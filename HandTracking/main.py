@@ -1,4 +1,3 @@
-from turtle import pos
 from image_wrap import four_point_transform as fpt
 from utility import correct_points as cp, limit, pyt, B_spline
 from Point import Point
