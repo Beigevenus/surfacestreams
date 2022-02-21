@@ -8,9 +8,6 @@ import cv2
 
 # Pythagoras of points from the hand object
 #TODO: remove, so that the class method is used instead
-def pyt(point1, point2):
-    calculation = pow(point1.x - point2.x, 2) + pow(point1.y - point2.y, 2)
-    return sqrt(calculation)
 
 # A basic min/max function
 def limit(num, minimum=0, maximum=255):
@@ -73,7 +70,7 @@ def find_corners_from_color(image, color):
 
     for point in colored_points:
         for i in range(0, len(colored_points)):
-            if point.distance(corners[i]) < corners[i].distance(actual_corners[i]):
+            if point.distance_to(corners[i]) < corners[i].distance_to(actual_corners[i]):
                 actual_corners[i] = point
 
     print(f'{actual_corners[0].x}, {actual_corners[0].y}, \n {actual_corners[1].x}, {actual_corners[1].y}, \n {actual_corners[2].x}, {actual_corners[2].y}, \n {actual_corners[3].x}, {actual_corners[3].y},')
