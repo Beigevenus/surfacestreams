@@ -1,5 +1,3 @@
-from math import sqrt
-from operator import index, indexOf
 from Point import Point
 from scipy import interpolate
 
@@ -14,7 +12,7 @@ def limit(num, minimum=0, maximum=255):
 
 # Function to find blackboard in camera using the calibration points as reference, and
 # then choosing the xv, that is closest to the given corner
-# TODO: Maybe delete, since automatic calibration is not nessesary since manual calibration does not take long.
+# TODO: Maybe delete, since automatic calibration is not necessary since manual calibration does not take long.
 # Needs to be done either way
 def find_corners_from_color(image, color):
     # TODO: Change the names of EVERYTHING so that it makes sense
@@ -34,7 +32,7 @@ def find_corners_from_color(image, color):
     # Bitwise-AND mask and original image
     output = cv2.bitwise_and(image, image, mask=mask)
 
-    # Row and colums
+    # Row and columns
     for i in image:
         for j in i:
             if j[0] > image_width:
@@ -51,7 +49,7 @@ def find_corners_from_color(image, color):
 
     # Gets the colored points from the image and
     x, y = np.where(np.all(output != [0, 0, 0], axis=2))
-    # Converts them to the point ojects
+    # Converts them to the point objects
     colored_points = []
     for point in range(0, len(x)):
         colored_points[point].x = x[point]
@@ -65,7 +63,10 @@ def find_corners_from_color(image, color):
     ]
 
     print(
-        f'{actual_corners[0].x}, {actual_corners[0].y}, \n {actual_corners[1].x}, {actual_corners[1].y}, \n {actual_corners[2].x}, {actual_corners[2].y}, \n {actual_corners[3].x}, {actual_corners[3].y},')
+        f'{actual_corners[0].x}, {actual_corners[0].y}, \n '
+        f'{actual_corners[1].x}, {actual_corners[1].y}, \n '
+        f'{actual_corners[2].x}, {actual_corners[2].y}, \n '
+        f'{actual_corners[3].x}, {actual_corners[3].y},')
 
     for point in colored_points:
         for i in range(0, len(colored_points)):
@@ -73,12 +74,15 @@ def find_corners_from_color(image, color):
                 actual_corners[i] = point
 
     print(
-        f'{actual_corners[0].x}, {actual_corners[0].y}, \n {actual_corners[1].x}, {actual_corners[1].y}, \n {actual_corners[2].x}, {actual_corners[2].y}, \n {actual_corners[3].x}, {actual_corners[3].y},')
+        f'{actual_corners[0].x}, {actual_corners[0].y}, \n'
+        f'{actual_corners[1].x}, {actual_corners[1].y}, \n'
+        f'{actual_corners[2].x}, {actual_corners[2].y}, \n'
+        f'{actual_corners[3].x}, {actual_corners[3].y},')
 
     return actual_corners
 
 
-def B_spline(points):
+def b_spline(points):
     x = []
     y = []
     cp = []
@@ -104,12 +108,13 @@ def B_spline(points):
 def adjusted_r(x, y, degree):
     """
     Finds the adjusted squared R in order to find
-    the most optimal n-degree polynomial over any 
+    the most optimal n-degree polynomial over any
     amount of points.
 
-    x: Array of the x-coordinates
-    y: Array of the y-coordinates
-    degree: The n-degree polynomial
+    :param x: Array of the x-coordinates
+    :param y: Array of the y-coordinates
+    :param degree: The n-degree polynomial
+    :return:
     """
     result = 0
     coeffs = np.polyfit(x, y, degree)
@@ -126,14 +131,13 @@ def adjusted_r(x, y, degree):
 def calc_polynomials(x, y, degree):
     """
     This functions returns the functions made
-    from the givin points x and y values also
+    from the given points x and y values also
     known as models.
-    
-    x: Array of the x-coordinates
-    y: Array of the y-coordinates
-    degree: The n-degree polynomial
 
-    return: The "function" also called model
+    :param x: Array of the x-coordinates
+    :param y: Array of the y-coordinates
+    :param degree: The n-degree polynomial
+    :return: The "function" also called model
     """
     models = {}
 

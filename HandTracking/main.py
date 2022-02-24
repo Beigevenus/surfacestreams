@@ -1,5 +1,6 @@
+from typing import NamedTuple
 from image_wrap import four_point_transform as fpt
-from utility import correct_points as cp, limit, B_spline
+from utility import limit
 from Point import Point
 from Canvas import Canvas
 from Hand import Hand
@@ -16,19 +17,18 @@ mp_hand = mp.solutions.hands
 
 def main():
     # TODO: Remove when auto calibration is implemented
-    counter = 0
+    counter: int = 0
 
     # drawing_points = deque(maxlen=5)
-    drawing_points = []
-    draw_status = False
-    old_point = None
-    draw_point_skip = 0
-    draw_point_skip_guard = 0
+    drawing_points: list[Point] = []
+    old_point: Point = None
+    draw_point_skip: int = 0
+    draw_point_skip_guard: int = 0
 
-    hand = Hand(mp_hand)
-    canvas = Canvas()
+    hand: Hand = Hand(mp_hand)
+    canvas: Canvas = Canvas()
     canvas.fullscreen()
-    camera = Camera()
+    camera: Camera = Camera()
 
     with mp_hand.Hands(
             model_complexity=0,
@@ -42,7 +42,7 @@ def main():
                 # If loading a video, use 'break' instead of 'continue'.
                 continue
 
-            hand_position = hands.process(camera.frame)
+            hand_position: NamedTuple = hands.process(camera.frame)
 
             # TODO: figure out the structure of the hand position and landmarks
             if hand_position.multi_hand_landmarks:
@@ -72,7 +72,7 @@ def main():
                             if draw_point_skip > draw_point_skip_guard:
                                 ptm, warped_width, warped_height = fpt(camera.frame, camera.calibration_points)
 
-                                camera_point = Point(
+                                camera_point: Point = Point(
                                     (limit((float(hand.get_drawing_point().x) * camera.width), 0, camera.width)),
                                     (limit((float(hand.get_drawing_point().y) * camera.height), 0, camera.height)))
 
@@ -91,9 +91,9 @@ def main():
                                         camera_point.x,
                                         camera_point.y, 1])
 
-                                    corrected_point = Point(corrected_coordinates[0], corrected_coordinates[1])
+                                    corrected_point: Point = Point(corrected_coordinates[0], corrected_coordinates[1])
 
-                                    point_on_canvas = corrected_point.get_position_on_canvas(warped_width,
+                                    point_on_canvas: Point = corrected_point.get_position_on_canvas(warped_width,
                                                                                              warped_height,
                                                                                              canvas.width,
                                                                                              canvas.height)
