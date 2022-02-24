@@ -5,6 +5,7 @@ from Point import Point
 from Canvas import Canvas
 from Hand import Hand
 from Camera import Camera
+from Settings import runsettings as run_settings
 
 import cv2
 import mediapipe as mp
@@ -133,4 +134,5 @@ def main():
 
 
 if __name__ == "__main__":
+    run_settings()
     main()
