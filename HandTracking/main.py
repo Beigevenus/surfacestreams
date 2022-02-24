@@ -85,7 +85,7 @@ def main():
                                         limit(camera_point.y, camera.calibration_points[0].y,
                                               camera.calibration_points[3].y) == camera_point.y):
 
-                                    # Does matrix multipication on the perspective transform matrix and the original
+                                    # Does matrix multiplication on the perspective transform matrix and the original
                                     # position of the finger on the camera
                                     corrected_coordinates = np.matmul(ptm, [
                                         camera_point.x,
