@@ -4,6 +4,7 @@ from Point import Point
 from Canvas import Canvas
 from Hand import Hand
 from Camera import Camera
+from DrawArea import DrawArea
 
 import cv2
 import mediapipe as mp
@@ -29,6 +30,9 @@ def main():
     canvas = Canvas()
     canvas.fullscreen()
     camera = Camera()
+    # TODO: Make it able to handle vertical lines
+    draw_area = DrawArea(
+        [Point(0+1, 0), Point(canvas.width, 0), Point(0, canvas.height), Point(canvas.width-1, canvas.height)])
 
     with mp_hand.Hands(
             model_complexity=0,
@@ -67,6 +71,7 @@ def main():
 
                     # The actual check whether the program should be drawing or not
                     if hand.is_drawing():
+                        print("drawing")
                         if len(camera.calibration_points) > 3:
                             draw_point_skip += 1
                             if draw_point_skip > draw_point_skip_guard:
@@ -80,10 +85,11 @@ def main():
                                 #  shaped box. This is where the finger will be registered, so this needs to be more
                                 #  accurate. One way to do this is to calculate the linear functions between the four
                                 #  points, and then check whether a point is within the box that the lines create.
-                                if (limit(camera_point.x, camera.calibration_points[0].x,
-                                          camera.calibration_points[3].x) == camera_point.x and
-                                        limit(camera_point.y, camera.calibration_points[0].y,
-                                              camera.calibration_points[3].y) == camera_point.y):
+                                if draw_area.get_position_on_canvas(canvas.width, canvas.height, camera_point):
+                                    # (limit(camera_point.x, camera.calibration_points[0].x,
+                                    # camera.calibration_points[3].x) == camera_point.x and
+                                    # limit(camera_point.y, camera.calibration_points[0].y,
+                                    # camera.calibration_points[3].y) == camera_point.y):
 
                                     # Does matrix multipication on the perspective transform matrix and the original
                                     # position of the finger on the camera
@@ -93,15 +99,23 @@ def main():
 
                                     corrected_point = Point(corrected_coordinates[0], corrected_coordinates[1])
 
-                                    point_on_canvas = corrected_point.get_position_on_canvas(warped_width,
-                                                                                             warped_height,
-                                                                                             canvas.width,
-                                                                                             canvas.height)
+                                    print(str(corrected_point.x) + ":" + str(corrected_point.y))
+
+                                    print(
+                                        str(camera.calibration_points[0].x) + ":" + str(camera.calibration_points[0].y))
+                                    print(
+                                        str(camera.calibration_points[1].x) + ":" + str(camera.calibration_points[1].y))
+                                    print(
+                                        str(camera.calibration_points[2].x) + ":" + str(camera.calibration_points[2].y))
+                                    print(
+                                        str(camera.calibration_points[3].x) + ":" + str(camera.calibration_points[3].y))
+
+                                    point_on_canvas = draw_area.get_position_on_canvas(canvas.width,
+                                                                                             canvas.height,
+                                                                                             camera_point)
+                                    print(str(point_on_canvas.x) + ":" + str(point_on_canvas.y))
                                     drawing_points.append(point_on_canvas)
                                     # drawing_points = cp(drawing_points, 6)
-
-                                    if old_point is None:
-                                        old_point = point_on_canvas
 
                                     # point = drawing_points.popleft()
                                     canvas.draw(old_point, point_on_canvas)

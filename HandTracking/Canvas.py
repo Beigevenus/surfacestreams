@@ -21,6 +21,9 @@ class Canvas:
         self.height = height
 
     def draw(self, previous_point, point):
+        if previous_point is None:
+            previous_point = point
+
         cv2.circle(self.image, (int(point.x), int(point.y)),
                    int(self.toolbox.circle_size), self.toolbox.color, cv2.FILLED)
 
