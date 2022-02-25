@@ -1,4 +1,3 @@
-from image_wrap import four_point_transform as fpt
 from utility import correct_points as cp, limit, B_spline
 from Point import Point
 from Canvas import Canvas
@@ -75,7 +74,7 @@ def main():
                         if len(camera.calibration_points) > 3:
                             draw_point_skip += 1
                             if draw_point_skip > draw_point_skip_guard:
-                                ptm, warped_width, warped_height = fpt(camera.frame, camera.calibration_points)
+
 
                                 camera_point = Point(
                                     (limit((float(hand.get_drawing_point().x) * camera.width), 0, camera.width)),
