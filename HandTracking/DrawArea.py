@@ -7,16 +7,10 @@ class DrawArea:
     def __init__(self, calibration_points):
         self.sorted_calibration_points = self.sort_calibration_points(calibration_points)
 
-        try:
-            self.left_border = polyfit(self.sorted_calibration_points[0].as_array(), self.sorted_calibration_points[2].as_array(), 1)
-        except numpy.linalg.LinAlgError:
-            self.left_border = 'Vertical'
-        try:
-            self.right_border = polyfit(self.sorted_calibration_points[1].as_array(), self.sorted_calibration_points[3].as_array(), 1)
-        except numpy.linalg.LinAlgError:
-            self.right_border = 'Vertical'
-        self.top_border = polyfit(self.sorted_calibration_points[0].as_array(), self.sorted_calibration_points[1].as_array(), 1)
-        self.bottom_border = polyfit(self.sorted_calibration_points[2].as_array(), self.sorted_calibration_points[3].as_array(), 1)
+        self.left_border = self.get_line_attributes(self.sorted_calibration_points[0], self.sorted_calibration_points[2])
+        self.right_border = self.get_line_attributes(self.sorted_calibration_points[1], self.sorted_calibration_points[3])
+        self.top_border = self.get_line_attributes(self.sorted_calibration_points[0], self.sorted_calibration_points[1])
+        self.bottom_border = self.get_line_attributes(self.sorted_calibration_points[2], self.sorted_calibration_points[3])
 
     def set_calibration_points(self, calibration_points):
         self.sorted_calibration_points = self.sort_calibration_points(calibration_points)
@@ -93,3 +87,12 @@ class DrawArea:
             right_bot = temp
 
         return [left_top, right_top, left_bot, right_bot]
+
+    def get_line_attributes(self, point1, point2):
+        if point2.x == point1.x:
+            return None
+        a = (point2.y-point1.y) / (point2.x-point1.x)
+        b = point1.y - (a*point1.x)
+
+        return[a, b]
+
