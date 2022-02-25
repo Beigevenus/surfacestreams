@@ -15,6 +15,17 @@ class Point:
         calculation = pow(self.x - other.x, 2) + pow(self.y - other.y, 2)
         return sqrt(calculation)
 
+    def offset_to(self, other, precision=2):
+        point = self.midpoint_to(other)
+
+        for i in range(0, precision):
+            point = self.midpoint_to(point)
+
+        return point
+
+    def midpoint_to(self, other):
+        return Point((self.x + other.x)/2, (self.y + other.y)/2)
+
     def get_position_on_canvas(self, area_width, area_height, canvas_width, canvas_height):
         """
         Get the position of the point in the actual canvas
