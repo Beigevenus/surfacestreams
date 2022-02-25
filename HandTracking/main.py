@@ -1,3 +1,4 @@
+from typing import NamedTuple
 from image_wrap import four_point_transform as fpt
 from utility import limit
 from Point import Point
@@ -38,7 +39,7 @@ def main():
                 # If loading a video, use 'break' instead of 'continue'.
                 continue
 
-            hand_position = hands.process(camera.frame)
+            hand_position: NamedTuple = hands.process(camera.frame)
 
             # TODO: figure out the structure of the hand position and landmarks
             if hand_position.multi_hand_landmarks:
