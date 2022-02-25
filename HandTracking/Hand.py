@@ -1,4 +1,4 @@
-from Point import Point
+from HandTracking.Point import Point
 
 
 class Hand:

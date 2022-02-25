@@ -1,10 +1,10 @@
 from typing import NamedTuple
-from image_wrap import four_point_transform as fpt
-from utility import limit
-from Point import Point
-from Canvas import Canvas
-from Hand import Hand
-from Camera import Camera
+from HandTracking.image_wrap import four_point_transform as fpt
+from HandTracking.utility import limit
+from HandTracking.Point import Point
+from HandTracking.Canvas import Canvas
+from HandTracking.Hand import Hand
+from HandTracking.Camera import Camera
 
 import cv2
 import mediapipe as mp

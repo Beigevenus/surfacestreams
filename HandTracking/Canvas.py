@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from PaintingToolbox import PaintingToolbox
+from HandTracking.PaintingToolbox import PaintingToolbox
 
 
 class Canvas:
@@ -17,11 +17,14 @@ class Canvas:
 
     def resize(self, width, height) -> None:
         """
-        TO BE WRITTEN.
+        Changes the width and height of the canvas window to the given lengths.
 
-        :param width:
-        :param height:
+        :param width: The desired width
+        :param height: The desired height
         """
+        if width <= 0 or height <= 0:
+            raise ValueError("Width and height of a resized canvas must be larger than 0.")
+
         self.image = cv2.resize(self.image, (width, height), interpolation=cv2.INTER_AREA)
         self.width = width
         self.height = height
