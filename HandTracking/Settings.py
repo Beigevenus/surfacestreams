@@ -1,11 +1,7 @@
 from screeninfo import get_monitors
-import pathlib
 import tkinter as tk
 import tkinter.ttk as ttk
 from Camera import Camera
-
-PROJECT_PATH = pathlib.Path(__file__).parent
-PROJECT_UI = PROJECT_PATH / "Settings.ui"
 
 
 class SettingsApp:
