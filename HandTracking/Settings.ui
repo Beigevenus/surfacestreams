@@ -1,165 +1,125 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>385</width>
-    <height>277</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Dialog</string>
-  </property>
-  <widget class="QGroupBox" name="windowmodebox">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>191</width>
-     <height>80</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Window mode</string>
-   </property>
-   <widget class="QRadioButton" name="isfullscreen">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>20</y>
-      <width>82</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Fullscreen</string>
-    </property>
-    <property name="checked">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="iswindowed">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>40</y>
-      <width>82</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Windowed</string>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QComboBox" name="monitor">
-   <property name="geometry">
-    <rect>
-     <x>60</x>
-     <y>100</y>
-     <width>141</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="editable">
-    <bool>false</bool>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>100</y>
-     <width>47</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Monitor:</string>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="cam">
-   <property name="geometry">
-    <rect>
-     <x>60</x>
-     <y>150</y>
-     <width>141</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="editable">
-    <bool>false</bool>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>150</y>
-     <width>47</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Cam:</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="calibratehand">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>190</y>
-     <width>131</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Calibrate Hand</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="calibratepoints">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>220</y>
-     <width>131</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Calibrate Cornor points</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="okButton">
-   <property name="geometry">
-    <rect>
-     <x>210</x>
-     <y>240</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>OK</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="cancleButton">
-   <property name="geometry">
-    <rect>
-     <x>290</x>
-     <y>240</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Cancle</string>
-   </property>
-  </widget>
- </widget>
- <resources/>
- <connections/>
-</ui>
+<?xml version='1.0' encoding='utf-8'?>
+<interface version="1.2">
+  <object class="tk.Toplevel" id="toplevel1">
+    <property name="borderwidth">2</property>
+    <property name="geometry">352x352</property>
+    <property name="height">200</property>
+    <property name="title" translatable="yes">Settings</property>
+    <property name="width">200</property>
+    <child>
+      <object class="ttk.Labelframe" id="labelframe1">
+        <property name="height">200</property>
+        <property name="text" translatable="yes">Window mode</property>
+        <property name="width">200</property>
+        <layout manager="pack">
+          <property name="anchor">nw</property>
+          <property name="ipadx">10</property>
+          <property name="ipady">10</property>
+          <property name="padx">10</property>
+          <property name="pady">10</property>
+          <property name="side">top</property>
+        </layout>
+        <child>
+          <object class="ttk.Radiobutton" id="fullscreen">
+            <property name="text" translatable="yes">Fullscreen</property>
+            <layout manager="pack">
+              <property name="anchor">w</property>
+              <property name="side">top</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="ttk.Radiobutton" id="windowed">
+            <property name="text" translatable="yes">Window</property>
+            <layout manager="pack">
+              <property name="anchor">w</property>
+              <property name="side">top</property>
+            </layout>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="ttk.Label" id="label1">
+        <property name="text" translatable="yes">Monitor</property>
+        <layout manager="pack">
+          <property name="anchor">w</property>
+          <property name="padx">10</property>
+          <property name="side">top</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="ttk.Combobox" id="Monitorbox">
+        <layout manager="pack">
+          <property name="anchor">w</property>
+          <property name="padx">10</property>
+          <property name="side">top</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="ttk.Label" id="label2">
+        <property name="text" translatable="yes">Webcam</property>
+        <layout manager="pack">
+          <property name="anchor">w</property>
+          <property name="padx">10</property>
+          <property name="side">top</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="ttk.Combobox" id="Webcambox">
+        <layout manager="pack">
+          <property name="anchor">w</property>
+          <property name="padx">10</property>
+          <property name="side">top</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="ttk.Button" id="Hand">
+        <property name="text" translatable="yes">Calibrate hand</property>
+        <layout manager="pack">
+          <property name="anchor">w</property>
+          <property name="padx">10</property>
+          <property name="pady">10</property>
+          <property name="side">top</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="ttk.Button" id="Corner">
+        <property name="text" translatable="yes">Calibrate corners</property>
+        <layout manager="pack">
+          <property name="anchor">w</property>
+          <property name="padx">10</property>
+          <property name="pady">10</property>
+          <property name="side">top</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="ttk.Button" id="Cancel">
+        <property name="text" translatable="yes">Cancel</property>
+        <layout manager="pack">
+          <property name="anchor">se</property>
+          <property name="padx">10</property>
+          <property name="pady">10</property>
+          <property name="side">right</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="ttk.Button" id="OK">
+        <property name="text" translatable="yes">OK</property>
+        <layout manager="pack">
+          <property name="anchor">se</property>
+          <property name="padx">10</property>
+          <property name="pady">10</property>
+          <property name="side">right</property>
+        </layout>
+      </object>
+    </child>
+  </object>
+</interface>
