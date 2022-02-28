@@ -6,6 +6,7 @@ from Camera import Camera
 
 class SettingsApp:
     def __init__(self, master=None):
+        self.appliedSettings = {}
         # build ui
         self.toplevel1 = tk.Tk() if master is None else tk.Toplevel(master)
 
@@ -15,13 +16,22 @@ class SettingsApp:
 
         self.labelframe1 = ttk.Labelframe(self.toplevel1)
         self.fullscreen = ttk.Radiobutton(self.labelframe1)
-        self.fullscreen.configure(text='Fullscreen', variable=self.radioVar, value=True)
+        self.fullscreen.configure(text='Fullscreen', variable=self.radioVar, value=True, command=self.__windowchange)
         self.fullscreen.pack(anchor='w', side='top')
         self.windowed = ttk.Radiobutton(self.labelframe1)
-        self.windowed.configure(text='Window', variable=self.radioVar, value=False)
+        self.windowed.configure(text='Window', variable=self.radioVar, value=False, command=self.__windowchange)
         self.windowed.pack(anchor='w', side='top')
         self.labelframe1.configure(height='200', text='Window mode', width='200')
         self.labelframe1.pack(anchor='nw', ipadx='10', ipady='10', padx='10', pady='10', side='top')
+
+        self.labelrez = ttk.Label(self.labelframe1)
+        self.labelrez.configure(text='Resolution')
+        self.labelrez.pack(anchor='w', padx='10', side='top')
+        self.selected_rez = tk.StringVar()
+        self.Rezbox = ttk.Combobox(self.labelframe1, textvariable=self.selected_rez)
+        self.Rezbox.pack(anchor='w', padx='10', side='top')
+        self.Rezbox['state'] = 'disabled'
+
 
         # monitor stuff
         self.label1 = ttk.Label(self.toplevel1)
@@ -34,14 +44,11 @@ class SettingsApp:
         }
         for idx, m in enumerate(get_monitors()):
             self.monitor_list["Display{num}".format(num=idx + 1)] = m
-        print(self.monitor_list)
-        print(self.monitor_list.keys())
         self.Monitorbox['values'] = list(self.monitor_list.keys())
         self.Monitorbox.current(0)
         self.Monitorbox['state'] = 'readonly'
 
         # webcam stuff
-
         self.active_cams = Camera.returnCameraIndexes()
         self.selected_cam = tk.StringVar()
 
@@ -89,6 +96,26 @@ class SettingsApp:
     def run(self):
         self.mainwindow.mainloop()
 
+        return self.appliedSettings
+
+    def __windowchange(self):
+        if int(self.radioVar.get()) == 1:
+            print(self.radioVar.get())
+            self.Rezbox['state'] = 'disabled'
+        else:
+            self.Rezbox['state'] = 'readonly'
+
+    def __calculate_aspect(self, width: int, height: int) -> str:
+        def gcd(a, b):
+            """The GCD (greatest common divisor) is the highest number that evenly divides both width and height."""
+            return a if b == 0 else gcd(b, a % b)
+
+        r = gcd(width, height)
+        x = int(width / r)
+        y = int(height / r)
+
+        return f"{x}:{y}"
+
     def calibrate_hands(self):
         pass
 
@@ -99,11 +126,16 @@ class SettingsApp:
         self.toplevel1.destroy()
 
     def save(self):
-        print("is fullscreen: " + self.radioVar.get())
-        print(self.monitor_list[self.selected_monitor.get()])
-        print("cam selected: " + self.selected_cam.get())
+        # print("is fullscreen: " + self.radioVar.get())
+        # print(self.monitor_list[self.selected_monitor.get()])
+        # print("cam selected: " + self.selected_cam.get())
+
+        self.appliedSettings["monitor"] = self.monitor_list[self.selected_monitor.get()]
+        self.appliedSettings["isFullscreen"] = self.radioVar.get()
+        self.appliedSettings["camera"] = self.selected_cam.get()
+        self.toplevel1.destroy()
 
 
 def runsettings():
     app = SettingsApp()
-    app.run()
+    return app.run()

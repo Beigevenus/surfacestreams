@@ -134,5 +134,6 @@ def main():
 
 
 if __name__ == "__main__":
-    run_settings()
+    settings = run_settings()
+    # TODO: implement the hand and canvas warp features into settings, and update main so that it uses the settings.
     main()
