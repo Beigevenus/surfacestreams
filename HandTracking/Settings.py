@@ -24,6 +24,7 @@ class SettingsApp:
         self.labelframe1.configure(height='200', text='Window mode', width='200')
         self.labelframe1.pack(anchor='nw', ipadx='10', ipady='10', padx='10', pady='10', side='top')
 
+        # for choosing resolution when windowed mode is selected
         self.labelrez = ttk.Label(self.labelframe1)
         self.labelrez.configure(text='Resolution')
         self.labelrez.pack(anchor='w', padx='10', side='top')
@@ -105,6 +106,7 @@ class SettingsApp:
         else:
             self.Rezbox['state'] = 'readonly'
 
+    # Calculates the aspect ratio.. dont know if needed
     def __calculate_aspect(self, width: int, height: int) -> str:
         def gcd(a, b):
             """The GCD (greatest common divisor) is the highest number that evenly divides both width and height."""
@@ -130,6 +132,7 @@ class SettingsApp:
         # print(self.monitor_list[self.selected_monitor.get()])
         # print("cam selected: " + self.selected_cam.get())
 
+        # adds settings data to the dict that will be returned
         self.appliedSettings["monitor"] = self.monitor_list[self.selected_monitor.get()]
         self.appliedSettings["isFullscreen"] = self.radioVar.get()
         self.appliedSettings["camera"] = self.selected_cam.get()
