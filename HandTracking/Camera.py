@@ -5,17 +5,19 @@ import cv2
 
 
 class Camera:
-    def __init__(self, name='camera', camera=0):
+    def __init__(self, drawarea, tmp_calibration_points, name='camera', camera=0):
         # TODO: Needs to be dynamically found
         self.capture = cv2.VideoCapture(camera)
+        self.calibration_points = []
+        self.sorted_calibration_points = tmp_calibration_points
         self.frame = self.update_frame()
         self.height = self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
         self.width = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.name = name
-        self.calibration_points = []
         self.ptm = None
         self.warped_width = None
         self.warped_height = None
+        self.drawarea = drawarea
 
         cv2.namedWindow(self.name)
         cv2.setMouseCallback(self.name, self.mouse_click)
@@ -36,6 +38,10 @@ class Camera:
         if event == cv2.EVENT_LBUTTONUP:
             if len(self.calibration_points) > 3:
                 self.calibration_points.clear()
+            elif len(self.calibration_points) == 3:
+                self.calibration_points.append(Point(x, y))
+                self.sorted_calibration_points = self.sort_calibration_points()
+                self.drawarea.update_calibration_borders(self.sorted_calibration_points)
             else:
                 self.calibration_points.append(Point(x, y))
 
@@ -45,4 +51,41 @@ class Camera:
                        [255, 255, 0], cv2.FILLED)
 
     def update_image_ptm(self):
-        self.ptm, self.warped_width, self.warped_height = fpt(self.frame, self.calibration_points)
+        if len(self.calibration_points) <= 3:
+            None
+        else:
+            self.ptm, self.warped_width, self.warped_height = fpt(self.frame, self.calibration_points)
+
+    def sort_calibration_points(self):
+        left_top = left_bot = right_top = right_bot = None
+
+        right_points = []
+        left_top = self.calibration_points[0]
+        left_bot = self.calibration_points[1]
+        for point in self.calibration_points[2:]:
+            temp = None
+            if point.x < left_top.x:
+                temp = left_top
+                left_top = point
+            else:
+                temp = point
+            if temp.x < left_bot.x:
+                right_points.append(left_bot)
+                left_bot = temp
+            else:
+                right_points.append(temp)
+
+        right_top = right_points[0]
+        right_bot = right_points[1]
+
+        if left_top.y > left_bot.y:
+            temp = left_top
+            left_top = left_bot
+            left_bot = temp
+
+        if right_top.y > right_bot.y:
+            temp = right_top
+            right_top = right_bot
+            right_bot = temp
+
+        return [left_top, right_top, left_bot, right_bot]
