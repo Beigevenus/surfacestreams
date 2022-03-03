@@ -25,13 +25,13 @@ def main():
     hand = Hand(mp_hand)
     canvas = Canvas()
     canvas.fullscreen()
-    camera = Camera(camera=2)
+    camera = Camera()
 
     with mp_hand.Hands(
             model_complexity=0,
             max_num_hands=1,
             min_detection_confidence=0.5,
-            min_tracking_confidence=0.7) as hands:
+            min_tracking_confidence=0.1) as hands:
         while camera.capture.isOpened():
             camera.update_frame()
             if camera.frame is None:
@@ -58,7 +58,7 @@ def main():
                     if counter < 50:
                         hand.set_finger_length()
                         counter += 1
-                    elif counter == 100:
+                    elif counter == 50:
                         print("Done calibrating")
                         counter += 1
 

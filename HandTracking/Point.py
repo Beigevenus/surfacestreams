@@ -6,6 +6,15 @@ class Point:
         self.x = x
         self.y = y
 
+    def __eq__(self, other):
+        if self.x == other.x and self.y == other.y:
+            return True
+        else:
+            return False
+
+    def __str__(self):
+        return "(" + str(self.x) + ", " + str(self.y) + ")"
+
     @classmethod
     def from_landmark(cls, landmark) -> 'Point':
         """
