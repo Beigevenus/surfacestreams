@@ -1,7 +1,7 @@
 from screeninfo import get_monitors, Monitor
 import tkinter as tk
 import tkinter.ttk as ttk
-from Camera import Camera
+from HandTracking.Camera import Camera
 
 
 class Settings:

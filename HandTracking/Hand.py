@@ -1,7 +1,7 @@
 import math
 
 from HandTracking.Point import Point
-from Vector import Vector
+from HandTracking.Vector import Vector
 
 
 class Hand:
