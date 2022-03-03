@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import gi,logging,os
+import gi,logging,os,signal
 gi.require_version('Gst', '1.0')
 gi.require_version('GLib', '2.0')
 from gi.repository import Gst, GLib
@@ -82,12 +82,12 @@ def link_to_inputselector(el1, tpl1, el2):
     el2.set_property("active-pad", pad)
     return pad
 
-def dump_debug(name="debug"):
+def dump_debug(name="surfacestreams"):
     if os.getenv("GST_DEBUG_DUMP_DOT_DIR") == None:
         return
     logging.info("Writing graph snapshot to "+name+".dot")
     # write out debug dot file (needs envvar GST_DEBUG_DUMP_DOT_DIR set)
-    Gst.debug_bin_to_dot_file(pipeline,Gst.DebugGraphDetails(15),name)
+    Gst.debug_bin_to_dot_file(pipeline,Gst.DebugGraphDetails.ALL,name)
 
 def get_by_name(name):
     return pipeline.get_by_name(name)
@@ -106,6 +106,9 @@ def init_pipeline(callback,mylevel=0):
     # configure the logger
     loglevels = { 0: logging.INFO, 1: logging.DEBUG, 2: logging.TRACE }
     logging.basicConfig(format="%(levelname)s:: %(message)s",level=loglevels[mylevel])
+
+    # signal handler to dump graph dot file on SIGUSR1
+    signal.signal(signal.SIGUSR1, lambda a,b: dump_debug())
 
     Gst.init(None)
     pipeline = Gst.Pipeline()
@@ -126,7 +129,7 @@ def connect_bus(msgtype, callback, *args):
 def add_test_sources(frontdev="",surfdev="",audiodev="",fake=False,perspective=None,bgcol=0xFF00FF00,wave="ticks"):
 
     if fake:
-        frontsrc = "videotestsrc is-live=true pattern=smpte ! timeoverlay" if frontdev == "" else frontdev
+        frontsrc = "videotestsrc is-live=true pattern=smpte ! timeoverlay text="+wave if frontdev == "" else frontdev
         surfsrc  = "videotestsrc is-live=true pattern=ball background-color="+str(bgcol)+" ! timeoverlay" if surfdev == "" else surfdev
         audiosrc = "audiotestsrc is-live=true wave="+wave if audiodev == "" else audiodev
     else:

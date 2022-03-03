@@ -128,7 +128,7 @@ def adjusted_r(x, y, degree):
     return result
 
 
-def calc_polynomials(x, y, degree):
+def __calc_polynomials(x, y, degree):
     """
     This functions returns the functions made
     from the given points x and y values also
@@ -147,7 +147,7 @@ def calc_polynomials(x, y, degree):
     return models
 
 
-def arr_from_points(points):
+def __arr_from_points(points):
     """
     Makes two arrays from the array of points.
     One for the x-coordinates and one for the y.
@@ -162,9 +162,9 @@ def arr_from_points(points):
     return x, y
 
 
-def find_optimal_polynomial(points, degree):
-    x, y = arr_from_points(points)
-    models = calc_polynomials(x, y, degree)
+def __find_optimal_polynomial(points, degree):
+    x, y = __arr_from_points(points)
+    models = __calc_polynomials(x, y, degree)
 
     best_model = [np.poly1d(np.polyfit(x, y, 1)), 0]
 
@@ -175,10 +175,16 @@ def find_optimal_polynomial(points, degree):
     return best_model
 
 
-def correct_points(points, degree):
-    model = find_optimal_polynomial(points, degree)
+def smooth_points(points, degree):
+    model = __find_optimal_polynomial(points, degree)
+
+    #define scatterplot
+    polyline = np.linspace(15, 50)
+
+    #add fitted polynomial curve to scatterplot
 
     for point in points:
         point.y = model[0](point.x)
 
     return points
+    

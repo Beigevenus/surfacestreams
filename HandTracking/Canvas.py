@@ -1,27 +1,31 @@
 import cv2
 import numpy as np
+from numpy import ndarray
 
-from PaintingToolbox import PaintingToolbox
+from HandTracking.PaintingToolbox import PaintingToolbox
 
 
 class Canvas:
     def __init__(self, width=1920, height=1080, name='canvas', toolbox=PaintingToolbox()):
-        self.width = width
-        self.height = height
-        self.toolbox = toolbox
-        self.image = np.zeros(shape=[height, width, 3], dtype=np.uint8)
-        self.name = name
+        self.width: int = width
+        self.height: int = height
+        self.toolbox: PaintingToolbox = toolbox
+        self.image: ndarray = np.zeros(shape=[height, width, 3], dtype=np.uint8)
+        self.name: str = name
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
         #self.move_window(2500)
 
     def resize(self, width, height) -> None:
         """
-        TO BE WRITTEN.
+        Changes the width and height of the canvas window to the given lengths.
 
-        :param width:
-        :param height:
+        :param width: The desired width
+        :param height: The desired height
         """
+        if width <= 0 or height <= 0:
+            raise ValueError("Width and height of a resized canvas must be larger than 0.")
+
         self.image = cv2.resize(self.image, (width, height), interpolation=cv2.INTER_AREA)
         self.width = width
         self.height = height
