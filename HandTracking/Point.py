@@ -1,4 +1,4 @@
-from math import sqrt, pow
+from math import sqrt
 
 
 class Point:
@@ -35,7 +35,7 @@ class Point:
         :param other: The other Point to calculate the distance to
         :return: The distance between self and other
         """
-        calculation = pow(self.x - other.x, 2) + pow(self.y - other.y, 2)
+        calculation = (self.x - other.x) ** 2 + (self.y - other.y) ** 2
         return sqrt(calculation)
 
     def offset_to(self, other, precision=2):

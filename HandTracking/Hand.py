@@ -105,7 +105,8 @@ class Hand:
             a = Vector(self.pip, self.mcp)
             b = Vector(self.pip, self.tip)
             angle = a.angle_between(b)
-            if angle > 0.9:
+            print(angle)
+            if angle < 0:
                 return True
             return False
 

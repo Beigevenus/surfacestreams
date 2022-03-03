@@ -14,4 +14,4 @@ class Vector:
         return (self.x * other.x) + (self.y * other.y)
     
     def angle_between(self, other):
-        return math.acos((self.dot(other)) / (self.length * other.length))
+        return (self.dot(other)) / (self.length * other.length)
