@@ -25,13 +25,13 @@ def main():
     hand = Hand(mp_hand)
     canvas = Canvas()
     canvas.fullscreen()
-    camera = Camera(camera=2)
+    camera = Camera()
 
     with mp_hand.Hands(
             model_complexity=0,
             max_num_hands=1,
             min_detection_confidence=0.5,
-            min_tracking_confidence=0.7) as hands:
+            min_tracking_confidence=0.1) as hands:
         while camera.capture.isOpened():
             camera.update_frame()
             if camera.frame is None:
@@ -54,13 +54,12 @@ def main():
 
                     hand.update(hand_landmarks)
 
-                    # TODO: Needs to only run this once, when the display is set up or something
-                    if counter < 50:
-                        hand.set_finger_length()
-                        counter += 1
-                    elif counter == 100:
-                        print("Done calibrating")
-                        counter += 1
+                    # if counter < 50:
+                    #     hand.set_finger_length()
+                    #     counter += 1
+                    # elif counter == 50:
+                    #     print("Done calibrating")
+                    #     counter += 1  
 
                     # The actual check whether the program should be drawing or not
                     if hand.is_drawing():

@@ -1,3 +1,4 @@
+from turtle import update
 from Point import Point
 
 import cv2
@@ -24,16 +25,17 @@ class Camera:
         cv2.imshow(self.name, self.frame)
 
     def update_frame(self):
-        success, frame = self.capture.read()
-        frame = cv2.flip(frame, 1)
+        success, self.frame = self.capture.read()
+        self.frame = cv2.flip(self.frame, 1)
         if success:
-            return frame
+            return self.frame
         return None
 
     def mouse_click(self, event, x, y, flags, param) -> None:
         if event == cv2.EVENT_LBUTTONUP:
             if len(self.calibration_points) > 3:
                 self.calibration_points.clear()
+                print("Work!")
             else:
                 self.calibration_points.append(Point(x, y))
 
