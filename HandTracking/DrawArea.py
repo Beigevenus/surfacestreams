@@ -28,9 +28,9 @@ class DrawArea:
 
         corrected_point = Point(corrected_coordinates[0], corrected_coordinates[1])
 
-        x = canvas_width * (corrected_point.x / area_width)
-        y = canvas_height * (corrected_point.y / area_height)
-        return Point(x, y)
+        # x = canvas_width * (corrected_point.x / area_width)
+        # y = canvas_height * (corrected_point.y / area_height)
+        return corrected_point# Point(x, y)
 
     def is_position_in_calibration_area(self, point):
         # y = ax+b

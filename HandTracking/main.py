@@ -33,7 +33,7 @@ def main():
     draw_area = DrawArea(
         [Point(0+1, 0), Point(canvas.width, 0), Point(0, canvas.height), Point(canvas.width-1, canvas.height)])
 
-    camera = Camera(draw_area, [Point(0+1, 0), Point(canvas.width, 0), Point(0, canvas.height), Point(canvas.width-1, canvas.height)])
+    camera = Camera(draw_area, canvas, [Point(0+1, 0), Point(canvas.width, 0), Point(0, canvas.height), Point(canvas.width-1, canvas.height)])
 
     with mp_hand.Hands(
             model_complexity=0,
@@ -82,6 +82,9 @@ def main():
                                     (limit((float(hand.get_drawing_point().x) * camera.width), 0, camera.width)),
                                     (limit((float(hand.get_drawing_point().y) * camera.height), 0, camera.height)))
 
+                                print(camera_point)
+                                print(str(camera.ptm) + " : " + str(camera.warped_width) + " : " + str(camera.warped_height)
+                                      )
                                 # TODO: This is also the reason why the accuracy is bad, if it is not a rectangular
                                 #  shaped box. This is where the finger will be registered, so this needs to be more
                                 #  accurate. One way to do this is to calculate the linear functions between the four

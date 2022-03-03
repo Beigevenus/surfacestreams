@@ -1,11 +1,11 @@
-from Point import Point
-from image_wrap import four_point_transform as fpt
+from HandTracking.Point import Point
+from HandTracking.image_wrap import four_point_transform as fpt
 
 import cv2
 
 
 class Camera:
-    def __init__(self, drawarea, tmp_calibration_points, name='camera', camera=0):
+    def __init__(self, drawarea, canvas, tmp_calibration_points, name='camera', camera=0):
         # TODO: Needs to be dynamically found
         self.capture = cv2.VideoCapture(camera)
         self.calibration_points = []
@@ -18,6 +18,7 @@ class Camera:
         self.warped_width = None
         self.warped_height = None
         self.drawarea = drawarea
+        self.canvas = canvas
 
         cv2.namedWindow(self.name)
         cv2.setMouseCallback(self.name, self.mouse_click)
@@ -30,7 +31,6 @@ class Camera:
         success, self.frame = self.capture.read()
         self.frame = cv2.flip(self.frame, 1)
         if success:
-            self.update_image_ptm()
             return self.frame
         return None
 
@@ -42,6 +42,7 @@ class Camera:
                 self.calibration_points.append(Point(x, y))
                 self.sorted_calibration_points = self.sort_calibration_points()
                 self.drawarea.update_calibration_borders(self.sorted_calibration_points)
+                self.update_image_ptm()
             else:
                 self.calibration_points.append(Point(x, y))
 
@@ -54,7 +55,7 @@ class Camera:
         if len(self.calibration_points) <= 3:
             None
         else:
-            self.ptm, self.warped_width, self.warped_height = fpt(self.frame, self.calibration_points)
+            self.ptm, self.warped_width, self.warped_height = fpt(self.frame, self.sorted_calibration_points, self.canvas.width, self.canvas.height)
 
     def sort_calibration_points(self):
         left_top = left_bot = right_top = right_bot = None
