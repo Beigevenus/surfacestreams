@@ -5,7 +5,7 @@ from Point import Point
 from Canvas import Canvas
 from Hand import Hand
 from Camera import Camera
-from Settings import runsettings as run_settings
+from Settings import runsettings as run_settings, Settings
 
 import cv2
 import mediapipe as mp
@@ -16,7 +16,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_hand = mp.solutions.hands
 
 
-def main():
+def main(config: Settings):
     # TODO: Remove when auto calibration is implemented
     counter: int = 0
 
@@ -27,9 +27,12 @@ def main():
     draw_point_skip_guard: int = 0
 
     hand: Hand = Hand(mp_hand)
-    canvas: Canvas = Canvas()
-    canvas.fullscreen()
-    camera: Camera = Camera()
+    canvas: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height)
+    canvas.move_window(config.monitor.x, config.monitor.y)
+    if config.isFullscreen == 1:
+        canvas.fullscreen()
+    camera: Camera = Camera(camera=config.camera)
+
 
     with mp_hand.Hands(
             model_complexity=0,
@@ -135,5 +138,9 @@ def main():
 
 if __name__ == "__main__":
     settings = run_settings()
-    # TODO: implement the hand and canvas warp features into settings, and update main so that it uses the settings.
-    main()
+    # use line below instead of above line to bypass settings menu..
+    # settings = Settings(fullscreen=1,camera=0)
+    # also use line below to move canvas to secondary monitor
+    # (if secondary monitor is less than 2500 pixels away)
+    # settings.monitor.x = 2500
+    main(settings)
