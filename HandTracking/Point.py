@@ -1,10 +1,19 @@
-from math import sqrt, pow
+from math import sqrt
 
 
 class Point:
     def __init__(self, x, y) -> None:
         self.x: float = x
         self.y: float = y
+
+    def __eq__(self, other):
+        if self.x == other.x and self.y == other.y:
+            return True
+        else:
+            return False
+
+    def __str__(self):
+        return "(" + str(self.x) + ", " + str(self.y) + ")"
 
     @classmethod
     def from_landmark(cls, landmark) -> 'Point':
@@ -26,7 +35,7 @@ class Point:
         :param other: The other Point to calculate the distance to
         :return: The distance between self and other
         """
-        calculation: float = pow(self.x - other.x, 2) + pow(self.y - other.y, 2)
+        calculation: float = (self.x - other.x) ** 2 + (self.y - other.y) ** 2
         return sqrt(calculation)
 
     def offset_to(self, other, precision=2):
