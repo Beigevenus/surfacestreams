@@ -1,10 +1,10 @@
 from typing import NamedTuple
-from image_wrap import four_point_transform as fpt
-from utility import limit
-from Point import Point
-from Canvas import Canvas
-from Hand import Hand
-from Camera import Camera
+from HandTracking.image_wrap import four_point_transform as fpt
+from HandTracking.utility import limit
+from HandTracking.Point import Point
+from HandTracking.Canvas import Canvas
+from HandTracking.Hand import Hand
+from HandTracking.Camera import Camera
 
 import cv2
 import mediapipe as mp
@@ -68,7 +68,7 @@ def main():
                             #if draw_point_skip > draw_point_skip_guard:
                             ptm, warped_width, warped_height = fpt(camera.frame, camera.calibration_points)
 
-                            camera_point = Point(
+                            camera_point: Point = Point(
                                 (limit((float(hand.get_drawing_point().x) * camera.width), 0, camera.width)),
                                 (limit((float(hand.get_drawing_point().y) * camera.height), 0, camera.height)))
 
@@ -87,9 +87,9 @@ def main():
                                     camera_point.x,
                                     camera_point.y, 1])
 
-                                corrected_point = Point(corrected_coordinates[0], corrected_coordinates[1])
+                                corrected_point: Point = Point(corrected_coordinates[0], corrected_coordinates[1])
 
-                                point_on_canvas = corrected_point.get_position_on_canvas(warped_width,
+                                point_on_canvas: Point = corrected_point.get_position_on_canvas(warped_width,
                                                                                         warped_height,
                                                                                         canvas.width,
                                                                                         canvas.height)
