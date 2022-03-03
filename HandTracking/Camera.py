@@ -24,10 +24,10 @@ class Camera:
         cv2.imshow(self.name, self.frame)
 
     def update_frame(self):
-        success, self.frame = self.capture.read()
-        self.frame = cv2.flip(self.frame, 1)
+        success, frame = self.capture.read()
+        frame = cv2.flip(frame, 1)
         if success:
-            return self.frame
+            return frame
         return None
 
     def mouse_click(self, event, x, y, flags, param) -> None:
