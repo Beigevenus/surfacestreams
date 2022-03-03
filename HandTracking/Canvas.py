@@ -1,16 +1,17 @@
 import cv2
 import numpy as np
+from numpy import ndarray
 
 from HandTracking.PaintingToolbox import PaintingToolbox
 
 
 class Canvas:
     def __init__(self, width=1920, height=1080, name='canvas', toolbox=PaintingToolbox()):
-        self.width = width
-        self.height = height
-        self.toolbox = toolbox
-        self.image = np.zeros(shape=[height, width, 3], dtype=np.uint8)
-        self.name = name
+        self.width: int = width
+        self.height: int = height
+        self.toolbox: PaintingToolbox = toolbox
+        self.image: ndarray = np.zeros(shape=[height, width, 3], dtype=np.uint8)
+        self.name: str = name
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
         self.move_window(2500)

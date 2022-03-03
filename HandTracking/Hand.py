@@ -5,11 +5,11 @@ class Hand:
     def __init__(self, mp_hand):
         self.mp_hand = mp_hand
         self.wrist = None
-        self.fingers = {"THUMB": self.Finger(),
-                        "INDEX": self.Finger(),
-                        "MIDDLE": self.Finger(),
-                        "RING": self.Finger(),
-                        "PINKY": self.Finger()}
+        self.fingers: dict = {"THUMB": self.Finger(),
+                              "INDEX": self.Finger(),
+                              "MIDDLE": self.Finger(),
+                              "RING": self.Finger(),
+                              "PINKY": self.Finger()}
 
     def update(self, landmarks) -> None:
         """
@@ -17,10 +17,11 @@ class Hand:
 
         :param landmarks:
         """
-        self.wrist = Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark.WRIST])
+        self.wrist: Point = Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark.WRIST])
         self.fingers["THUMB"].tip = Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark.THUMB_TIP])
         self.fingers["INDEX"].tip = Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark.INDEX_FINGER_TIP])
-        self.fingers["MIDDLE"].tip = Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark.MIDDLE_FINGER_TIP])
+        self.fingers["MIDDLE"].tip = Point.from_landmark(
+            landmarks.landmark[self.mp_hand.HandLandmark.MIDDLE_FINGER_TIP])
         self.fingers["RING"].tip = Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark.RING_FINGER_TIP])
         self.fingers["PINKY"].tip = Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark.PINKY_TIP])
         self.calc_distances()

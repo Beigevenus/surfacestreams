@@ -8,10 +8,10 @@ class Camera:
         # TODO: Needs to be dynamically found
         self.capture = cv2.VideoCapture(camera)
         self.frame = self.update_frame()
-        self.height = self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
-        self.width = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
-        self.name = name
-        self.calibration_points = []
+        self.height: int = self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        self.width: int = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.name: str = name
+        self.calibration_points: list = []
 
         cv2.namedWindow(self.name)
         cv2.setMouseCallback(self.name, self.mouse_click)

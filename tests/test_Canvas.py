@@ -5,37 +5,34 @@ x_fail = pytest.mark.xfail
 
 
 class TestCanvas:
-    def test_resize_negative_raises_value_error(self):
+    @pytest.mark.parametrize("width, height", [(-1920, 1080), (1920, -1080)])
+    def test_resize_negative_raises_value_error(self, width, height):
         # Arrange
-        canvas = Canvas()
+        canvas: Canvas = Canvas()
 
         # Act & Assert
         with pytest.raises(ValueError):
-            canvas.resize(-1920, 1080)
+            canvas.resize(width, height)
 
-    def test_resize_zero_raises_value_error(self):
+    @pytest.mark.parametrize("width, height", [(0, 1080), (1920, 0)])
+    def test_resize_zero_raises_value_error(self, width, height):
         # Arrange
-        canvas = Canvas()
+        canvas: Canvas = Canvas()
 
         # Act & Assert
         with pytest.raises(ValueError):
-            canvas.resize(0, 1080)
+            canvas.resize(width, height)
 
-    def test_resize_positive_successful(self):
+    @pytest.mark.parametrize("width, height, expected_width, expected_height", [(1280, 720, 1280, 720),
+                                                                                (1920, 1080, 1920, 1080),
+                                                                                (3840, 2160, 3840, 2160)])
+    def test_resize_positive_successful(self, width, height, expected_width, expected_height):
         # Arrange
-        canvas1 = Canvas()
-        canvas2 = Canvas()
-        canvas3 = Canvas()
+        canvas: Canvas = Canvas()
 
         # Act
-        canvas1.resize(1280, 720)
-        canvas2.resize(1920, 1080)
-        canvas3.resize(3840, 2160)
+        canvas.resize(width, height)
 
         # Assert
-        assert canvas1.width == 1280
-        assert canvas1.height == 720
-        assert canvas2.width == 1920
-        assert canvas2.height == 1080
-        assert canvas3.width == 3840
-        assert canvas3.height == 2160
+        assert canvas.width == expected_width
+        assert canvas.height == expected_height

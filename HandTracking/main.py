@@ -93,6 +93,7 @@ def main():
 
                                     corrected_point: Point = Point(corrected_coordinates[0], corrected_coordinates[1])
 
+                                    # TODO: Handle potential division by zero exception
                                     point_on_canvas: Point = corrected_point.get_position_on_canvas(warped_width,
                                                                                              warped_height,
                                                                                              canvas.width,

@@ -3,8 +3,8 @@ from math import sqrt, pow
 
 class Point:
     def __init__(self, x, y) -> None:
-        self.x = x
-        self.y = y
+        self.x: float = x
+        self.y: float = y
 
     @classmethod
     def from_landmark(cls, landmark) -> 'Point':
@@ -14,8 +14,8 @@ class Point:
         :param landmark: The landmark to extract coordinates from
         :return: A Point object containing the x and y of the landmark
         """
-        x = landmark.x
-        y = landmark.y
+        x: float = landmark.x
+        y: float = landmark.y
 
         return cls(x, y)
 
@@ -26,7 +26,7 @@ class Point:
         :param other: The other Point to calculate the distance to
         :return: The distance between self and other
         """
-        calculation = pow(self.x - other.x, 2) + pow(self.y - other.y, 2)
+        calculation: float = pow(self.x - other.x, 2) + pow(self.y - other.y, 2)
         return sqrt(calculation)
 
     def get_position_on_canvas(self, area_width, area_height, canvas_width, canvas_height) -> 'Point':
@@ -39,6 +39,6 @@ class Point:
         :param canvas_height: The height of the canvas
         :return: A new Point object with coordinates corresponding to the position on the canvas
         """
-        x = canvas_width * (canvas_width * (self.x / area_width) / canvas_width)
-        y = canvas_height * (canvas_height * (self.y / area_height) / canvas_height)
+        x: float = canvas_width * (canvas_width * (self.x / area_width) / canvas_width)
+        y: float = canvas_height * (canvas_height * (self.y / area_height) / canvas_height)
         return Point(x, y)
