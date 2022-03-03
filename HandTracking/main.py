@@ -54,13 +54,12 @@ def main():
 
                     hand.update(hand_landmarks)
 
-                    # TODO: Needs to only run this once, when the display is set up or something
-                    if counter < 50:
-                        hand.set_finger_length()
-                        counter += 1
-                    elif counter == 50:
-                        print("Done calibrating")
-                        counter += 1
+                    # if counter < 50:
+                    #     hand.set_finger_length()
+                    #     counter += 1
+                    # elif counter == 50:
+                    #     print("Done calibrating")
+                    #     counter += 1  
 
                     # The actual check whether the program should be drawing or not
                     if hand.is_drawing():
