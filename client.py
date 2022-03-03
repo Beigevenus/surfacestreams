@@ -22,11 +22,23 @@ mixer_links = []
 # position offsets for 4 front streams
 # FIXME: how to handle > 4 clients?
 offsets = [
-    (640,360),
-    (  0,  0),
-    (640,  0),
-    (  0,360)
+    (640,360), # <- this one is for the initial test stream
+    (640,360), # bottom right (on top of the test stream)
+    (  0,  0), # top left
+    (640,  0), # top right
+    (  0,360)  # bottom left
 ]
+
+def link_to_frontmixer(tee):
+
+    # request and link pads from tee and frontmixer
+    sinkpad = link_request_pads(tee,"src_%u",frontmixer,"sink_%u")
+
+    # set xpos/ypos properties on pad according to sequence number
+    padnum = int(sinkpad.get_name().split("_")[1])
+    sinkpad.set_property("xpos",offsets[padnum][0])
+    sinkpad.set_property("ypos",offsets[padnum][1])
+
 
 class Client:
 
@@ -59,24 +71,28 @@ class Client:
     def link_to_front(self):
 
         # FIXME: frontstream is separately encoded for each client ATM, should be one single encoder
-        if not "front" in self.inputs or not "front" in self.outputs:
+        if not "front" in self.inputs:
             return
 
         logging.info("    linking client "+self.name+" to frontmixer")
 
         # link frontstream tee to client-specific muxer
+        # FIXME: for the sink client, this must only happen _after_ the frontstream starts
         link_to_inputselector(frontstream,"src_%u",self.inputs["front"])
 
-        # request and link pads from tee and frontmixer
-        sinkpad = link_request_pads(self.outputs["front"],"src_%u",frontmixer,"sink_%u")
+        # sanity check (important for sink client)
+        if not "front" in self.outputs:
+            return
 
-        # set xpos/ypos properties on pad according to sequence number
-        padnum = int(sinkpad.get_name().split("_")[1])
-        sinkpad.set_property("xpos",offsets[padnum][0])
-        sinkpad.set_property("ypos",offsets[padnum][1])
+        # request and link pads from tee and frontmixer
+        link_to_frontmixer(self.outputs["front"])
 
     # helper function to link source tees to destination mixers
     def link_streams_oneway(self,dest,prefix,qparams):
+
+        # sanity check (important for sink client)
+        if not prefix in self.outputs:
+            return
 
         linkname = prefix+"_"+self.name+"_"+dest.name
         if not linkname in mixer_links:
@@ -128,6 +144,7 @@ def create_frontmixer_queue():
     frontstream = new_element("tee",{"allow-not-linked":True},myname="frontstream")
 
     add_and_link([ frontmixer, frontstream ])
+    link_to_frontmixer(get_by_name("fronttestsource"))
 
 # link new client to mixers
 def link_new_client(client):
@@ -152,8 +169,6 @@ def link_new_client(client):
     # add missing surface/audio mixer links
     client.link_all_streams(clients)
 
-    dump_debug("final")
-
 # new top-level element added to pipeline
 def on_element_added(thebin, element):
 
@@ -175,8 +190,28 @@ def on_element_added(thebin, element):
     if direction == "input":
         client.inputs[stype] = element
 
-    # are all outputs in place?
-    if len(client.outputs) == 3:
+    # are all inputs and outputs in place?
+    if len(client.outputs) == 3 and len(client.inputs) == 3:
         logging.info("Client "+source+": all input/output elements complete.")
         link_new_client(client)
 
+# add a "fake" client to sink all incoming streams to file
+def create_sink_client():
+
+    logging.info("Adding file sink client...")
+
+    sink_client = Client("file_sink")
+    # FIXME: hack to make it look like a "proper" client with 3 inputs and outputs
+    sink_client.outputs = { "foo": None, "bar": None, "baz": None }
+
+    # TODO: use only a single muxer and filesrc for all streams here (try to reuse code from webrtc_peer?)
+    VENCODER="queue max-size-buffers=1 ! x264enc bitrate=1500 speed-preset=ultrafast tune=zerolatency key-int-max=15 ! video/x-h264,profile=constrained-baseline ! queue max-size-time=100000000 ! h264parse ! mp4mux fragment-duration=1000 ! filesink sync=true location="
+    AENCODER="queue ! opusenc ! queue max-size-time=100000000 ! mp4mux fragment-duration=1000 ! filesink sync=true location="
+
+    encoders = { "surface": VENCODER, "front": VENCODER, "audio": AENCODER }
+
+    for name in encoders:
+        logging.info("  Adding file sink encoder for "+name+"...")
+        selector = new_element("input-selector",myname="input_file_sink_"+name)
+        add_and_link([selector,Gst.parse_bin_from_description( encoders[name]+name+".mp4", True )])
+        link_request_pads(get_by_name(name+"testsource"),"src_%u",selector,"sink_%u")
