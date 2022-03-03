@@ -14,7 +14,7 @@ class Canvas:
         self.name: str = name
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
-        self.move_window(2500)
+        #self.move_window(2500)
 
     def resize(self, width, height) -> None:
         """
@@ -66,10 +66,10 @@ class Canvas:
         """
         cv2.setWindowProperty(self.name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-    def move_window(self, offset) -> None:
+    def move_window(self, offsetx, offsety) -> None:
         """
         Moves the canvas window horizontally by the given offset.
 
         :param offset: The number of pixels to move the window in the horizontal plane
         """
-        cv2.moveWindow(self.name, offset, 0)
+        cv2.moveWindow(self.name, offsetx, offsety)

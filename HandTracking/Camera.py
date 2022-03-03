@@ -42,3 +42,18 @@ class Camera:
         for point in self.calibration_points:
             cv2.circle(self.frame, (int(point.x), int(point.y)), int(int(10 / 2) * 2),
                        [255, 255, 0], cv2.FILLED)
+
+    @staticmethod
+    def returnCameraIndexes():
+        # checks the first 20 indexes.
+        index = 0
+        arr = []
+        i = 20
+        while i > 0:
+            cap = cv2.VideoCapture(index)
+            if cap.read()[0]:
+                arr.append(index)
+                cap.release()
+            index += 1
+            i -= 1
+        return arr

@@ -5,6 +5,7 @@ from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
 from HandTracking.Hand import Hand
 from HandTracking.Camera import Camera
+from HandTracking.Settings import runsettings as run_settings, Settings
 
 import cv2
 import mediapipe as mp
@@ -15,17 +16,26 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_hand = mp.solutions.hands
 
 
-def main():
+def main(config: Settings):
     # TODO: Remove when auto calibration is implemented
     counter = 0
     drawing_point = None
     drawing_precision = 30
     old_point = None
 
-    hand = Hand(mp_hand)
-    canvas = Canvas()
-    canvas.fullscreen()
-    camera = Camera()
+    # drawing_points = deque(maxlen=5)
+    drawing_points: list[Point] = []
+    old_point: Point = None
+    draw_point_skip: int = 0
+    draw_point_skip_guard: int = 0
+
+    hand: Hand = Hand(mp_hand)
+    canvas: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height)
+    canvas.move_window(config.monitor.x, config.monitor.y)
+    if config.isFullscreen == 1:
+        canvas.fullscreen()
+    camera: Camera = Camera(camera=config.camera)
+
 
     with mp_hand.Hands(
             model_complexity=0,
@@ -120,4 +130,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    settings = run_settings()
+    # use line below instead of above line to bypass settings menu..
+    # settings = Settings(fullscreen=1,camera=0)
+    # also use line below to move canvas to secondary monitor
+    # (if secondary monitor is less than 2500 pixels away)
+    # settings.monitor.x = 2500
+    main(settings)
