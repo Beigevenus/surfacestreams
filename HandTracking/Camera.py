@@ -5,25 +5,28 @@ import cv2
 
 
 class Camera:
-    def __init__(self, drawarea, canvas, tmp_calibration_points, name='camera', camera=0):
+    def __init__(self, drawarea, canvas, tmp_calibration_points, name='camera', camera=0) -> None:
         # TODO: Needs to be dynamically found
         self.capture = cv2.VideoCapture(camera)
-        self.calibration_points = []
+        self.calibration_points: list = []
         self.sorted_calibration_points = tmp_calibration_points
         self.frame = self.update_frame()
-        self.height = self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
-        self.width = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
-        self.name = name
+        self.height: int = self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        self.width: int = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.name: str = name
         self.ptm = None
-        self.warped_width = None
-        self.warped_height = None
+        self.warped_width: int = None
+        self.warped_height: int = None
         self.drawarea = drawarea
         self.canvas = canvas
 
         cv2.namedWindow(self.name)
         cv2.setMouseCallback(self.name, self.mouse_click)
 
-    def show_frame(self):
+    def show_frame(self) -> None:
+        """
+        Shows the current camera frame in its window.
+        """
         self.draw_calibration_points()
         cv2.imshow(self.name, self.frame)
 
@@ -34,7 +37,7 @@ class Camera:
             return self.frame
         return None
 
-    def mouse_click(self, event, x, y, flags, param):
+    def mouse_click(self, event, x, y, flags, param) -> None:
         if event == cv2.EVENT_LBUTTONUP:
             if len(self.calibration_points) > 3:
                 self.calibration_points.clear()
@@ -46,10 +49,25 @@ class Camera:
             else:
                 self.calibration_points.append(Point(x, y))
 
-    def draw_calibration_points(self):
+    def draw_calibration_points(self) -> None:
         for point in self.calibration_points:
             cv2.circle(self.frame, (int(point.x), int(point.y)), int(int(10 / 2) * 2),
                        [255, 255, 0], cv2.FILLED)
+
+    @staticmethod
+    def returnCameraIndexes():
+        # checks the first 20 indexes.
+        index = 0
+        arr = []
+        i = 20
+        while i > 0:
+            cap = cv2.VideoCapture(index)
+            if cap.read()[0]:
+                arr.append(index)
+                cap.release()
+            index += 1
+            i -= 1
+        return arr
 
     def update_image_ptm(self):
         if len(self.calibration_points) <= 3:
