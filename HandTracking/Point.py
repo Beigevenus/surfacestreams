@@ -1,4 +1,5 @@
-from math import sqrt
+from math import sqrt, pow
+from numpy import polyfit
 
 
 class Point:
@@ -62,3 +63,6 @@ class Point:
         x: float = canvas_width * (canvas_width * (self.x / area_width) / canvas_width)
         y: float = canvas_height * (canvas_height * (self.y / area_height) / canvas_height)
         return Point(x, y)
+
+    def as_array(self):
+        return [self.x, self.y]

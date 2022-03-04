@@ -37,6 +37,9 @@ class Canvas:
         :param previous_point: The start position of the line segment
         :param point: The end position of the line segment
         """
+        if previous_point is None:
+            previous_point = point
+
         cv2.circle(self.image, (int(point.x), int(point.y)),
                    int(self.toolbox.circle_size), self.toolbox.color, cv2.FILLED)
 
