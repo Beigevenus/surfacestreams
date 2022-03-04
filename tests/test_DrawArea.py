@@ -6,21 +6,11 @@ x_fail = pytest.mark.xfail
 
 
 class Test:
-    @pytest.mark.parametrize('point1, point2, point3, point4',
-                             [(Point(10, 11), Point(50, 0), Point(70, 85), Point(20, 120)),
-                              (Point(10, 11), Point(50, 0), Point(20, 120), Point(70, 85)),
-                              (Point(10, 11), Point(70, 85), Point(50, 0), Point(20, 120)),
-                              (Point(10, 11), Point(70, 85), Point(20, 120), Point(50, 0)),
-                              (Point(10, 11), Point(50, 0), Point(70, 85), Point(20, 120)),
-                              (Point(20, 120), Point(10, 11), Point(50, 0), Point(70, 85)),
-                              (Point(10, 11), Point(70, 85), Point(50, 0), Point(20, 120))
-                              ])
-
     def test_borders(self):
         point1 = Point(10, 11)
         point2 = Point(50, 0)
-        point3 = Point(70, 85)
-        point4 = Point(20, 120)
+        point3 = Point(20, 120)
+        point4 = Point(70, 85)
         expected_leftborder = [10.9, -98]
         expected_topborder = [-0.275, 13.75]
         expected_rightborder = [4.25, -212.5]
@@ -37,6 +27,19 @@ class Test:
         assert drawarea.bottom_border[0] == expected_bottomborder[0]
         assert drawarea.bottom_border[1] == expected_bottomborder[1]
 
+    def test_is_position_in_calibration_area_for_vertical_borders(self):
+        point1 = Point(0, 0)
+        point2 = Point(30, 0)
+        point3 = Point(0, 30)
+        point4 = Point(30, 30)
+        test_pont = Point(20, 20)
+
+        drawarea = DrawArea([point1, point2, point3, point4])
+
+        assert drawarea.left_border[0] is None
+        assert drawarea.right_border[0] is None
+        assert drawarea.is_position_in_calibration_area(test_pont) is True
+
     @pytest.mark.parametrize('point', [(Point(20, 10)),
                                                  (Point(18, 9)),
                                                  (Point(60, 70)),
@@ -47,8 +50,8 @@ class Test:
     def test_is_position_in_calibration_area_when_inside(self, point):
         point1 = Point(10, 11)
         point2 = Point(50, 0)
-        point3 = Point(70, 85)
-        point4 = Point(20, 120)
+        point3 = Point(20, 120)
+        point4 = Point(70, 85)
 
         drawarea = DrawArea([point1, point2, point3, point4])
 

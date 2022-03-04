@@ -41,18 +41,26 @@ class DrawArea:
         if bottom_border_point.y <= point.y:
             return False
         # x = (y-b) / a
-        left_border_point = Point((point.y - self.left_border[1]) / self.left_border[0], point.y)
-        if left_border_point.x >= point.x:
+        if self.left_border[0] is None:
+            left_border_point = Point(self.left_border[1], point.y)
+        else:
+            left_border_point = Point((point.y - self.left_border[1]) / self.left_border[0], point.y)
+        if left_border_point.x > point.x:
             return False
-        right_border_point = Point((point.y - self.right_border[1]) / self.right_border[0], point.y)
-        if right_border_point.x <= point.x:
+
+        if self.right_border[0] is None:
+            right_border_point = Point(self.right_border[1], point.y)
+        else:
+            right_border_point = Point((point.y - self.right_border[1]) / self.right_border[0], point.y)
+        if right_border_point.x < point.x:
             return False
 
         return True
 
     def get_line_attributes(self, point1, point2):
         if point2.x == point1.x:
-            return None
+            # When the line is vertical the gradient is set to None and the b value should be used for further calculations
+            return [None, point1.x]
         a = (point2.y-point1.y) / (point2.x-point1.x)
         b = point1.y - (a*point1.x)
 
