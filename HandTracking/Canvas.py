@@ -51,7 +51,7 @@ class Canvas:
     def draw_points(self, points) -> None:
         for point in points:
             cv2.circle(self.image, (int(point.x), int(point.y)),
-                       int(self.toolbox.circle_size), self.toolbox.color, cv2.FILLED)
+                       int(self.toolbox.mask_circle), self.toolbox.mask_color, cv2.FILLED)
 
     def show(self) -> None:
         """

@@ -91,6 +91,7 @@ class Hand:
         for finger in self.fingers.values():
             points.append(finger.mcp)
             points.append(finger.pip)
+            points.append(finger.dip)
 
         points.append(self.wrist)
         return points

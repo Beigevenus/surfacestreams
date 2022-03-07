@@ -1,3 +1,4 @@
+from cmath import pi
 from turtle import shape
 from typing import NamedTuple
 from HandTracking.utility import limit
@@ -11,6 +12,7 @@ from HandTracking.DrawArea import DrawArea
 import cv2
 import mediapipe as mp
 import numpy as np
+import copy
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -25,11 +27,9 @@ def main(config: Settings):
 
     hand: Hand = Hand(mp_hand)
     canvas: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height)
-    canvas.move_window(config.monitor.x, config.monitor.y)
     hand_mask: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height, name='mask')
     hand_mask.move_window(config.monitor.x, config.monitor.y)
     if config.isFullscreen == 1:
-        canvas.fullscreen()
         hand_mask.fullscreen()
 
     # TODO: Make it able to handle vertical lines
@@ -39,6 +39,7 @@ def main(config: Settings):
     camera = Camera(draw_area, canvas, [Point(0 + 1, 0), Point(canvas.width, 0), Point(0, canvas.height),
                                         Point(canvas.width - 1, canvas.height)], camera=config.camera)
 
+    counter = 0
 
     with mp_hand.Hands(
             model_complexity=0,
@@ -100,10 +101,26 @@ def main(config: Settings):
                             canvas.draw_line(old_point, drawing_point)
                             old_point = drawing_point
 
-                hand_mask.draw_points(hand.get_mask_points())
+                    mask_points = []
+                    for point in hand.get_mask_points():
+                        p = Point(point.x * camera.width, point.y * camera.height)
+                        mask_points.append(draw_area.get_position_on_canvas(0, 0, 0, 0, p, camera.ptm))
+                    
+                    hand_mask.draw_points(mask_points)
 
-            canvas.show()
             camera.show_frame()
+            
+            # TODO: Save the black spots so we can safe the spots
+            if counter >= 5:
+                cannervasser = copy.deepcopy(canvas.image)
+                res = cannervasser
+                layer2 = hand_mask.image[:, :, 3] > 0
+                if res.shape[0] == hand_mask.image.shape[0]:
+                    res[layer2] = hand_mask.image[layer2]
+                    hand_mask.image = res
+            elif counter < 5:
+                counter = counter + 1
+
             
             hand_mask.show()
             hand_mask.image = np.zeros(shape=[hand_mask.height, hand_mask.width, 4], dtype=np.uint8)
