@@ -88,7 +88,7 @@ class Hand:
     def get_mask_points(self) -> list:
         points = []
 
-        for finger in self.fingers:
+        for finger in self.fingers.values():
             points.append(finger.mcp)
             points.append(finger.pip)
 
