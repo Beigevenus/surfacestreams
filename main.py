@@ -1,6 +1,6 @@
-import json
-from types import SimpleNamespace
 from typing import NamedTuple
+
+from HandTracking.Config import Config
 from HandTracking.utility import limit
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
@@ -33,9 +33,12 @@ def main(config: Settings):
     draw_area = DrawArea(
         [Point(0 + 1, 0), Point(canvas.width, 0), Point(0, canvas.height), Point(canvas.width - 1, canvas.height)])
 
-    camera = Camera(draw_area, canvas, [Point(0 + 1, 0), Point(canvas.width, 0), Point(0, canvas.height),
-                                        Point(canvas.width - 1, canvas.height)], camera=config.camera)
-
+    points = Config.load_calibration_points()
+    if points:
+        camera = Camera(draw_area, canvas, points, camera=config.camera)
+    else:
+        camera = Camera(draw_area, canvas, [Point(1, 0), Point(canvas.width, 0), Point(0, canvas.height),
+                                            Point(canvas.width - 1, canvas.height)], camera=config.camera)
 
     with mp_hand.Hands(
             model_complexity=0,
@@ -108,11 +111,7 @@ def main(config: Settings):
 
 if __name__ == "__main__":
     try:
-        # TODO: Preferably, the path to the file should be defined globally. It's currently an attribute on SettingsApp
-        #  as well
-        with open("./config.json", "r") as file:
-            data = json.load(file)
-            settings = Settings.from_dict(data)
+        settings = Settings.from_dict(Config.load()["startup"])
     except FileNotFoundError:
         settings = run_settings()
 
