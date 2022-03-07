@@ -61,6 +61,7 @@ class Hand:
         :return: Whether the hand is drawing or not
         """
         # TODO: Optimize. we ignore thumb for now
+        one_extra = False
         for key, finger in self.fingers.items():
             if key == "INDEX_FINGER":
                 if not finger.is_stretched():
@@ -69,7 +70,10 @@ class Hand:
                 None
             else:
                 if finger.is_stretched():
-                    return False
+                    if one_extra:
+                        return False
+                    else:
+                        one_extra = True
         return True
 
     def get_drawing_point(self) -> Point:
@@ -104,8 +108,8 @@ class Hand:
             if self.pip is None or self.mcp is None or self.tip is None:
                 return False
 
-            a = Vector(self.tip, self.mcp)
-            b = Vector(self.mcp, self.wrist)
+            a = Vector(self.tip, self.pip)
+            b = Vector(self.pip, self.wrist)
             angle = a.angle_between(b)
             if angle > 0:
                 return True
