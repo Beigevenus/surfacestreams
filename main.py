@@ -1,3 +1,4 @@
+from turtle import shape
 from typing import NamedTuple
 from HandTracking.utility import limit
 from HandTracking.Point import Point
@@ -9,6 +10,7 @@ from HandTracking.DrawArea import DrawArea
 
 import cv2
 import mediapipe as mp
+import numpy as np
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -24,8 +26,11 @@ def main(config: Settings):
     hand: Hand = Hand(mp_hand)
     canvas: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height)
     canvas.move_window(config.monitor.x, config.monitor.y)
+    hand_mask: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height, name='mask')
+    hand_mask.move_window(config.monitor.x, config.monitor.y)
     if config.isFullscreen == 1:
         canvas.fullscreen()
+        hand_mask.fullscreen()
 
     # TODO: Make it able to handle vertical lines
     draw_area = DrawArea(
@@ -92,11 +97,16 @@ def main(config: Settings):
                     if drawing_point is not None:
                         if drawing_point.distance_to(point_on_canvas) > drawing_precision:
                             drawing_point = drawing_point.offset_to(point_on_canvas, 2)
-                            canvas.draw(old_point, drawing_point)
+                            canvas.draw_line(old_point, drawing_point)
                             old_point = drawing_point
+
 
             canvas.show()
             camera.show_frame()
+            
+            hand_mask.draw_points(hand.get_mask_points())
+            hand_mask.show()
+            hand_mask.image = np.zeros(shape=[hand_mask.height, hand_mask.width, 4], dtype=np.uint8)
 
             # Exit program when Esc is pressed
             if cv2.waitKey(1) == 27:
