@@ -14,7 +14,7 @@ class Settings:
         self.camera = camera
 
     @classmethod
-    def from_dict(cls, dictionary) -> 'Settings':
+    def from_dict(cls, dictionary: dict) -> 'Settings':
         monitor = Monitor(width=dictionary["monitor"]["width"],
                           height=dictionary["monitor"]["height"],
                           x=dictionary["monitor"]["x"],

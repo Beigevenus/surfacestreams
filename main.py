@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 from HandTracking.Config import Config
 from HandTracking.utility import limit
@@ -110,9 +110,12 @@ def main(config: Settings):
 
 
 if __name__ == "__main__":
-    try:
-        settings = Settings.from_dict(Config.load()["startup"])
-    except FileNotFoundError:
+    startup_dict: dict = Config.load_startup_settings()
+    settings: Optional[Settings] = None
+
+    if startup_dict:
+        settings = Settings.from_dict(startup_dict)
+    else:
         settings = run_settings()
 
     # use line below instead of above line to bypass settings menu..
