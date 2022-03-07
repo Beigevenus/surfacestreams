@@ -34,22 +34,22 @@ class Hand:
                                                 Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_DIP"]]),
                                                 Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_TIP"]]))
 
-        #self.calc_distances()
+        # self.calc_distances()
 
-    # def calc_distances(self) -> None:
-    #     """
-    #     TO BE WRITTEN.
-    #     """
-    #     for finger in self.fingers.values():
-    #         finger.distance_to_wrist = self.wrist.distance_to(finger.tip)
+    def calc_distances(self) -> None:
+        """
+        TO BE WRITTEN.
+        """
+        for finger in self.fingers.values():
+            finger.distance_to_wrist = self.wrist.distance_to(finger.tip)
 
-    # def set_finger_length(self) -> None:
-    #     """
-    #     TO BE WRITTEN.
-    #     """
-    #     for finger in self.fingers.values():
-    #         finger.length = finger.distance_to_wrist
-    #         finger.stretched_guard = 0.9 * finger.length
+    def set_finger_length(self) -> None:
+        """
+        TO BE WRITTEN.
+        """
+        for finger in self.fingers.values():
+            finger.length = finger.distance_to_wrist
+            finger.stretched_guard = 0.9 * finger.length
 
     def is_drawing(self) -> bool:
         """
