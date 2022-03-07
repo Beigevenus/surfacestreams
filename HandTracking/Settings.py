@@ -1,3 +1,5 @@
+import json
+
 from screeninfo import get_monitors, Monitor
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -9,6 +11,21 @@ class Settings:
         self.monitor: Monitor = monitor
         self.isFullscreen = fullscreen
         self.camera = camera
+
+    @classmethod
+    def from_dict(cls, dictionary) -> 'Settings':
+        monitor = Monitor(width=dictionary["monitor"]["width"],
+                          height=dictionary["monitor"]["height"],
+                          x=dictionary["monitor"]["x"],
+                          y=dictionary["monitor"]["y"])
+
+        return Settings(monitor, dictionary["isFullscreen"], dictionary["camera"])
+
+    def to_json(self):
+        """
+        JSON serializes itself and sub-object like Monitor
+        """
+        return json.dumps(self, default=lambda o: o.__dict__)
 
 
 class SettingsApp:
@@ -91,6 +108,9 @@ class SettingsApp:
         # Main widget
         self.mainwindow = self.toplevel1
 
+        # Config file path
+        self.filepath = "./config.json"
+
     def run(self) -> Settings:
         self.mainwindow.mainloop()
 
@@ -113,7 +133,16 @@ class SettingsApp:
             self.appliedSettings.monitor.width = 640
             self.appliedSettings.monitor.height = 360
 
+        self.save_to_file()
+
         self.toplevel1.destroy()
+
+    def save_to_file(self) -> None:
+        """
+        Writes the current configuration to a config file
+        """
+        with open(self.filepath, "w") as file:
+            file.write(self.appliedSettings.to_json())
 
 
 def runsettings() -> Settings:

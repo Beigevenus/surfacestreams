@@ -1,3 +1,5 @@
+import json
+from types import SimpleNamespace
 from typing import NamedTuple
 from HandTracking.utility import limit
 from HandTracking.Point import Point
@@ -105,7 +107,15 @@ def main(config: Settings):
 
 
 if __name__ == "__main__":
-    settings = run_settings()
+    try:
+        # TODO: Preferably, the path to the file should be defined globally. It's currently an attribute on SettingsApp
+        #  as well
+        with open("./config.json", "r") as file:
+            data = json.load(file)
+            settings = Settings.from_dict(data)
+    except FileNotFoundError:
+        settings = run_settings()
+
     # use line below instead of above line to bypass settings menu..
     # settings = Settings(fullscreen=1,camera=0)
     # also use line below to move canvas to secondary monitor
