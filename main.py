@@ -101,12 +101,12 @@ def main(config: Settings):
                             old_point = drawing_point
 
                 hand_mask.draw_points(hand.get_mask_points())
-                hand_mask.show()
-                hand_mask.image = np.zeros(shape=[hand_mask.height, hand_mask.width, 4], dtype=np.uint8)
 
             canvas.show()
             camera.show_frame()
             
+            hand_mask.show()
+            hand_mask.image = np.zeros(shape=[hand_mask.height, hand_mask.width, 4], dtype=np.uint8)
 
             # Exit program when Esc is pressed
             if cv2.waitKey(1) == 27:

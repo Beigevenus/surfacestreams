@@ -10,7 +10,7 @@ class Canvas:
         self.width: int = width
         self.height: int = height
         self.toolbox: PaintingToolbox = toolbox
-        self.image: ndarray = np.zeros(shape=[height, width, 3], dtype=np.uint8)
+        self.image: ndarray = np.zeros(shape=[height, width, 4], dtype=np.uint8)
         self.name: str = name
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
