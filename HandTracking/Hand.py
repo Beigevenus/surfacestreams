@@ -27,12 +27,14 @@ class Hand:
                 self.fingers["THUMB"].update_finger(Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_CMC"]]),
                                                     Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_MCP"]]),
                                                     Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_IP"]]),
-                                                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_TIP"]]))
+                                                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_TIP"]]),
+                                                    self.wrist)
             else:
                 self.fingers[key].update_finger(Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_MCP"]]),
                                                 Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_PIP"]]),
                                                 Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_DIP"]]),
-                                                Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_TIP"]]))
+                                                Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_TIP"]]),
+                                                self.wrist)
 
         #self.calc_distances()
 
@@ -80,11 +82,12 @@ class Hand:
         return self.fingers["INDEX_FINGER"].tip
 
     class Finger:
-        def __init__(self, mcp=None, pip=None, dip=None, tip=None):
+        def __init__(self, mcp=None, pip=None, dip=None, tip=None, wrist=None):
             self.mcp: Point = mcp
             self.pip: Point = pip
             self.dip: Point = dip
             self.tip: Point = tip
+            self.wrist: Point = wrist
             self.distance_to_wrist: float = 0
             self.length: float = 0
             self.stretched_guard: float = 0
@@ -101,15 +104,16 @@ class Hand:
             if self.pip is None or self.mcp is None or self.tip is None:
                 return False
 
-            a = Vector(self.pip, self.mcp)
-            b = Vector(self.pip, self.tip)
+            a = Vector(self.tip, self.mcp)
+            b = Vector(self.mcp, self.wrist)
             angle = a.angle_between(b)
-            if angle < 0:
+            if angle > 0:
                 return True
             return False
 
-        def update_finger(self, mcp=None, pip=None, dip=None, tip=None):
+        def update_finger(self, mcp=None, pip=None, dip=None, tip=None, wrist=None):
             self.mcp: Point = mcp
             self.pip: Point = pip
             self.dip: Point = dip
             self.tip: Point = tip
+            self.wrist: Point = wrist
