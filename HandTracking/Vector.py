@@ -20,10 +20,11 @@ class Vector:
         :return: The dot product of self and other
         """
         return (self.x * other.x) + (self.y * other.y)
-    
+
+    # TODO: Vulnerable to DivisionByZeroError, fix this
     def angle_between(self, other: 'Vector') -> float:
         """
-        Calculates the angle between two vectors, namely, itself and other.
+        Calculates and returns the cosine of the angle between two vectors, namely, itself and other.
 
         :param other: The vector to calculate the angle to
         :return: The angle between self and other
