@@ -1,6 +1,8 @@
 from cmath import pi
 from turtle import shape
-from typing import NamedTuple
+from typing import NamedTuple, Optional
+
+from HandTracking.Config import Config
 from HandTracking.utility import limit
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
@@ -36,9 +38,12 @@ def main(config: Settings):
     draw_area = DrawArea(
         [Point(0 + 1, 0), Point(canvas.width, 0), Point(0, canvas.height), Point(canvas.width - 1, canvas.height)])
 
-    camera = Camera(draw_area, canvas, [Point(0 + 1, 0), Point(canvas.width, 0), Point(0, canvas.height),
-                                        Point(canvas.width - 1, canvas.height)], camera=config.camera)
-
+    points = Config.load_calibration_points()
+    if points:
+        camera = Camera(draw_area, canvas, points, camera=config.camera)
+    else:
+        camera = Camera(draw_area, canvas, [Point(1, 0), Point(canvas.width, 0), Point(0, canvas.height),
+                                            Point(canvas.width - 1, canvas.height)], camera=config.camera)
     counter = 0
 
     with mp_hand.Hands(
@@ -110,7 +115,7 @@ def main(config: Settings):
 
             camera.show_frame()
             
-            # TODO: Save the black spots so we can safe the spots
+            # TODO: Save the black spots so we can save the spots
             if counter >= 5:
                 cannervasser = copy.deepcopy(canvas.image)
                 res = cannervasser
@@ -132,7 +137,14 @@ def main(config: Settings):
 
 
 if __name__ == "__main__":
-    settings = run_settings()
+    startup_dict: dict = Config.load_startup_settings()
+    settings: Optional[Settings] = None
+
+    if startup_dict:
+        settings = Settings.from_dict(startup_dict)
+    else:
+        settings = run_settings()
+
     # use line below instead of above line to bypass settings menu..
     # settings = Settings(fullscreen=1,camera=0)
     # also use line below to move canvas to secondary monitor
