@@ -73,6 +73,8 @@ def main(config: Settings):
 
                     hand.update(hand_landmarks)
 
+                    print(hand.get_hand_sign(camera.frame, hand_landmarks))
+
                     # The actual check whether the program should be drawing or not
                     if hand.is_drawing():
                         if len(camera.calibration_points) > 3:
