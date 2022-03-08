@@ -131,8 +131,26 @@ def main(config: Settings):
             hand_mask.image = np.zeros(shape=[hand_mask.height, hand_mask.width, 4], dtype=np.uint8)
 
             # Exit program when Esc is pressed
-            if cv2.waitKey(1) == 27:
+            key = cv2.waitKey(1)
+            if key == 27:
                 break
+            elif key == 48:
+                canvas.change_color([150, 150, 150, 255])
+            elif key == 49:
+                canvas.change_color([15, 150, 255, 255])
+            elif key == 50:
+                canvas.change_color([22, 140, 37, 255])
+            elif key == 51:
+                canvas.change_color([57, 150, 90, 255])
+            elif key == 52:
+                canvas.change_color([27, 255, 100, 255])
+            elif key == 53:
+                canvas.change_color([3, 7, 87, 255])
+            elif key == 54:
+                canvas.change_color([20, 40, 60, 255])
+            elif key == 55:
+                canvas.change_color([0, 0, 0, 255], 50)
+
     camera.capture.release()
 
 
