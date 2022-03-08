@@ -6,7 +6,7 @@ import cv2
 
 
 # A basic min/max function
-def limit(num, minimum=0, maximum=255):
+def limit(num: float, minimum: float = 0, maximum:float = 255) -> float:
     return max(min(num, maximum), minimum)
 
 

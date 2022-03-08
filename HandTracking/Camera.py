@@ -1,6 +1,11 @@
-from typing import List
+from typing import List, Optional
 
+from cv2 import VideoCapture
+from numpy import ndarray
+
+from HandTracking.Canvas import Canvas
 from HandTracking.Config import Config
+from HandTracking.DrawArea import DrawArea
 from HandTracking.Point import Point
 from HandTracking.image_wrap import four_point_transform as fpt
 
@@ -8,20 +13,21 @@ import cv2
 
 
 class Camera:
-    def __init__(self, draw_area, canvas, calibration_points, name='camera', camera=0) -> None:
+    def __init__(self, draw_area: DrawArea, canvas: Canvas, calibration_points: list[Point], name: str = 'camera',
+                 camera: int = 0) -> None:
         # TODO: Needs to be dynamically found
-        self.capture = cv2.VideoCapture(camera)
+        self.capture: VideoCapture = cv2.VideoCapture(camera)
         self.calibration_points: list[Point] = calibration_points
         self.sorted_calibration_points: list[Point] = self.sort_calibration_points()
-        self.frame = self.update_frame()
+        self.frame: ndarray = self.update_frame()
         self.height: int = self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
         self.width: int = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.name: str = name
-        self.ptm = None
-        self.warped_width: int = None
-        self.warped_height: int = None
-        self.draw_area = draw_area
-        self.canvas = canvas
+        self.ptm: Optional[ndarray] = None
+        self.warped_width: Optional[int] = None
+        self.warped_height: Optional[int] = None
+        self.draw_area: DrawArea = draw_area
+        self.canvas: Canvas = canvas
 
         cv2.namedWindow(self.name)
         cv2.setMouseCallback(self.name, self.mouse_click)
@@ -35,7 +41,7 @@ class Camera:
         self.draw_calibration_points()
         cv2.imshow(self.name, self.frame)
 
-    def update_frame(self):
+    def update_frame(self) -> Optional[ndarray]:
         success, self.frame = self.capture.read()
         self.frame = cv2.flip(self.frame, 1)
         if success:
@@ -61,11 +67,11 @@ class Camera:
                        [255, 255, 0], cv2.FILLED)
 
     @staticmethod
-    def return_camera_indexes():
+    def return_camera_indexes() -> List[int]:
         # checks the first 20 indexes.
-        index = 0
-        arr = []
-        i = 20
+        index: int = 0
+        arr: list[int] = []
+        i: int = 20
         while i > 0:
             cap = cv2.VideoCapture(index)
             if cap.read()[0]:
@@ -75,20 +81,18 @@ class Camera:
             i -= 1
         return arr
 
-    def update_image_ptm(self):
+    def update_image_ptm(self) -> None:
         if len(self.calibration_points) <= 3:
             None
         else:
-            self.ptm, self.warped_width, self.warped_height = fpt(self.frame, self.sorted_calibration_points, self.canvas.width, self.canvas.height)
+            self.ptm, self.warped_width, self.warped_height = fpt(self.frame, self.sorted_calibration_points,
+                                                                  self.canvas.width, self.canvas.height)
 
     def sort_calibration_points(self) -> List[Point]:
-        left_top = left_bot = right_top = right_bot = None
-
-        right_points = []
-        left_top = self.calibration_points[0]
-        left_bot = self.calibration_points[1]
+        right_points: list[Point] = []
+        left_top: Point = self.calibration_points[0]
+        left_bot: Point = self.calibration_points[1]
         for point in self.calibration_points[2:]:
-            temp = None
             if point.x < left_top.x:
                 temp = left_top
                 left_top = point
@@ -100,8 +104,8 @@ class Camera:
             else:
                 right_points.append(temp)
 
-        right_top = right_points[0]
-        right_bot = right_points[1]
+        right_top: Point = right_points[0]
+        right_bot: Point = right_points[1]
 
         if left_top.y > left_bot.y:
             temp = left_top

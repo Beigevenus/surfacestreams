@@ -8,17 +8,18 @@ from HandTracking.Config import Config
 
 
 class Settings:
-    def __init__(self, monitor=Monitor(width=640, height=360, x=0, y=0), fullscreen=1, camera=0):
+    def __init__(self, monitor: Monitor = Monitor(width=640, height=360, x=0, y=0), fullscreen: int = 1,
+                 camera: int = 0) -> None:
         self.monitor: Monitor = monitor
-        self.isFullscreen = fullscreen
-        self.camera = camera
+        self.isFullscreen: int = fullscreen
+        self.camera: int = camera
 
     @classmethod
     def from_dict(cls, dictionary: dict) -> 'Settings':
-        monitor = Monitor(width=dictionary["monitor"]["width"],
-                          height=dictionary["monitor"]["height"],
-                          x=dictionary["monitor"]["x"],
-                          y=dictionary["monitor"]["y"])
+        monitor: Monitor = Monitor(width=dictionary["monitor"]["width"],
+                                   height=dictionary["monitor"]["height"],
+                                   x=dictionary["monitor"]["x"],
+                                   y=dictionary["monitor"]["y"])
 
         return Settings(monitor, dictionary["isFullscreen"], dictionary["camera"])
 
@@ -34,7 +35,7 @@ class Settings:
 
 
 class SettingsApp:
-    def __init__(self, master=None):
+    def __init__(self, master=None) -> None:
         # build ui
         self.toplevel1 = tk.Tk() if master is None else tk.Toplevel(master)
         self.appliedSettings = Settings()
@@ -59,8 +60,7 @@ class SettingsApp:
         self.selected_monitor = tk.StringVar()
         self.Monitorbox = ttk.Combobox(self.toplevel1, textvariable=self.selected_monitor)
         self.Monitorbox.pack(anchor='w', padx='10', side='top')
-        self.monitor_list = {
-        }
+        self.monitor_list = {}
         for idx, m in enumerate(get_monitors()):
             self.monitor_list["Display{num}".format(num=idx + 1)] = m
         self.Monitorbox['values'] = list(self.monitor_list.keys())
@@ -117,16 +117,16 @@ class SettingsApp:
 
         return self.appliedSettings
 
-    def calibrate_hands(self):
+    def calibrate_hands(self) -> None:
         pass
 
-    def calibrate_corners(self):
+    def calibrate_corners(self) -> None:
         pass
 
-    def cancel(self):
+    def cancel(self) -> None:
         self.toplevel1.destroy()
 
-    def save(self):
+    def save(self) -> None:
         self.appliedSettings.monitor = self.monitor_list[self.selected_monitor.get()]
         self.appliedSettings.isFullscreen = int(self.radioVar.get())
         self.appliedSettings.camera = int(self.selected_cam.get())
@@ -139,6 +139,6 @@ class SettingsApp:
         self.toplevel1.destroy()
 
 
-def runsettings() -> Settings:
+def run_settings() -> Settings:
     app = SettingsApp()
     return app.run()

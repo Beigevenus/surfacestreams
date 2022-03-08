@@ -40,6 +40,7 @@ class Config:
         except KeyError:
             return None
 
+
     @classmethod
     def load_startup_settings(cls) -> Optional[dict]:
         """

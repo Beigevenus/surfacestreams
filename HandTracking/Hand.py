@@ -1,18 +1,19 @@
 import math
+from typing import Optional
 
 from HandTracking.Point import Point
 from HandTracking.Vector import Vector
 
 
 class Hand:
-    def __init__(self, mp_hand):
+    def __init__(self, mp_hand) -> None:
         self.mp_hand = mp_hand
-        self.wrist = None
-        self.fingers = {"THUMB": self.Finger(),
-                        "INDEX_FINGER": self.Finger(),
-                        "MIDDLE_FINGER": self.Finger(),
-                        "RING_FINGER": self.Finger(),
-                        "PINKY": self.Finger()}
+        self.wrist: Optional[Point] = None
+        self.fingers: dict = {"THUMB": self.Finger(),
+                              "INDEX_FINGER": self.Finger(),
+                              "MIDDLE_FINGER": self.Finger(),
+                              "RING_FINGER": self.Finger(),
+                              "PINKY": self.Finger()}
 
     def update(self, landmarks) -> None:
         """
@@ -24,17 +25,19 @@ class Hand:
         # TODO: Make thumb great again
         for key in self.fingers.keys():
             if key == "THUMB":
-                self.fingers["THUMB"].update_finger(Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_CMC"]]),
-                                                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_MCP"]]),
-                                                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_IP"]]),
-                                                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_TIP"]]),
-                                                    self.wrist)
+                self.fingers["THUMB"].update_finger(
+                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_CMC"]]),
+                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_MCP"]]),
+                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_IP"]]),
+                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_TIP"]]),
+                    self.wrist)
             else:
-                self.fingers[key].update_finger(Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_MCP"]]),
-                                                Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_PIP"]]),
-                                                Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_DIP"]]),
-                                                Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_TIP"]]),
-                                                self.wrist)
+                self.fingers[key].update_finger(
+                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_MCP"]]),
+                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_PIP"]]),
+                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_DIP"]]),
+                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_TIP"]]),
+                    self.wrist)
 
         # self.calc_distances()
 
@@ -61,7 +64,7 @@ class Hand:
         :return: Whether the hand is drawing or not
         """
         # TODO: Optimize. we ignore thumb for now
-        one_extra = False
+        one_extra: bool = False
         for key, finger in self.fingers.items():
             if key == "INDEX_FINGER":
                 if not finger.is_stretched():
@@ -85,8 +88,8 @@ class Hand:
         """
         return self.fingers["INDEX_FINGER"].tip
 
-    def get_mask_points(self) -> list:
-        points = []
+    def get_mask_points(self) -> list[Point]:
+        points: list[Point] = []
 
         for finger in self.fingers.values():
             points.append(finger.mcp)
@@ -97,7 +100,8 @@ class Hand:
         return points
 
     class Finger:
-        def __init__(self, mcp=None, pip=None, dip=None, tip=None, wrist=None):
+        def __init__(self, mcp: Point = None, pip: Point = None, dip: Point = None, tip: Point = None,
+                     wrist: Point = None):
             self.mcp: Point = mcp
             self.pip: Point = pip
             self.dip: Point = dip
@@ -119,16 +123,17 @@ class Hand:
             if self.pip is None or self.mcp is None or self.tip is None:
                 return False
 
-            a = Vector(self.tip, self.pip)
-            b = Vector(self.pip, self.wrist)
-            angle = a.angle_between(b)
+            a: Vector = Vector(self.tip, self.pip)
+            b: Vector = Vector(self.pip, self.wrist)
+            angle: float = a.angle_between(b)
             if angle > 0:
                 return True
             return False
 
-        def update_finger(self, mcp=None, pip=None, dip=None, tip=None, wrist=None):
-            self.mcp: Point = mcp
-            self.pip: Point = pip
-            self.dip: Point = dip
-            self.tip: Point = tip
-            self.wrist: Point = wrist
+        def update_finger(self, mcp: Point = None, pip: Point = None, dip: Point = None, tip: Point = None,
+                          wrist: Point = None):
+            self.mcp = mcp
+            self.pip = pip
+            self.dip = dip
+            self.tip = tip
+            self.wrist = wrist

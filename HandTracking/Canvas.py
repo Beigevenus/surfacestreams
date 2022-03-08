@@ -3,10 +3,12 @@ import numpy as np
 from numpy import ndarray
 
 from HandTracking.PaintingToolbox import PaintingToolbox
+from HandTracking.Point import Point
 
 
 class Canvas:
-    def __init__(self, width=1920, height=1080, name='canvas', toolbox=PaintingToolbox()):
+    def __init__(self, width: int = 1920, height: int = 1080, name: str = 'canvas',
+                 toolbox: PaintingToolbox = PaintingToolbox()) -> None:
         self.width: int = width
         self.height: int = height
         self.toolbox: PaintingToolbox = toolbox
@@ -14,9 +16,9 @@ class Canvas:
         self.name: str = name
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
-        #self.move_window(2500)
+        # self.move_window(2500)
 
-    def resize(self, width, height) -> None:
+    def resize(self, width: int, height: int) -> None:
         """
         Changes the width and height of the canvas window to the given lengths.
 
@@ -30,7 +32,7 @@ class Canvas:
         self.width = width
         self.height = height
 
-    def draw_line(self, previous_point, point) -> None:
+    def draw_line(self, previous_point: Point, point: Point) -> None:
         """
         Draws a circle at the current point, and a line between the old and current point.
 
@@ -48,7 +50,7 @@ class Canvas:
                  (int(point.x), int(point.y)),
                  self.toolbox.color, self.toolbox.line_size)
 
-    def draw_points(self, points) -> None:
+    def draw_points(self, points: list[Point]) -> None:
         for point in points:
             cv2.circle(self.image, (int(point.x), int(point.y)),
                        int(self.toolbox.mask_circle), self.toolbox.mask_color, cv2.FILLED)
@@ -64,6 +66,8 @@ class Canvas:
         """
         TO BE WRITTEN.
         """
+        width: int
+        height: int
         width, height = cv2.getWindowImageRect(self.name)[2:]
         if width != self.width or height != self.height:
             self.resize(width, height)
@@ -74,10 +78,11 @@ class Canvas:
         """
         cv2.setWindowProperty(self.name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-    def move_window(self, offsetx, offsety) -> None:
+    def move_window(self, offset_x: int, offset_y: int) -> None:
         """
         Moves the canvas window horizontally by the given offset.
 
-        :param offset: The number of pixels to move the window in the horizontal plane
+        :param offset_x: The number of pixels to move the window in the horizontal plane
+        :param offset_y: The number of pixels to move the window in the vertical plane
         """
-        cv2.moveWindow(self.name, offsetx, offsety)
+        cv2.moveWindow(self.name, offset_x, offset_y)

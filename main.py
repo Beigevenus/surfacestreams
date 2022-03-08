@@ -2,13 +2,15 @@ from cmath import pi
 from turtle import shape
 from typing import NamedTuple, Optional
 
+from numpy import ndarray
+
 from HandTracking.Config import Config
 from HandTracking.utility import limit
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
 from HandTracking.Hand import Hand
 from HandTracking.Camera import Camera
-from HandTracking.Settings import runsettings as run_settings, Settings
+from HandTracking.Settings import run_settings as run_settings, Settings
 from HandTracking.DrawArea import DrawArea
 
 import cv2
@@ -23,9 +25,9 @@ mp_hand = mp.solutions.hands
 
 def main(config: Settings):
     # TODO: Remove when auto calibration is implemented
-    drawing_point = None
-    drawing_precision = 30
-    old_point: Point = None
+    drawing_point: Optional[Point] = None
+    drawing_precision: int = 30
+    old_point: Optional[Point] = None
 
     hand: Hand = Hand(mp_hand)
     canvas: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height)
@@ -35,16 +37,16 @@ def main(config: Settings):
         hand_mask.fullscreen()
 
     # TODO: Make it able to handle vertical lines
-    draw_area = DrawArea(
+    draw_area: DrawArea = DrawArea(
         [Point(0 + 1, 0), Point(canvas.width, 0), Point(0, canvas.height), Point(canvas.width - 1, canvas.height)])
 
-    points = Config.load_calibration_points()
+    points: list[Point] = Config.load_calibration_points()
     if points:
         camera = Camera(draw_area, canvas, points, camera=config.camera)
     else:
         camera = Camera(draw_area, canvas, [Point(1, 0), Point(canvas.width, 0), Point(0, canvas.height),
                                             Point(canvas.width - 1, canvas.height)], camera=config.camera)
-    counter = 0
+    counter: int = 0
 
     with mp_hand.Hands(
             model_complexity=0,
@@ -85,10 +87,7 @@ def main(config: Settings):
                             #  accurate. One way to do this is to calculate the linear functions between the four
                             #  points, and then check whether a point is within the box that the lines create.
                             if draw_area.is_position_in_calibration_area(camera_point):
-                                point_on_canvas = draw_area.get_position_on_canvas(canvas.width, canvas.height,
-                                                                                   camera.warped_width,
-                                                                                   camera.warped_height, camera_point,
-                                                                                   camera.ptm)
+                                point_on_canvas = draw_area.get_position_on_canvas(camera_point, camera.ptm)
 
                                 if drawing_point is None:
                                     drawing_point = point_on_canvas
@@ -106,10 +105,10 @@ def main(config: Settings):
                             canvas.draw_line(old_point, drawing_point)
                             old_point = drawing_point
 
-                    mask_points = []
+                    mask_points: list[Point] = []
                     for point in hand.get_mask_points():
                         p = Point(point.x * camera.width, point.y * camera.height)
-                        mask_points.append(draw_area.get_position_on_canvas(0, 0, 0, 0, p, camera.ptm))
+                        mask_points.append(draw_area.get_position_on_canvas(p, camera.ptm))
                     
                     hand_mask.draw_points(mask_points)
 
@@ -117,16 +116,15 @@ def main(config: Settings):
             
             # TODO: Save the black spots so we can save the spots
             if counter >= 5:
-                cannervasser = copy.deepcopy(canvas.image)
-                res = cannervasser
-                layer2 = hand_mask.image[:, :, 3] > 0
+                cannervasser: ndarray = copy.deepcopy(canvas.image)  # TODO: Please change this name
+                res: ndarray = cannervasser
+                layer2: ndarray = hand_mask.image[:, :, 3] > 0
                 if res.shape[0] == hand_mask.image.shape[0]:
                     res[layer2] = hand_mask.image[layer2]
                     hand_mask.image = res
             elif counter < 5:
                 counter = counter + 1
 
-            
             hand_mask.show()
             hand_mask.image = np.zeros(shape=[hand_mask.height, hand_mask.width, 4], dtype=np.uint8)
 
