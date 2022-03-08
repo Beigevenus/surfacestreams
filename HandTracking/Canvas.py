@@ -10,7 +10,7 @@ class Canvas:
         self.width: int = width
         self.height: int = height
         self.toolbox: PaintingToolbox = toolbox
-        self.image: ndarray = np.zeros(shape=[height, width, 3], dtype=np.uint8)
+        self.image: ndarray = np.zeros(shape=[height, width, 4], dtype=np.uint8)
         self.name: str = name
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
@@ -30,7 +30,7 @@ class Canvas:
         self.width = width
         self.height = height
 
-    def draw(self, previous_point, point) -> None:
+    def draw_line(self, previous_point, point) -> None:
         """
         Draws a circle at the current point, and a line between the old and current point.
 
@@ -47,6 +47,11 @@ class Canvas:
         cv2.line(self.image, (int(previous_point.x), int(previous_point.y)),
                  (int(point.x), int(point.y)),
                  self.toolbox.color, self.toolbox.line_size)
+
+    def draw_points(self, points) -> None:
+        for point in points:
+            cv2.circle(self.image, (int(point.x), int(point.y)),
+                       int(self.toolbox.mask_circle), self.toolbox.mask_color, cv2.FILLED)
 
     def show(self) -> None:
         """

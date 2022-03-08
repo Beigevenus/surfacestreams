@@ -85,6 +85,17 @@ class Hand:
         """
         return self.fingers["INDEX_FINGER"].tip
 
+    def get_mask_points(self) -> list:
+        points = []
+
+        for finger in self.fingers.values():
+            points.append(finger.mcp)
+            points.append(finger.pip)
+            points.append(finger.dip)
+
+        points.append(self.wrist)
+        return points
+
     class Finger:
         def __init__(self, mcp=None, pip=None, dip=None, tip=None, wrist=None):
             self.mcp: Point = mcp
