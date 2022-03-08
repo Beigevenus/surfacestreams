@@ -1,3 +1,5 @@
+from typing import List
+
 from HandTracking.Config import Config
 from HandTracking.Point import Point
 from HandTracking.image_wrap import four_point_transform as fpt
@@ -79,7 +81,7 @@ class Camera:
         else:
             self.ptm, self.warped_width, self.warped_height = fpt(self.frame, self.sorted_calibration_points, self.canvas.width, self.canvas.height)
 
-    def sort_calibration_points(self) -> list[Point]:
+    def sort_calibration_points(self) -> List[Point]:
         left_top = left_bot = right_top = right_bot = None
 
         right_points = []

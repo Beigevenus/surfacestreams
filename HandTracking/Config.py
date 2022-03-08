@@ -1,5 +1,5 @@
 import json
-from typing import Optional
+from typing import Optional, List
 
 from HandTracking.Point import Point
 
@@ -22,7 +22,7 @@ class Config:
             return json.load(file)
 
     @classmethod
-    def load_calibration_points(cls) -> Optional[list[Point]]:
+    def load_calibration_points(cls) -> Optional[List[Point]]:
         """
         Converts calibration points from the config file to a list of Point objects.
 
@@ -30,7 +30,7 @@ class Config:
         """
         try:
             config: dict = cls.load()
-            point_list: list[Point] = [Point.from_dict(config["cal_points"]["point0"]),
+            point_list: List[Point] = [Point.from_dict(config["cal_points"]["point0"]),
                                        Point.from_dict(config["cal_points"]["point1"]),
                                        Point.from_dict(config["cal_points"]["point2"]),
                                        Point.from_dict(config["cal_points"]["point3"]), ]
@@ -68,7 +68,7 @@ class Config:
         cls.__write(config)
 
     @classmethod
-    def save_calibration_points(cls, cal_points: list[Point]) -> None:
+    def save_calibration_points(cls, cal_points: List[Point]) -> None:
         """
         Writes the new calibration points to the config file.
 
@@ -84,7 +84,7 @@ class Config:
         cls.__write(config)
 
     @classmethod
-    def point_list_to_dict(cls, point_list: list[Point]) -> dict:
+    def point_list_to_dict(cls, point_list: List[Point]) -> dict:
         """
         Converts a list of Point objects to a dictionary representation.
 
