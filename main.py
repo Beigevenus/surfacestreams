@@ -133,8 +133,30 @@ def main(config: Settings):
             hand_mask.image = np.zeros(shape=[hand_mask.height, hand_mask.width, 4], dtype=np.uint8)
 
             # Exit program when Esc is pressed
-            if cv2.waitKey(1) == 27:
-                break
+            key = cv2.waitKey(1)
+            if key == 27:  # ESC
+                return 0
+            elif key == 48:  # 0
+                canvas.change_color([150, 150, 150, 255])
+            elif key == 49:  # 1
+                canvas.change_color([15, 150, 255, 255])
+            elif key == 50:  # 2
+                canvas.change_color([22, 140, 37, 255])
+            elif key == 51:  # 3
+                canvas.change_color([57, 150, 90, 255])
+            elif key == 52:  # 4
+                canvas.change_color([27, 255, 100, 255])
+            elif key == 53:  # 5
+                canvas.change_color([3, 7, 87, 255])
+            elif key == 54:  # 6
+                canvas.change_color([20, 40, 60, 255])
+            elif key == 55:  # 7
+                canvas.change_color([0, 0, 0, 255], 50)
+            elif key == 115:  # S
+                camera.capture.release()
+                cv2.destroyAllWindows()
+                return 1
+
     camera.capture.release()
 
 
@@ -147,9 +169,7 @@ if __name__ == "__main__":
     else:
         settings = run_settings()
 
-    # use line below instead of above line to bypass settings menu..
-    # settings = Settings(fullscreen=1,camera=0)
-    # also use line below to move canvas to secondary monitor
-    # (if secondary monitor is less than 2500 pixels away)
-    # settings.monitor.x = 2500
-    main(settings)
+    running = main(settings)
+    while running:
+        settings = run_settings()
+        running = main(settings)
