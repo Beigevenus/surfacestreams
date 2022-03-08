@@ -16,6 +16,12 @@ class Settings:
 
     @classmethod
     def from_dict(cls, dictionary: dict) -> 'Settings':
+        """
+        Overload of the constructor, which creates a Settings object from a dictionary.
+
+        :param dictionary: The dictionary to extract attributes from
+        :return: A Settings object containing the attributes defined in the dictionary
+        """
         monitor: Monitor = Monitor(width=dictionary["monitor"]["width"],
                                    height=dictionary["monitor"]["height"],
                                    x=dictionary["monitor"]["x"],
@@ -25,7 +31,9 @@ class Settings:
 
     def to_dict(self) -> dict:
         """
-        Converts the Settings object to a dictionary representation
+        Converts the Settings object to a dictionary representation.
+
+        :return: A dictionary resembling the Settings object
         """
 
         string: str = json.dumps(self, default=lambda o: o.__dict__)
@@ -113,6 +121,7 @@ class SettingsApp:
         self.mainwindow = self.toplevel1
 
     def run(self) -> Settings:
+        # TODO: Write docstring for method
         self.mainwindow.mainloop()
 
         return self.appliedSettings
@@ -124,9 +133,11 @@ class SettingsApp:
         pass
 
     def cancel(self) -> None:
+        # TODO: Write docstring for method
         self.toplevel1.destroy()
 
     def save(self) -> None:
+        # TODO: Write docstring for method
         self.appliedSettings.monitor = self.monitor_list[self.selected_monitor.get()]
         self.appliedSettings.isFullscreen = int(self.radioVar.get())
         self.appliedSettings.camera = int(self.selected_cam.get())
@@ -140,5 +151,6 @@ class SettingsApp:
 
 
 def run_settings() -> Settings:
+    # TODO: Write docstring for function
     app = SettingsApp()
     return app.run()

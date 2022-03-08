@@ -51,21 +51,18 @@ class Canvas:
                  self.toolbox.color, self.toolbox.line_size)
 
     def draw_points(self, points: list[Point]) -> None:
+        # TODO: Write docstring for method
         for point in points:
             cv2.circle(self.image, (int(point.x), int(point.y)),
                        int(self.toolbox.mask_circle), self.toolbox.mask_color, cv2.FILLED)
 
     def show(self) -> None:
-        """
-        TO BE WRITTEN.
-        """
+        # TODO: Write docstring for method
         cv2.imshow(self.name, cv2.flip(self.image, 1))
         self.__check_for_resize()
 
     def __check_for_resize(self) -> None:
-        """
-        TO BE WRITTEN.
-        """
+        # TODO: Write docstring for method
         width: int
         height: int
         width, height = cv2.getWindowImageRect(self.name)[2:]

@@ -42,6 +42,7 @@ class Camera:
         cv2.imshow(self.name, self.frame)
 
     def update_frame(self) -> Optional[ndarray]:
+        # TODO: Write docstring for method
         success, self.frame = self.capture.read()
         self.frame = cv2.flip(self.frame, 1)
         if success:
@@ -49,6 +50,7 @@ class Camera:
         return None
 
     def mouse_click(self, event, x, y, flags, param) -> None:
+        # TODO: Write docstring for method
         if event == cv2.EVENT_LBUTTONUP:
             if len(self.calibration_points) > 3:
                 self.calibration_points.clear()
@@ -62,12 +64,16 @@ class Camera:
                 self.calibration_points.append(Point(x, y))
 
     def draw_calibration_points(self) -> None:
+        """
+        Draws the calibration points as circles on the camera window.
+        """
         for point in self.calibration_points:
             cv2.circle(self.frame, (int(point.x), int(point.y)), int(int(10 / 2) * 2),
                        [255, 255, 0], cv2.FILLED)
 
     @staticmethod
     def return_camera_indexes() -> List[int]:
+        # TODO: Write docstring for method
         # checks the first 20 indexes.
         index: int = 0
         arr: list[int] = []
@@ -82,6 +88,7 @@ class Camera:
         return arr
 
     def update_image_ptm(self) -> None:
+        # TODO: Write docstring for method
         if len(self.calibration_points) <= 3:
             None
         else:
@@ -89,6 +96,7 @@ class Camera:
                                                                   self.canvas.width, self.canvas.height)
 
     def sort_calibration_points(self) -> List[Point]:
+        # TODO: Write docstring for method
         right_points: list[Point] = []
         left_top: Point = self.calibration_points[0]
         left_bot: Point = self.calibration_points[1]

@@ -6,6 +6,7 @@ from HandTracking.Point import Point
 
 
 def order_points(pts: ndarray) -> ndarray:
+    # TODO: Write docstring for function
     # initialize a list of coordinates that will be ordered
     # such that the first entry in the list is the top-left,
     # the second entry is the top-right, the third is the
@@ -31,6 +32,7 @@ def order_points(pts: ndarray) -> ndarray:
 
 # TODO: Refactor this to not abuse variables for multiple types
 def four_point_transform(image: ndarray, points: list[Point], width: int, height: int):
+    # TODO: Write docstring for function
     # put the points into an numpy array
     pts: list[list[float]] = []
     for p in points:

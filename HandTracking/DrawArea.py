@@ -11,15 +11,14 @@ class DrawArea:
         self.bottom_border: list[float] = self.get_line_attributes(calibration_points[2], calibration_points[3])
 
     def update_calibration_borders(self, calibration_points: list[Point]) -> None:
+        # TODO: Write docstring for method
         self.left_border = self.get_line_attributes(calibration_points[0], calibration_points[2])
         self.right_border = self.get_line_attributes(calibration_points[1], calibration_points[3])
         self.top_border = self.get_line_attributes(calibration_points[0], calibration_points[1])
         self.bottom_border = self.get_line_attributes(calibration_points[2], calibration_points[3])
 
     def get_position_on_canvas(self, point: Point, ptm: ndarray) -> Point:
-        """
-        Get the position of the point in the actual canvas
-        """
+        # TODO: Write docstring for method
         # Does matrix multiplication on the perspective transform matrix and the original
         # position of the finger on the camera
         corrected_coordinates = np.matmul(ptm, [
@@ -33,6 +32,12 @@ class DrawArea:
         return corrected_point  # Point(x, y)
 
     def is_position_in_calibration_area(self, point: Point) -> bool:
+        """
+        Determines whether the given point is within the zone created by the calibration points.
+
+        :param point: The point to check
+        :return: True or False depending on whether it is inside or outside the calibration area
+        """
         # y = ax+b
         top_border_point: Point = Point(point.x, self.top_border[0] * point.x + self.top_border[1])
         if top_border_point.y >= point.y:
@@ -58,6 +63,7 @@ class DrawArea:
         return True
 
     def get_line_attributes(self, point1: Point, point2: Point) -> list[float]:
+        # TODO: Write docstring for method
         if point2.x == point1.x:
             # When the line is vertical the gradient is set to None and the b value should be used for further
             # calculations

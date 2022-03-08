@@ -31,6 +31,12 @@ class Point:
 
     @classmethod
     def from_dict(cls, dictionary: dict) -> 'Point':
+        """
+        Overload of the constructor, which gives a Point object from a dictionary of coordinates.
+
+        :param dictionary: The dictionary to extract coordinates from
+        :return: A Point object containing the x and y of the dictionary
+        """
         x: float = dictionary["x"]
         y: float = dictionary["y"]
 
@@ -47,6 +53,7 @@ class Point:
         return sqrt(calculation)
 
     def offset_to(self, other: 'Point', precision: int = 2) -> 'Point':
+        # TODO: Write docstring for method
         point: Point = self.midpoint_to(other)
 
         for i in range(0, precision):
@@ -55,6 +62,7 @@ class Point:
         return point
 
     def midpoint_to(self, other) -> 'Point':
+        # TODO: Write docstring for method
         return Point((self.x + other.x)/2, (self.y + other.y)/2)
 
     def get_position_on_canvas(self, area_width: int, area_height: int, canvas_width: int,
@@ -73,4 +81,9 @@ class Point:
         return Point(x, y)
 
     def as_list(self) -> list[float]:
+        """
+        Converts the Point object to a list of coordinates.
+
+        :return: A list containing the Point object's coordinates
+        """
         return [self.x, self.y]

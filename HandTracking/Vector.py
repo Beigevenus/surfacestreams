@@ -13,7 +13,19 @@ class Vector:
         return f"({self.x}, {self.y})"
 
     def dot(self, other) -> float:
+        """
+        Calculates the dot product of two vectors, namely, itself and other.
+
+        :param other: The other vector to calculate the dot product with
+        :return: The dot product of self and other
+        """
         return (self.x * other.x) + (self.y * other.y)
     
     def angle_between(self, other: 'Vector') -> float:
+        """
+        Calculates the angle between two vectors, namely, itself and other.
+
+        :param other: The vector to calculate the angle to
+        :return: The angle between self and other
+        """
         return (self.dot(other)) / (self.length * other.length)

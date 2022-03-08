@@ -16,11 +16,7 @@ class Hand:
                               "PINKY": self.Finger()}
 
     def update(self, landmarks) -> None:
-        """
-        TO BE WRITTEN.
-
-        :param landmarks:
-        """
+        # TODO: Write docstring for method
         self.wrist = Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark.WRIST])
         # TODO: Make thumb great again
         for key in self.fingers.keys():
@@ -43,14 +39,14 @@ class Hand:
 
     def calc_distances(self) -> None:
         """
-        TO BE WRITTEN.
+        Calculates the distance from each finger to the wrist and saves them.
         """
         for finger in self.fingers.values():
             finger.distance_to_wrist = self.wrist.distance_to(finger.tip)
 
     def set_finger_length(self) -> None:
         """
-        TO BE WRITTEN.
+        Sets the length of each finger and their stretched guard.
         """
         for finger in self.fingers.values():
             finger.length = finger.distance_to_wrist
@@ -89,6 +85,7 @@ class Hand:
         return self.fingers["INDEX_FINGER"].tip
 
     def get_mask_points(self) -> list[Point]:
+        # TODO: Write docstring for method
         points: list[Point] = []
 
         for finger in self.fingers.values():
@@ -132,6 +129,7 @@ class Hand:
 
         def update_finger(self, mcp: Point = None, pip: Point = None, dip: Point = None, tip: Point = None,
                           wrist: Point = None):
+            # TODO: Write docstring for method
             self.mcp = mcp
             self.pip = pip
             self.dip = dip
