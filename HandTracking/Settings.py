@@ -1,7 +1,10 @@
+import json
+
 from screeninfo import get_monitors, Monitor
 import tkinter as tk
 import tkinter.ttk as ttk
 from HandTracking.Camera import Camera
+from HandTracking.Config import Config
 
 
 class Settings:
@@ -9,6 +12,25 @@ class Settings:
         self.monitor: Monitor = monitor
         self.isFullscreen = fullscreen
         self.camera = camera
+
+    @classmethod
+    def from_dict(cls, dictionary: dict) -> 'Settings':
+        monitor = Monitor(width=dictionary["monitor"]["width"],
+                          height=dictionary["monitor"]["height"],
+                          x=dictionary["monitor"]["x"],
+                          y=dictionary["monitor"]["y"])
+
+        return Settings(monitor, dictionary["isFullscreen"], dictionary["camera"])
+
+    def to_dict(self) -> dict:
+        """
+        Converts the Settings object to a dictionary representation
+        """
+
+        string: str = json.dumps(self, default=lambda o: o.__dict__)
+        dictionary: dict = json.loads(string)
+
+        return dictionary
 
 
 class SettingsApp:
@@ -30,7 +52,6 @@ class SettingsApp:
         self.labelframe1.configure(height='200', text='Window mode', width='200')
         self.labelframe1.pack(anchor='nw', ipadx='10', ipady='10', padx='10', pady='10', side='top')
 
-
         # monitor stuff
         self.label1 = ttk.Label(self.toplevel1)
         self.label1.configure(text='Monitor')
@@ -47,7 +68,7 @@ class SettingsApp:
         self.Monitorbox['state'] = 'readonly'
 
         # webcam stuff
-        self.active_cams = Camera.returnCameraIndexes()
+        self.active_cams = Camera.return_camera_indexes()
         self.selected_cam = tk.StringVar()
 
         self.label2 = ttk.Label(self.toplevel1)
@@ -112,6 +133,8 @@ class SettingsApp:
         if int(self.radioVar.get()) == 0:
             self.appliedSettings.monitor.width = 640
             self.appliedSettings.monitor.height = 360
+
+        Config.save_startup_settings(self.appliedSettings.to_dict())
 
         self.toplevel1.destroy()
 

@@ -29,6 +29,13 @@ class Point:
 
         return cls(x, y)
 
+    @classmethod
+    def from_dict(cls, dictionary) -> 'Point':
+        x: float = dictionary["x"]
+        y: float = dictionary["y"]
+
+        return cls(x, y)
+
     def distance_to(self, other) -> float:
         """
         Calculates the distance between itself an another Point object.
