@@ -105,6 +105,10 @@ def main(config: Settings):
 
                         draw_color = 'BLACK'
                         draw_size = 50
+                        finger_tip_point = Point(hand.get_erasing_point().x * camera.width,
+                                                 hand.get_drawing_point().y * camera.height)
+                        finger_tip_point_on_camera = draw_area.get_position_on_canvas(0, 0, 0, 0, finger_tip_point,
+                                                                                      camera.ptm)
 
                     elif hand.is_drawing():
                         camera_point: Point = Point(
@@ -125,10 +129,17 @@ def main(config: Settings):
 
                         draw_color = 'WHITE'
                         draw_size = 5
+                        finger_tip_point = Point(hand.get_drawing_point().x * camera.width,
+                                                 hand.get_drawing_point().y * camera.height)
+                        finger_tip_point_on_camera = draw_area.get_position_on_canvas(0, 0, 0, 0, finger_tip_point,
+                                                                                      camera.ptm)
+                    else:
+                        finger_tip_point_on_camera = None
 
                 else:
                     old_point = None
                     drawing_point = None
+                    finger_tip_point_on_camera = None
 
                 if drawing_point is not None:
                     if drawing_point.distance_to(point_on_canvas) > drawing_precision:
@@ -143,6 +154,8 @@ def main(config: Settings):
                     mask_points.append(draw_area.get_position_on_canvas(0, 0, 0, 0, p, camera.ptm))
 
                 hand_mask.draw_points(mask_points, color='BLACK')
+                if finger_tip_point_on_camera is not None:
+                    hand_mask.draw_points([finger_tip_point_on_camera], color='RED', size=5)
 
         camera.show_frame()
 
