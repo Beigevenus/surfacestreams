@@ -77,6 +77,23 @@ class Hand:
                     else:
                         one_extra = True
         return True
+    
+    def is_erasing(self) -> bool:
+        """
+        Determines whether the hand is in 'erasing mode' or not, depending on the position of the fingers.
+        Drawing mode is defined as a stretched index, middle and ring finger, with the pinky not stretched.
+
+        :return: Whether the hand is erasing or not
+        """
+        # TODO: Optimize. we ignore thumb for now
+        for key, finger in self.fingers.items():
+            if key == "THUMB":
+                if not finger.is_stretched():
+                    return False
+            else:
+                if finger.is_stretched():
+                    return False
+        return True
 
     def get_drawing_point(self) -> Point:
         """
@@ -86,6 +103,16 @@ class Hand:
         :return: The Point that is used for drawing
         """
         return self.fingers["INDEX_FINGER"].tip
+
+    def get_erasing_point(self) -> bool:
+        """
+        Returns the position of the the tip of the thumb, currently used
+        for simple erasing, before the utilization of a ML model to 
+        recognize positions and gestures
+
+        :return: The Point that is used for erasing
+        """
+        return self.fingers["THUMB"].tip
 
     def get_mask_points(self) -> list:
         points = []

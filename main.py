@@ -26,6 +26,8 @@ def main(config: Settings):
     drawing_point = None
     drawing_precision = 30
     old_point: Point = None
+    draw_color: str = 'WHITE'
+    draw_size: int = 5
 
     hand: Hand = Hand(mp_hand)
     canvas: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height)
@@ -83,16 +85,12 @@ def main(config: Settings):
                 print(hand.get_hand_sign(camera.frame, hand_landmarks))
 
                 # The actual check whether the program should be drawing or not
-                if hand.is_drawing():
-                    if len(camera.calibration_points) > 3:
+                if len(camera.calibration_points) > 3:
+                    if hand.is_erasing():
                         camera_point: Point = Point(
-                            (limit((float(hand.get_drawing_point().x) * camera.width), 0, camera.width)),
-                            (limit((float(hand.get_drawing_point().y) * camera.height), 0, camera.height)))
+                            (limit((float(hand.get_erasing_point().x) * camera.width), 0, camera.width)),
+                            (limit((float(hand.get_erasing_point().y) * camera.height), 0, camera.height)))
 
-                        # TODO: This is also the reason why the accuracy is bad, if it is not a rectangular
-                        #  shaped box. This is where the finger will be registered, so this needs to be more
-                        #  accurate. One way to do this is to calculate the linear functions between the four
-                        #  points, and then check whether a point is within the box that the lines create.
                         if draw_area.is_position_in_calibration_area(camera_point):
                             point_on_canvas = draw_area.get_position_on_canvas(canvas.width, canvas.height,
                                                                                camera.warped_width,
@@ -105,6 +103,28 @@ def main(config: Settings):
                             if old_point is None:
                                 old_point = point_on_canvas
 
+                        draw_color = 'BLACK'
+                        draw_size = 50
+
+                    elif hand.is_drawing():
+                        camera_point: Point = Point(
+                            (limit((float(hand.get_drawing_point().x) * camera.width), 0, camera.width)),
+                            (limit((float(hand.get_drawing_point().y) * camera.height), 0, camera.height)))
+
+                        if draw_area.is_position_in_calibration_area(camera_point):
+                            point_on_canvas = draw_area.get_position_on_canvas(canvas.width, canvas.height,
+                                                                               camera.warped_width,
+                                                                               camera.warped_height, camera_point,
+                                                                               camera.ptm)
+
+                            if drawing_point is None:
+                                drawing_point = point_on_canvas
+
+                            if old_point is None:
+                                old_point = point_on_canvas
+
+                        draw_color = 'WHITE'
+                        draw_size = 5
 
                 else:
                     old_point = None
@@ -113,15 +133,16 @@ def main(config: Settings):
                 if drawing_point is not None:
                     if drawing_point.distance_to(point_on_canvas) > drawing_precision:
                         drawing_point = drawing_point.offset_to(point_on_canvas, 2)
-                        canvas.draw_line(old_point, drawing_point)
+                        canvas.draw_line(old_point, drawing_point, draw_color, draw_size)
                         old_point = drawing_point
 
+                # Mask for removing the hand
                 mask_points = []
                 for point in hand.get_mask_points():
                     p = Point(point.x * camera.width, point.y * camera.height)
                     mask_points.append(draw_area.get_position_on_canvas(0, 0, 0, 0, p, camera.ptm))
 
-                hand_mask.draw_points(mask_points)
+                hand_mask.draw_points(mask_points, color='BLACK')
 
         camera.show_frame()
 
