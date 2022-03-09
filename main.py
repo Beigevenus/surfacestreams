@@ -105,6 +105,7 @@ def main(config: Settings):
                             if old_point is None:
                                 old_point = point_on_canvas
 
+
                 else:
                     old_point = None
                     drawing_point = None

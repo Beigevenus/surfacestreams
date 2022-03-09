@@ -69,7 +69,7 @@ def four_point_transform(image, points, width, height):
     # and transformation perspective, i know that it must ve possible to use
     # just the perspective transform matrix to do the conversion of one coordinate
     # system to another - Sebastian
-    warped = cv2.warpPerspective(image, m, (width, height))
+    # warped = cv2.warpPerspective(image, m, (width, height))
 
     # return the warped image
     return m, width, height
