@@ -82,8 +82,6 @@ def main(config: Settings):
 
                 hand.update(hand_landmarks)
 
-                print(hand.get_hand_sign(camera.frame, hand_landmarks))
-
                 # The actual check whether the program should be drawing or not
                 if len(camera.calibration_points) > 3:
                     if hand.is_erasing():
@@ -92,10 +90,7 @@ def main(config: Settings):
                             (limit((float(hand.get_erasing_point().y) * camera.height), 0, camera.height)))
 
                         if draw_area.is_position_in_calibration_area(camera_point):
-                            point_on_canvas = draw_area.get_position_on_canvas(canvas.width, canvas.height,
-                                                                               camera.warped_width,
-                                                                               camera.warped_height, camera_point,
-                                                                               camera.ptm)
+                            point_on_canvas = draw_area.get_position_on_canvas(camera_point, canvas, camera)
 
                             if drawing_point is None:
                                 drawing_point = point_on_canvas
@@ -107,20 +102,17 @@ def main(config: Settings):
                         draw_size = 50
                         finger_tip_point = Point(hand.get_erasing_point().x * camera.width,
                                                  hand.get_drawing_point().y * camera.height)
-                        finger_tip_point_on_camera = draw_area.get_position_on_canvas(0, 0, 0, 0, finger_tip_point,
-                                                                                      camera.ptm)
+                        finger_tip_point_on_camera = draw_area.get_position_on_canvas(finger_tip_point, canvas, camera)
                         finger_dot = (finger_tip_point_on_camera, "RED")
 
                     elif hand.is_drawing():
+                        print(hand.get_drawing_point())
                         camera_point: Point = Point(
-                            (limit((float(hand.get_drawing_point().x) * camera.width), 0, camera.width)),
-                            (limit((float(hand.get_drawing_point().y) * camera.height), 0, camera.height)))
+                            (round(limit((float(hand.get_drawing_point().x) * camera.width), 0, camera.width))),
+                            (round(limit((float(hand.get_drawing_point().y) * camera.height), 0, camera.height))))
 
                         if draw_area.is_position_in_calibration_area(camera_point):
-                            point_on_canvas = draw_area.get_position_on_canvas(canvas.width, canvas.height,
-                                                                               camera.warped_width,
-                                                                               camera.warped_height, camera_point,
-                                                                               camera.ptm)
+                            point_on_canvas = draw_area.get_position_on_canvas(camera_point, canvas, camera)
 
                             if drawing_point is None:
                                 drawing_point = point_on_canvas
@@ -132,8 +124,7 @@ def main(config: Settings):
                         draw_size = 5
                         finger_tip_point = Point(hand.get_drawing_point().x * camera.width,
                                                  hand.get_drawing_point().y * camera.height)
-                        finger_tip_point_on_camera = draw_area.get_position_on_canvas(0, 0, 0, 0, finger_tip_point,
-                                                                                      camera.ptm)
+                        finger_tip_point_on_camera = draw_area.get_position_on_canvas(finger_tip_point, canvas, camera)
                         finger_dot = (finger_tip_point_on_camera, "GREEN")
                     else:
                         finger_dot = None
@@ -153,7 +144,7 @@ def main(config: Settings):
                 mask_points = []
                 for point in hand.get_mask_points():
                     p = Point(point.x * camera.width, point.y * camera.height)
-                    mask_points.append(draw_area.get_position_on_canvas(0, 0, 0, 0, p, camera.ptm))
+                    mask_points.append(draw_area.get_position_on_canvas(p, canvas, camera))
 
                 hand_mask.draw_points(mask_points, color='BLACK')
                 if finger_dot is not None:

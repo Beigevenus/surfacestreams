@@ -26,7 +26,7 @@ def order_points(pts):
     return rect
 
 
-def four_point_transform(image, points, width, height):
+def four_point_transform(points):
     # put the points into an numpy array
     pts = []
     for p in points:
@@ -59,9 +59,9 @@ def four_point_transform(image, points, width, height):
     # order
     dst = np.array([
         [0, 0],
-        [width - 1, 0],
-        [width - 1, height - 1],
-        [0, height - 1]], dtype="float32")
+        [maxWidth - 1, 0],
+        [maxWidth - 1, maxHeight - 1],
+        [0, maxHeight - 1]], dtype="float32")
 
     # compute the perspective transform matrix and then apply it
     m = cv2.getPerspectiveTransform(rect, dst)
@@ -72,4 +72,4 @@ def four_point_transform(image, points, width, height):
     # warped = cv2.warpPerspective(image, m, (width, height))
 
     # return the warped image
-    return m, width, height
+    return m, maxWidth, maxHeight

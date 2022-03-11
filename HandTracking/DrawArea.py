@@ -1,5 +1,7 @@
 import numpy as np
 from numpy import polyfit
+from HandTracking.Camera import Camera
+from HandTracking.Canvas import Canvas
 from HandTracking.Point import Point
 
 
@@ -16,21 +18,24 @@ class DrawArea:
         self.top_border = self.get_line_attributes(calibration_points[0], calibration_points[1])
         self.bottom_border = self.get_line_attributes(calibration_points[2], calibration_points[3])
 
-    def get_position_on_canvas(self, canvas_width, canvas_height, area_width, area_height, point, ptm):
+    def get_position_on_canvas(self, point, canvas: Canvas, camera: Camera):
         """
         Get the position of the point in the actual canvas
         """
         # Does matrix multipication on the perspective transform matrix and the original
         # position of the finger on the camera
-        corrected_coordinates = np.matmul(ptm, [
+        corrected_coordinates = np.matmul(camera.ptm, [
             point.x,
             point.y, 1])
 
-        corrected_point = Point(corrected_coordinates[0], corrected_coordinates[1])
+        ########################### Midlertidig løsning ############################
+        normalized_coordinates = Point(round(corrected_coordinates[0]) / camera.warped_width, round(corrected_coordinates[1]) / camera.warped_height)
+
+        corrected_point = Point(round(normalized_coordinates.x * canvas.width), round(normalized_coordinates.y * canvas.height))
 
         # x = canvas_width * (corrected_point.x / area_width)
         # y = canvas_height * (corrected_point.y / area_height)
-        return corrected_point# Point(x, y)
+        return corrected_point # Point(x, y)
 
     def is_position_in_calibration_area(self, point):
         # y = ax+b
