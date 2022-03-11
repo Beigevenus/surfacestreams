@@ -20,7 +20,7 @@ class Canvas:
 
     def resize(self, width: int, height: int) -> None:
         """
-        Changes the width and height of the canvas window to the given lengths.
+        Changes the width and height of the canvas resolution to the given lengths.
 
         :param width: The desired width
         :param height: The desired height
@@ -50,19 +50,27 @@ class Canvas:
                  (int(point.x), int(point.y)),
                  self.toolbox.color, self.toolbox.line_size)
 
-    def draw_points(self, points: list[Point]) -> None:
-        # TODO: Write docstring for method
+    def draw_mask_points(self, points: list[Point]) -> None:
+        """
+        Draws mask circles (black circles to cover the hand) at every point given.
+
+        :param points: A list of Point objects to draw mask circles at
+        """
         for point in points:
             cv2.circle(self.image, (int(point.x), int(point.y)),
                        int(self.toolbox.mask_circle), self.toolbox.mask_color, cv2.FILLED)
 
     def show(self) -> None:
-        # TODO: Write docstring for method
+        """
+        Updates the shown canvas in its window.
+        """
         cv2.imshow(self.name, cv2.flip(self.image, 1))
         self.__check_for_resize()
 
     def __check_for_resize(self) -> None:
-        # TODO: Write docstring for method
+        """
+        Checks if the dimensions of the canvas window has changed and update its resolution accordingly.
+        """
         width: int
         height: int
         width, height = cv2.getWindowImageRect(self.name)[2:]

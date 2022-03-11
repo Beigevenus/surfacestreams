@@ -87,7 +87,7 @@ def main(config: Settings):
                             #  accurate. One way to do this is to calculate the linear functions between the four
                             #  points, and then check whether a point is within the box that the lines create.
                             if draw_area.is_position_in_calibration_area(camera_point):
-                                point_on_canvas = draw_area.get_position_on_canvas(camera_point, camera.ptm)
+                                point_on_canvas = DrawArea.get_position_on_canvas(camera_point, camera.ptm)
 
                                 if drawing_point is None:
                                     drawing_point = point_on_canvas
@@ -108,9 +108,9 @@ def main(config: Settings):
                     mask_points: list[Point] = []
                     for point in hand.get_mask_points():
                         p = Point(point.x * camera.width, point.y * camera.height)
-                        mask_points.append(draw_area.get_position_on_canvas(p, camera.ptm))
+                        mask_points.append(DrawArea.get_position_on_canvas(p, camera.ptm))
                     
-                    hand_mask.draw_points(mask_points)
+                    hand_mask.draw_mask_points(mask_points)
 
             camera.show_frame()
             

@@ -42,7 +42,11 @@ class Camera:
         cv2.imshow(self.name, self.frame)
 
     def update_frame(self) -> Optional[ndarray]:
-        # TODO: Write docstring for method
+        """
+        Retrieves the next frame from the camera input and, if successful, returns that.
+
+        :return: An ndarray representing the next frame from the camera input
+        """
         success, self.frame = self.capture.read()
         self.frame = cv2.flip(self.frame, 1)
         if success:
@@ -50,7 +54,16 @@ class Camera:
         return None
 
     def mouse_click(self, event, x, y, flags, param) -> None:
-        # TODO: Write docstring for method
+        """
+        Sets the calibration points from the x and y position of the mouse.
+        If 4 are set, an additional left click of the mouse will clear them.
+
+        :param event: An object containing the type of the event
+        :param x: The x position of the mouse
+        :param y: The y position of the mouse
+        :param flags: Currently unused
+        :param param: Currently unused
+        """
         if event == cv2.EVENT_LBUTTONUP:
             if len(self.calibration_points) > 3:
                 self.calibration_points.clear()
@@ -73,18 +86,18 @@ class Camera:
 
     @staticmethod
     def return_camera_indexes() -> List[int]:
-        # TODO: Write docstring for method
-        # checks the first 20 indexes.
-        index: int = 0
+        """
+        Checks the 20 first camera devices, and if they are live, adds them to a list of usable cameras.
+
+        :return: A list of the indexes for the live cameras
+        """
         arr: list[int] = []
-        i: int = 20
-        while i > 0:
+        # Checks the first 20 indexes.
+        for index in range(20):
             cap = cv2.VideoCapture(index)
             if cap.read()[0]:
                 arr.append(index)
                 cap.release()
-            index += 1
-            i -= 1
         return arr
 
     def update_image_ptm(self) -> None:
@@ -96,7 +109,12 @@ class Camera:
                                                                   self.canvas.width, self.canvas.height)
 
     def sort_calibration_points(self) -> List[Point]:
-        # TODO: Write docstring for method
+        """
+        Sorts the list of calibration points using the following order:
+        top left, top right, bottom left, bottom right.
+
+        :return: A list of the sorted calibration points
+        """
         right_points: list[Point] = []
         left_top: Point = self.calibration_points[0]
         left_bot: Point = self.calibration_points[1]

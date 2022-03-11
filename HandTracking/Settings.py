@@ -121,7 +121,10 @@ class SettingsApp:
         self.mainwindow = self.toplevel1
 
     def run(self) -> Settings:
-        # TODO: Write docstring for method
+        """
+        Starts the settings window's loop.
+        :return:
+        """
         self.mainwindow.mainloop()
 
         return self.appliedSettings
@@ -133,11 +136,15 @@ class SettingsApp:
         pass
 
     def cancel(self) -> None:
-        # TODO: Write docstring for method
+        """
+        Closes the settings window.
+        """
         self.toplevel1.destroy()
 
     def save(self) -> None:
-        # TODO: Write docstring for method
+        """
+        Saves the chosen values in memory as well as calling the writing to a config file.
+        """
         self.appliedSettings.monitor = self.monitor_list[self.selected_monitor.get()]
         self.appliedSettings.isFullscreen = int(self.radioVar.get())
         self.appliedSettings.camera = int(self.selected_cam.get())
@@ -151,6 +158,8 @@ class SettingsApp:
 
 
 def run_settings() -> Settings:
-    # TODO: Write docstring for function
+    """
+    Initializes the settings app and runs it.
+    """
     app = SettingsApp()
     return app.run()

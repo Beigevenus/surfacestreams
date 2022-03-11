@@ -6,7 +6,7 @@ import cv2
 
 
 # A basic min/max function
-def limit(num: float, minimum: float = 0, maximum:float = 255) -> float:
+def limit(num: float, minimum: float = 0, maximum: float = 255) -> float:
     # TODO: Write docstring for function
     return max(min(num, maximum), minimum)
 
@@ -179,10 +179,10 @@ def __find_optimal_polynomial(points, degree):
 def smooth_points(points, degree):
     model = __find_optimal_polynomial(points, degree)
 
-    #define scatterplot
+    # define scatterplot
     polyline = np.linspace(15, 50)
 
-    #add fitted polynomial curve to scatterplot
+    # add fitted polynomial curve to scatterplot
 
     for point in points:
         point.y = model[0](point.x)

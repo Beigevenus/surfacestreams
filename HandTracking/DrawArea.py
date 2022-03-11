@@ -5,20 +5,32 @@ from HandTracking.Point import Point
 
 class DrawArea:
     def __init__(self, calibration_points: list[Point]) -> None:
-        self.left_border: list[float] = self.get_line_attributes(calibration_points[0], calibration_points[2])
-        self.right_border: list[float] = self.get_line_attributes(calibration_points[1], calibration_points[3])
-        self.top_border: list[float] = self.get_line_attributes(calibration_points[0], calibration_points[1])
-        self.bottom_border: list[float] = self.get_line_attributes(calibration_points[2], calibration_points[3])
+        self.left_border: list[float] = DrawArea.get_line_attributes(calibration_points[0], calibration_points[2])
+        self.right_border: list[float] = DrawArea.get_line_attributes(calibration_points[1], calibration_points[3])
+        self.top_border: list[float] = DrawArea.get_line_attributes(calibration_points[0], calibration_points[1])
+        self.bottom_border: list[float] = DrawArea.get_line_attributes(calibration_points[2], calibration_points[3])
 
     def update_calibration_borders(self, calibration_points: list[Point]) -> None:
-        # TODO: Write docstring for method
+        """
+        Updates the lines/borders between the calibration points.
+
+        :param calibration_points: The list of calibration points to update the borders for
+        """
         self.left_border = self.get_line_attributes(calibration_points[0], calibration_points[2])
         self.right_border = self.get_line_attributes(calibration_points[1], calibration_points[3])
         self.top_border = self.get_line_attributes(calibration_points[0], calibration_points[1])
         self.bottom_border = self.get_line_attributes(calibration_points[2], calibration_points[3])
 
-    def get_position_on_canvas(self, point: Point, ptm: ndarray) -> Point:
-        # TODO: Write docstring for method
+    @staticmethod
+    def get_position_on_canvas(point: Point, ptm: ndarray) -> Point:
+        """
+        Utilizes a perspective transformation matrix to convert a given point to a point in the warped view of
+        the camera.
+
+        :param point: The point to get the new position of
+        :param ptm: The perspective transformation matrix to use
+        :return: The new point in the warped view
+        """
         # Does matrix multiplication on the perspective transform matrix and the original
         # position of the finger on the camera
         corrected_coordinates = np.matmul(ptm, [
@@ -62,8 +74,15 @@ class DrawArea:
 
         return True
 
-    def get_line_attributes(self, point1: Point, point2: Point) -> list[float]:
-        # TODO: Write docstring for method
+    @staticmethod
+    def get_line_attributes(point1: Point, point2: Point) -> list[float]:
+        """
+        Returns the a and b values for the line between point 1 and point 2.
+
+        :param point1: The first point
+        :param point2: The second point
+        :return: A list with the first element being the a value, and the second being the b value
+        """
         if point2.x == point1.x:
             # When the line is vertical the gradient is set to None and the b value should be used for further
             # calculations
