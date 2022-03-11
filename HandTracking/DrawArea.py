@@ -1,5 +1,5 @@
 import numpy as np
-from numpy import polyfit, ndarray
+from numpy import ndarray
 from HandTracking.Point import Point
 
 

@@ -31,7 +31,7 @@ def order_points(pts: ndarray) -> ndarray:
 
 
 # TODO: Refactor this to not abuse variables for multiple types
-def four_point_transform(image: ndarray, points: list[Point], width: int, height: int):
+def four_point_transform(points: list[Point], width: int, height: int):
     # TODO: Write docstring for function
     # put the points into an numpy array
     pts: list[list[float]] = []
@@ -42,7 +42,6 @@ def four_point_transform(image: ndarray, points: list[Point], width: int, height
     # obtain a consistent order of the points and unpack them
     # individually
     rect: ndarray = order_points(pts)
-    (tl, tr, br, bl) = rect
 
     # now that we have the dimensions of the new image, construct
     # the set of destination points to obtain a "birds eye view",

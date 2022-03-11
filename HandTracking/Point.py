@@ -1,5 +1,4 @@
-from math import sqrt, pow
-from numpy import polyfit
+from math import sqrt
 
 
 class Point:

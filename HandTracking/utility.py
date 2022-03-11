@@ -15,7 +15,7 @@ def limit(num: float, minimum: float = 0, maximum: float = 255) -> float:
 # then choosing the xv, that is closest to the given corner
 # TODO: Maybe delete, since automatic calibration is not necessary since manual calibration does not take long.
 # Needs to be done either way
-def find_corners_from_color(image, color):
+def find_corners_from_color(image):
     # TODO: Change the names of EVERYTHING so that it makes sense
     image_height = 0
     image_width = 0
@@ -117,7 +117,6 @@ def adjusted_r(x, y, degree):
     :param degree: The n-degree polynomial
     :return:
     """
-    result = 0
     coeffs = np.polyfit(x, y, degree)
     p = np.poly1d(coeffs)
     yhat = p(x)
@@ -178,9 +177,6 @@ def __find_optimal_polynomial(points, degree):
 
 def smooth_points(points, degree):
     model = __find_optimal_polynomial(points, degree)
-
-    # define scatterplot
-    polyline = np.linspace(15, 50)
 
     # add fitted polynomial curve to scatterplot
 
