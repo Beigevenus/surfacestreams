@@ -2,13 +2,15 @@ from cmath import pi
 from turtle import shape
 from typing import NamedTuple, Optional
 
+from numpy import ndarray
+
 from HandTracking.Config import Config
 from HandTracking.utility import limit
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
 from HandTracking.Hand import Hand
 from HandTracking.Camera import Camera
-from HandTracking.Settings import runsettings as run_settings, Settings
+from HandTracking.Settings import run_settings as run_settings, Settings
 from HandTracking.DrawArea import DrawArea
 
 import cv2
@@ -23,9 +25,9 @@ mp_hand = mp.solutions.hands
 
 def main(config: Settings):
     # TODO: Remove when auto calibration is implemented
-    drawing_point = None
-    drawing_precision = 30
-    old_point: Point = None
+    drawing_point: Optional[Point] = None
+    drawing_precision: int = 30
+    old_point: Optional[Point] = None
 
     hand: Hand = Hand(mp_hand)
     canvas: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height)
@@ -35,16 +37,16 @@ def main(config: Settings):
         hand_mask.fullscreen()
 
     # TODO: Make it able to handle vertical lines
-    draw_area = DrawArea(
+    draw_area: DrawArea = DrawArea(
         [Point(0 + 1, 0), Point(canvas.width, 0), Point(0, canvas.height), Point(canvas.width - 1, canvas.height)])
 
-    points = Config.load_calibration_points()
+    points: list[Point] = Config.load_calibration_points()
     if points:
         camera = Camera(draw_area, canvas, points, camera=config.camera)
     else:
         camera = Camera(draw_area, canvas, [Point(1, 0), Point(canvas.width, 0), Point(0, canvas.height),
                                             Point(canvas.width - 1, canvas.height)], camera=config.camera)
-    counter = 0
+    counter: int = 0
 
     hands = mp_hand.Hands(
             static_image_mode=False,
