@@ -114,6 +114,52 @@ def main(config: Settings):
                         if draw_area.is_position_in_calibration_area(camera_point):
                             point_on_canvas = draw_area.get_position_on_canvas(camera_point, canvas, camera)
 
+
+                            ############# MADS TEST!!! ################################
+                            print("top left:")
+                            topleft = draw_area.get_position_on_canvas(camera.sorted_calibration_points[0],canvas ,camera)
+                            print(int(topleft.x), int(topleft.y))
+
+                            print("top right:")
+                            topright = draw_area.get_position_on_canvas(camera.sorted_calibration_points[1],canvas, camera)
+                            print(int(topright.x), int(topright.y))
+
+                            print("bot left:")
+                            botleft = draw_area.get_position_on_canvas(camera.sorted_calibration_points[2], canvas, camera)
+                            print(int(botleft.x), int(botleft.y))
+
+                            print("bot right:")
+                            botright = draw_area.get_position_on_canvas(camera.sorted_calibration_points[3], canvas, camera)
+                            print(int(botright.x), int(botright.y))
+
+
+
+                            def norx(x):
+                                return ((float(x - topleft.x)) / (float(botright.x - topleft.x))) * camera.warped_width
+
+                            def nory(y):
+                                return ((float(y - topleft.y)) / (float(botright.y - topleft.y))) * camera.warped_height
+
+                            normalizedx = norx(point_on_canvas.x)
+                            normalizedy = nory(point_on_canvas.y)
+
+                            normalized_topleft = Point(norx(topleft.x), nory(topleft.y))
+                            normalized_topright = Point(norx(topright.x), nory(topright.y))
+                            normalized_botleft = Point(norx(botleft.x), nory(botleft.y))
+                            normalized_botright = Point(norx(botright.x), nory(botright.y))
+
+                            canvas.draw_line(normalized_topleft, normalized_topright, "RED", 4)
+                            canvas.draw_line(normalized_topright, normalized_botright, "RED", 4)
+                            canvas.draw_line(normalized_botright, normalized_botleft, "RED", 4)
+                            canvas.draw_line(normalized_botleft, normalized_topleft, "RED", 4)
+
+                            normal_point_on_canvas = Point(normalizedx, normalizedy)
+                            print(normal_point_on_canvas)
+
+                            #point_on_canvas = normal_point_on_canvas
+                            #############################################################
+
+
                             if drawing_point is None:
                                 drawing_point = point_on_canvas
 
