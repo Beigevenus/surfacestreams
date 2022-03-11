@@ -3,6 +3,7 @@ from typing import Optional
 
 from HandTracking.Point import Point
 from HandTracking.Vector import Vector
+from HandTracking.keypoint_classifier.keypoint_classifier import KeyPointClassifier
 
 
 class Hand:
@@ -14,6 +15,7 @@ class Hand:
                               "MIDDLE_FINGER": self.Finger(),
                               "RING_FINGER": self.Finger(),
                               "PINKY": self.Finger()}
+        self.keypoint_classifier = KeyPointClassifier()
 
     def update(self, landmarks) -> None:
         # TODO: Write docstring for method
@@ -95,6 +97,9 @@ class Hand:
 
         points.append(self.wrist)
         return points
+
+    def get_hand_sign(self, camera_frame, landmarks) -> str:
+        return self.keypoint_classifier.get_hand_sign(camera_frame, landmarks)
 
     class Finger:
         def __init__(self, mcp: Point = None, pip: Point = None, dip: Point = None, tip: Point = None,

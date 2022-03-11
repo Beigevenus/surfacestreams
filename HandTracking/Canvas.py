@@ -18,6 +18,11 @@ class Canvas:
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
         # self.move_window(2500)
 
+    def change_color(self, new_color, size = 5):
+        self.toolbox.color = new_color
+        self.toolbox.line_size = int(size)
+        self.toolbox.circle_size = int(size / 2)
+
     def resize(self, width: int, height: int) -> None:
         """
         Changes the width and height of the canvas resolution to the given lengths.
