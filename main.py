@@ -1,8 +1,4 @@
-from cmath import pi
-from turtle import shape
 from typing import NamedTuple, Optional
-
-from numpy import ndarray
 
 from HandTracking.Config import Config
 from HandTracking.utility import limit
@@ -96,17 +92,13 @@ def main(config: Settings):
                         #  accurate. One way to do this is to calculate the linear functions between the four
                         #  points, and then check whether a point is within the box that the lines create.
                         if draw_area.is_position_in_calibration_area(camera_point):
-                            point_on_canvas = draw_area.get_position_on_canvas(canvas.width, canvas.height,
-                                                                               camera.warped_width,
-                                                                               camera.warped_height, camera_point,
-                                                                               camera.ptm)
+                            point_on_canvas = DrawArea.get_position_on_canvas(camera_point, camera.ptm)
 
                             if drawing_point is None:
                                 drawing_point = point_on_canvas
 
                             if old_point is None:
                                 old_point = point_on_canvas
-
 
                 else:
                     old_point = None
@@ -121,9 +113,9 @@ def main(config: Settings):
                 mask_points = []
                 for point in hand.get_mask_points():
                     p = Point(point.x * camera.width, point.y * camera.height)
-                    mask_points.append(draw_area.get_position_on_canvas(0, 0, 0, 0, p, camera.ptm))
+                    mask_points.append(DrawArea.get_position_on_canvas(p, camera.ptm))
 
-                hand_mask.draw_points(mask_points)
+                hand_mask.draw_mask_points(mask_points)
 
         camera.show_frame()
 
@@ -137,7 +129,6 @@ def main(config: Settings):
                 hand_mask.image = res
         elif counter < 5:
             counter = counter + 1
-
 
         hand_mask.show()
         hand_mask.image = np.zeros(shape=[hand_mask.height, hand_mask.width, 4], dtype=np.uint8)
