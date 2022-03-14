@@ -105,8 +105,9 @@ class Camera:
         if len(self.calibration_points) <= 3:
             None
         else:
-            self.ptm, self.warped_width, self.warped_height = fpt(self.frame, self.sorted_calibration_points,
-                                                                  self.canvas.width, self.canvas.height)
+
+            self.ptm, self.warped_width, self.warped_height = fpt(self.sorted_calibration_points)
+
 
     def sort_calibration_points(self) -> List[Point]:
         """
