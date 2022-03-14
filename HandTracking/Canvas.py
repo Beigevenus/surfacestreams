@@ -60,7 +60,7 @@ class Canvas:
                  (int(point.x), int(point.y)),
                  self.toolbox.color[color], self.toolbox.line_size)
 
-    def draw_mask_points(self, points: list[Point]) -> None:
+    def draw_mask_points(self, points: list[Point], color: str, size: int) -> None:
         """
         Draws mask circles (black circles to cover the hand) at every point given.
 

@@ -90,7 +90,7 @@ def main(config: Settings) -> int:
                             (limit((float(hand.get_erasing_point().y) * camera.height), 0, camera.height)))
 
                         if draw_area.is_position_in_calibration_area(camera_point):
-                            point_on_canvas = draw_area.get_position_on_canvas(camera_point, canvas, camera)
+                            point_on_canvas = DrawArea.get_position_on_canvas(camera_point, canvas, camera)
 
                             if drawing_point is None:
                                 drawing_point = point_on_canvas
@@ -102,7 +102,7 @@ def main(config: Settings) -> int:
                         draw_size = 50
                         finger_tip_point = Point(hand.get_erasing_point().x * camera.width,
                                                  hand.get_drawing_point().y * camera.height)
-                        finger_tip_point_on_camera = draw_area.get_position_on_canvas(finger_tip_point, canvas, camera)
+                        finger_tip_point_on_camera = DrawArea.get_position_on_canvas(finger_tip_point, canvas, camera)
                         finger_dot = (finger_tip_point_on_camera, "RED")
 
                     elif hand.is_drawing():
@@ -117,19 +117,19 @@ def main(config: Settings) -> int:
 
                             ############# MADS TEST!!! ################################
                             print("top left:")
-                            topleft = draw_area.get_position_on_canvas(camera.sorted_calibration_points[0],canvas ,camera)
+                            topleft = DrawArea.get_position_on_canvas(camera.sorted_calibration_points[0],canvas ,camera)
                             print(int(topleft.x), int(topleft.y))
 
                             print("top right:")
-                            topright = draw_area.get_position_on_canvas(camera.sorted_calibration_points[1],canvas, camera)
+                            topright = DrawArea.get_position_on_canvas(camera.sorted_calibration_points[1],canvas, camera)
                             print(int(topright.x), int(topright.y))
 
                             print("bot left:")
-                            botleft = draw_area.get_position_on_canvas(camera.sorted_calibration_points[2], canvas, camera)
+                            botleft = DrawArea.get_position_on_canvas(camera.sorted_calibration_points[2], canvas, camera)
                             print(int(botleft.x), int(botleft.y))
 
                             print("bot right:")
-                            botright = draw_area.get_position_on_canvas(camera.sorted_calibration_points[3], canvas, camera)
+                            botright = DrawArea.get_position_on_canvas(camera.sorted_calibration_points[3], canvas, camera)
                             print(int(botright.x), int(botright.y))
 
 
@@ -158,7 +158,7 @@ def main(config: Settings) -> int:
                         draw_size = 5
                         finger_tip_point = Point(hand.get_drawing_point().x * camera.width,
                                                  hand.get_drawing_point().y * camera.height)
-                        finger_tip_point_on_camera = draw_area.get_position_on_canvas(finger_tip_point, canvas, camera)
+                        finger_tip_point_on_camera = DrawArea.get_position_on_canvas(finger_tip_point, canvas, camera)
                         finger_dot = (finger_tip_point_on_camera, "GREEN")
                     else:
                         finger_dot = None
@@ -180,9 +180,9 @@ def main(config: Settings) -> int:
                     p: Point = Point(point.x * camera.width, point.y * camera.height)
                     mask_points.append(DrawArea.get_position_on_canvas(p, canvas, camera))
 
-                hand_mask.draw_mask_points(mask_points, color='BLACK')
+                hand_mask.draw_mask_points(mask_points, 'BLACK', 5)
                 if finger_dot is not None:
-                    hand_mask.draw_points([finger_dot[0]], color=finger_dot[1], size=5)
+                    hand_mask.draw_mask_points([finger_dot[0]], finger_dot[1], 5)
 
 
         camera.show_frame()
