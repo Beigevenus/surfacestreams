@@ -46,7 +46,6 @@ class KeyPointClassifier(object):
 
         return result_index
 
-
     def get_hand_sign(self, camera_frame, hand_landmarks):
         landmark_list = self.calc_landmark_list(camera_frame, hand_landmarks)
         pre_processed_landmark_list = self.pre_process_landmark(
@@ -54,8 +53,6 @@ class KeyPointClassifier(object):
         hand_sign_id = self(pre_processed_landmark_list)
 
         return self.keypoint_classifier_labels[hand_sign_id]
-
-
 
     def pre_process_landmark(self, landmark_list):
         temp_landmark_list = copy.deepcopy(landmark_list)

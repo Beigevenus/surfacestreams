@@ -1,5 +1,9 @@
+from typing import Optional
+
+
 class PaintingToolbox:
-    def __init__(self, size=5, color=None):
+    def __init__(self, size: int = 5, color: Optional[list[int]] = None) -> None:
+
         if color is None:
             color = {}
             color['WHITE'] = [150, 150, 150, 255]

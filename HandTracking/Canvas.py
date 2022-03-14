@@ -3,10 +3,12 @@ import numpy as np
 from numpy import ndarray
 
 from HandTracking.PaintingToolbox import PaintingToolbox
+from HandTracking.Point import Point
 
 
 class Canvas:
-    def __init__(self, width=1920, height=1080, name='canvas', toolbox=PaintingToolbox()):
+    def __init__(self, width: int = 1920, height: int = 1080, name: str = 'canvas',
+                 toolbox: PaintingToolbox = PaintingToolbox()) -> None:
         self.width: int = width
         self.height: int = height
         self.toolbox: PaintingToolbox = toolbox
@@ -14,16 +16,16 @@ class Canvas:
         self.name: str = name
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
-        #self.move_window(2500)
+        # self.move_window(2500)
 
     def change_color(self, new_color, size = 5):
         self.toolbox.color = new_color
         self.toolbox.line_size = int(size)
         self.toolbox.circle_size = int(size / 2)
 
-    def resize(self, width, height) -> None:
+    def resize(self, width: int, height: int) -> None:
         """
-        Changes the width and height of the canvas window to the given lengths.
+        Changes the width and height of the canvas resolution to the given lengths.
 
         :param width: The desired width
         :param height: The desired height
@@ -37,6 +39,7 @@ class Canvas:
 
     # TODO: Make it so that the smoothing is an option, so that you can erase with ease
     def draw_line(self, previous_point, point, color, size) -> None:
+
         """
         Draws a circle at the current point, and a line between the old and current point.
 
@@ -56,24 +59,32 @@ class Canvas:
                  (int(point.x), int(point.y)),
                  self.toolbox.color[color], self.toolbox.line_size)
 
-    def draw_points(self, points, color, size = None) -> None:
+    def draw_mask_points(self, points: list[Point]) -> None:
+        """
+        Draws mask circles (black circles to cover the hand) at every point given.
+
+        :param points: A list of Point objects to draw mask circles at
+        """
         if size is None:
             size = int(self.toolbox.mask_circle_radius)
+
         for point in points:
             cv2.circle(self.image, (int(point.x), int(point.y)),
                        size, self.toolbox.color[color], cv2.FILLED)
 
     def show(self) -> None:
         """
-        TO BE WRITTEN.
+        Updates the shown canvas in its window.
         """
         cv2.imshow(self.name, cv2.flip(self.image, 1))
         self.__check_for_resize()
 
     def __check_for_resize(self) -> None:
         """
-        TO BE WRITTEN.
+        Checks if the dimensions of the canvas window has changed and update its resolution accordingly.
         """
+        width: int
+        height: int
         width, height = cv2.getWindowImageRect(self.name)[2:]
         if width != self.width or height != self.height:
             self.resize(width, height)
@@ -84,10 +95,11 @@ class Canvas:
         """
         cv2.setWindowProperty(self.name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-    def move_window(self, offsetx, offsety) -> None:
+    def move_window(self, offset_x: int, offset_y: int) -> None:
         """
         Moves the canvas window horizontally by the given offset.
 
-        :param offset: The number of pixels to move the window in the horizontal plane
+        :param offset_x: The number of pixels to move the window in the horizontal plane
+        :param offset_y: The number of pixels to move the window in the vertical plane
         """
-        cv2.moveWindow(self.name, offsetx, offsety)
+        cv2.moveWindow(self.name, offset_x, offset_y)

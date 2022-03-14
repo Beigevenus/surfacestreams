@@ -1,5 +1,3 @@
-from cmath import pi
-from turtle import shape
 from typing import NamedTuple, Optional
 
 from HandTracking.Config import Config
@@ -8,7 +6,7 @@ from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
 from HandTracking.Hand import Hand
 from HandTracking.Camera import Camera
-from HandTracking.Settings import runsettings as run_settings, Settings
+from HandTracking.Settings import run_settings as run_settings, Settings
 from HandTracking.DrawArea import DrawArea
 
 import cv2
@@ -23,11 +21,12 @@ mp_hand = mp.solutions.hands
 
 def main(config: Settings):
     # TODO: Remove when auto calibration is implemented
-    drawing_point = None
-    drawing_precision = 30
-    old_point: Point = None
+    drawing_point: Optional[Point] = None
+    drawing_precision: int = 30
+    old_point: Optional[Point] = None
     draw_color: str = 'WHITE'
     draw_size: int = 5
+
 
     hand: Hand = Hand(mp_hand)
     canvas: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height)
@@ -37,16 +36,16 @@ def main(config: Settings):
         hand_mask.fullscreen()
 
     # TODO: Make it able to handle vertical lines
-    draw_area = DrawArea(
+    draw_area: DrawArea = DrawArea(
         [Point(0 + 1, 0), Point(canvas.width, 0), Point(0, canvas.height), Point(canvas.width - 1, canvas.height)])
 
-    points = Config.load_calibration_points()
+    points: list[Point] = Config.load_calibration_points()
     if points:
         camera = Camera(draw_area, canvas, points, camera=config.camera)
     else:
         camera = Camera(draw_area, canvas, [Point(1, 0), Point(canvas.width, 0), Point(0, canvas.height),
                                             Point(canvas.width - 1, canvas.height)], camera=config.camera)
-    counter = 0
+    counter: int = 0
 
     hands = mp_hand.Hands(
             static_image_mode=False,
@@ -112,7 +111,7 @@ def main(config: Settings):
                             (round(limit((float(hand.get_drawing_point().y) * camera.height), 0, camera.height))))
 
                         if draw_area.is_position_in_calibration_area(camera_point):
-                            point_on_canvas = draw_area.get_position_on_canvas(camera_point, canvas, camera)
+                            point_on_canvas = DrawArea.get_position_on_canvas(camera_point, canvas, camera)
 
 
                             ############# MADS TEST!!! ################################
@@ -178,11 +177,12 @@ def main(config: Settings):
                 mask_points = []
                 for point in hand.get_mask_points():
                     p = Point(point.x * camera.width, point.y * camera.height)
-                    mask_points.append(draw_area.get_position_on_canvas(p, canvas, camera))
+                    mask_points.append(DrawArea.get_position_on_canvas(p, canvas, camera))
 
-                hand_mask.draw_points(mask_points, color='BLACK')
+                hand_mask.draw_mask_points(mask_points, color='BLACK')
                 if finger_dot is not None:
                     hand_mask.draw_points([finger_dot[0]], color=finger_dot[1], size=5)
+
 
         camera.show_frame()
 
@@ -196,7 +196,6 @@ def main(config: Settings):
                 hand_mask.image = res
         elif counter < 5:
             counter = counter + 1
-
 
         hand_mask.show()
         hand_mask.image = np.zeros(shape=[hand_mask.height, hand_mask.width, 4], dtype=np.uint8)
