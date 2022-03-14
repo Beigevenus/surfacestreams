@@ -134,27 +134,15 @@ def main(config: Settings):
 
 
 
-                            def norx(x):
-                                return ((float(x - topleft.x)) / (float(botright.x - topleft.x))) * camera.warped_width
+                            
 
-                            def nory(y):
-                                return ((float(y - topleft.y)) / (float(botright.y - topleft.y))) * camera.warped_height
+                            canvas.draw_line(topleft, topright, "RED", 4)
+                            canvas.draw_line(topright, botright, "RED", 4)
+                            canvas.draw_line(botright, botleft, "RED", 4)
+                            canvas.draw_line(botleft, topleft, "RED", 4)
 
-                            normalizedx = norx(point_on_canvas.x)
-                            normalizedy = nory(point_on_canvas.y)
-
-                            normalized_topleft = Point(norx(topleft.x), nory(topleft.y))
-                            normalized_topright = Point(norx(topright.x), nory(topright.y))
-                            normalized_botleft = Point(norx(botleft.x), nory(botleft.y))
-                            normalized_botright = Point(norx(botright.x), nory(botright.y))
-
-                            canvas.draw_line(normalized_topleft, normalized_topright, "RED", 4)
-                            canvas.draw_line(normalized_topright, normalized_botright, "RED", 4)
-                            canvas.draw_line(normalized_botright, normalized_botleft, "RED", 4)
-                            canvas.draw_line(normalized_botleft, normalized_topleft, "RED", 4)
-
-                            normal_point_on_canvas = Point(normalizedx, normalizedy)
-                            print(normal_point_on_canvas)
+                            # normal_point_on_canvas = Point(normalizedx, normalizedy)
+                            # print(normal_point_on_canvas)
 
                             #point_on_canvas = normal_point_on_canvas
                             #############################################################
