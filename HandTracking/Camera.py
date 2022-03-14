@@ -1,11 +1,11 @@
-from typing import List, Optional
+from typing import Optional
 
+import numpy as np
 from cv2 import VideoCapture
 from numpy import ndarray
 
 from HandTracking.Canvas import Canvas
 from HandTracking.Config import Config
-from HandTracking.DrawArea import DrawArea
 from HandTracking.Point import Point
 from HandTracking.image_wrap import four_point_transform as fpt
 
@@ -13,7 +13,7 @@ import cv2
 
 
 class Camera:
-    def __init__(self, draw_area: DrawArea, canvas: Canvas, calibration_points: list[Point], name: str = 'camera',
+    def __init__(self, canvas: Canvas, calibration_points: list[Point], name: str = 'camera',
                  camera: int = 0) -> None:
         # TODO: Needs to be dynamically found
         self.capture: VideoCapture = cv2.VideoCapture(camera)
@@ -24,14 +24,10 @@ class Camera:
         self.width: int = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.name: str = name
         self.ptm: Optional[ndarray] = None
-        self.warped_width: Optional[int] = None
-        self.warped_height: Optional[int] = None
-        self.draw_area: DrawArea = draw_area
         self.canvas: Canvas = canvas
 
         cv2.namedWindow(self.name)
         cv2.setMouseCallback(self.name, self.mouse_click)
-        self.draw_area.update_calibration_borders(self.sorted_calibration_points)
         self.update_image_ptm()
 
     def show_frame(self) -> None:
@@ -70,7 +66,6 @@ class Camera:
             elif len(self.calibration_points) == 3:
                 self.calibration_points.append(Point(x, y))
                 self.sorted_calibration_points = self.sort_calibration_points()
-                self.draw_area.update_calibration_borders(self.sorted_calibration_points)
                 self.update_image_ptm()
                 Config.save_calibration_points(self.calibration_points)
             else:
@@ -85,7 +80,7 @@ class Camera:
                        [255, 255, 0], cv2.FILLED)
 
     @staticmethod
-    def return_camera_indexes() -> List[int]:
+    def return_camera_indexes() -> list[int]:
         """
         Checks the 20 first camera devices, and if they are live, adds them to a list of usable cameras.
 
@@ -103,9 +98,9 @@ class Camera:
     def update_image_ptm(self) -> None:
         # TODO: Write docstring for method
         if not len(self.calibration_points) <= 3:
-            self.ptm, self.warped_width, self.warped_height = fpt(self.sorted_calibration_points)
+            self.ptm = fpt(self.sorted_calibration_points, self.canvas.width, self.canvas.height)
 
-    def sort_calibration_points(self) -> List[Point]:
+    def sort_calibration_points(self) -> list[Point]:
         """
         Sorts the list of calibration points using the following order:
         top left, top right, bottom left, bottom right.
@@ -141,3 +136,9 @@ class Camera:
             right_bot = temp
 
         return [left_top, right_top, left_bot, right_bot]
+
+    def transform_point(self, point):
+        # TODO: Write docstring for method
+        corrected_coordinates = np.matmul(self.ptm, [point.x, point.y, 1])
+
+        return Point(round(corrected_coordinates[0]), round(corrected_coordinates[1]))

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 from HandTracking.Canvas import Canvas
 from HandTracking.Point import Point
@@ -20,33 +22,6 @@ class DrawArea:
         self.right_border = self.get_line_attributes(calibration_points[1], calibration_points[3])
         self.top_border = self.get_line_attributes(calibration_points[0], calibration_points[1])
         self.bottom_border = self.get_line_attributes(calibration_points[2], calibration_points[3])
-
-    @staticmethod
-    def get_position_on_canvas(point, canvas: Canvas, camera):
-        """
-        Utilizes a perspective transformation matrix to convert a given point to a point in the warped view of
-        the camera.
-
-        :param point: The point to get the new position of
-        :param ptm: The perspective transformation matrix to use
-        :return: The new point in the warped view
-        """
-        # Does matrix multiplication on the perspective transform matrix and the original
-        # position of the finger on the camera
-        corrected_coordinates = np.matmul(camera.ptm, [
-            point.x,
-            point.y, 1])
-
-        ########################### Midlertidig løsning ############################
-        normalized_coordinates = Point(round(corrected_coordinates[0]) / camera.warped_width,
-                                       round(corrected_coordinates[1]) / camera.warped_height)
-
-        corrected_point = Point(round(normalized_coordinates.x * canvas.width),
-                                round(normalized_coordinates.y * canvas.height))
-
-        # x = canvas_width * (corrected_point.x / area_width)
-        # y = canvas_height * (corrected_point.y / area_height)
-        return corrected_point  # Point(x, y)
 
     def is_position_in_calibration_area(self, point: Point) -> bool:
         """

@@ -103,7 +103,7 @@ class Hand:
         """
         return self.fingers["INDEX_FINGER"].tip
 
-    def get_erasing_point(self) -> bool:
+    def get_erasing_point(self) -> Point:
         """
         Returns the position of the the tip of the thumb, currently used
         for simple erasing, before the utilization of a ML model to 
@@ -116,7 +116,6 @@ class Hand:
     def get_mask_points(self) -> list[Point]:
         # TODO: Write docstring for method
         points: list[Point] = []
-
 
         for finger in self.fingers.values():
             points.append(finger.mcp)

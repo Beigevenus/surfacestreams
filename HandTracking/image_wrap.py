@@ -31,7 +31,7 @@ def order_points(pts: ndarray) -> ndarray:
 
 
 # TODO: Refactor this to not abuse variables for multiple types
-def four_point_transform(points: list[Point]):
+def four_point_transform(points: list[Point], width: int, height: int):
     # TODO: Write docstring for function
     # put the points into an numpy array
     pts: list[list[float]] = []
@@ -43,20 +43,6 @@ def four_point_transform(points: list[Point]):
     # individually
     rect: ndarray = order_points(pts)
 
-    (tl, tr, br, bl) = rect
-	# compute the width of the new image, which will be the
-	# maximum distance between bottom-right and bottom-left
-	# x-coordiates or the top-right and top-left x-coordinates
-    widthA = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
-    widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
-    maxWidth = max(int(widthA), int(widthB))
-	# compute the height of the new image, which will be the
-	# maximum distance between the top-right and bottom-right
-	# y-coordinates or the top-left and bottom-left y-coordinates
-    heightA = np.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
-    heightB = np.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
-    maxHeight = max(int(heightA), int(heightB))
-
     # now that we have the dimensions of the new image, construct
     # the set of destination points to obtain a "birds eye view",
     # (i.e. top-down view) of the image, again specifying points
@@ -64,12 +50,12 @@ def four_point_transform(points: list[Point]):
     # order
     dst: ndarray = np.array([
         [0, 0],
-        [maxWidth - 1, 0],
-        [maxWidth - 1, maxHeight - 1],
-        [0, maxHeight - 1]], dtype="float32")
+        [width - 1, 0],
+        [width - 1, height - 1],
+        [0, height - 1]], dtype="float32")
 
     # compute the perspective transform matrix and then apply it
     m = cv2.getPerspectiveTransform(rect, dst)
 
     # return the warped image
-    return m, maxWidth, maxHeight
+    return m
