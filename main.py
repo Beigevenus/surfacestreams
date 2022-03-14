@@ -1,4 +1,5 @@
 from typing import NamedTuple, Optional
+from numpy import ndarray
 
 from HandTracking.Config import Config
 from HandTracking.utility import limit
@@ -19,14 +20,14 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_hand = mp.solutions.hands
 
 
-def main(config: Settings):
+def main(config: Settings) -> int:
     # TODO: Remove when auto calibration is implemented
     drawing_point: Optional[Point] = None
     drawing_precision: int = 30
     old_point: Optional[Point] = None
+    point_on_canvas: Optional[Point] = None
     draw_color: str = 'WHITE'
     draw_size: int = 5
-
 
     hand: Hand = Hand(mp_hand)
     canvas: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height)
@@ -176,7 +177,7 @@ def main(config: Settings):
                 # Mask for removing the hand
                 mask_points = []
                 for point in hand.get_mask_points():
-                    p = Point(point.x * camera.width, point.y * camera.height)
+                    p: Point = Point(point.x * camera.width, point.y * camera.height)
                     mask_points.append(DrawArea.get_position_on_canvas(p, canvas, camera))
 
                 hand_mask.draw_mask_points(mask_points, color='BLACK')
@@ -188,8 +189,8 @@ def main(config: Settings):
 
         # TODO: Save the black spots so we can save the spots
         if counter >= 5:
-            cannervasser = copy.deepcopy(canvas.image)
-            res = cannervasser
+            canvas_copy: ndarray = copy.deepcopy(canvas.image)
+            res = canvas_copy
             layer2 = hand_mask.image[:, :, 3] > 0
             if res.shape[0] == hand_mask.image.shape[0]:
                 res[layer2] = hand_mask.image[layer2]

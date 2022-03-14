@@ -102,12 +102,9 @@ class Camera:
 
     def update_image_ptm(self) -> None:
         # TODO: Write docstring for method
-        if len(self.calibration_points) <= 3:
-            None
-        else:
-
-            self.ptm, self.warped_width, self.warped_height = fpt(self.sorted_calibration_points)
-
+        if not len(self.calibration_points) <= 3:
+            self.ptm, self.warped_width, self.warped_height = fpt(self.sorted_calibration_points,
+                                                                  self.canvas.width, self.canvas.height)
 
     def sort_calibration_points(self) -> List[Point]:
         """

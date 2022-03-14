@@ -1,5 +1,4 @@
 import numpy as np
-from numpy import polyfit
 from HandTracking.Camera import Camera
 from HandTracking.Canvas import Canvas
 

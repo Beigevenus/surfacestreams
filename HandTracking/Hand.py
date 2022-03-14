@@ -1,4 +1,3 @@
-import math
 from typing import Optional
 
 from HandTracking.Point import Point
@@ -68,6 +67,7 @@ class Hand:
                 if not finger.is_stretched():
                     return False
             elif key == "THUMB":
+                # TODO: Stop ignoring thumb at some point
                 None
             else:
                 if finger.is_stretched():

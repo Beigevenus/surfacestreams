@@ -18,7 +18,8 @@ class Canvas:
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
         # self.move_window(2500)
 
-    def change_color(self, new_color, size = 5):
+    def change_color(self, new_color: list[int], size: int = 5):
+        # TODO: Write docstring for method
         self.toolbox.color = new_color
         self.toolbox.line_size = int(size)
         self.toolbox.circle_size = int(size / 2)

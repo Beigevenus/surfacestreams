@@ -42,7 +42,6 @@ def four_point_transform(points: list[Point]):
     # obtain a consistent order of the points and unpack them
     # individually
     rect: ndarray = order_points(pts)
-    (tl, tr, br, bl) = rect
 
     # now that we have the dimensions of the new image, construct
     # the set of destination points to obtain a "birds eye view",

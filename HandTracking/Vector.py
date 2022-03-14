@@ -1,5 +1,3 @@
-import math
-
 from HandTracking.Point import Point
 
 
@@ -21,7 +19,6 @@ class Vector:
         """
         return (self.x * other.x) + (self.y * other.y)
 
-    # TODO: Vulnerable to DivisionByZeroError, fix this
     def angle_between(self, other: 'Vector') -> float:
         """
         Calculates and returns the cosine of the angle between two vectors, namely, itself and other.
@@ -29,4 +26,8 @@ class Vector:
         :param other: The vector to calculate the angle to
         :return: The angle between self and other
         """
-        return (self.dot(other)) / (self.length * other.length)
+        if self.length == 0 or other.length == 0:
+            # If either length is zero, there's no angle between the vectors
+            return 1
+        else:
+            return (self.dot(other)) / (self.length * other.length)
