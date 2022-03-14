@@ -37,10 +37,14 @@ def main(config: Settings) -> int:
 
     points: list[Point] = Config.load_calibration_points()
     if points:
-        camera = Camera(canvas, points, camera=config.camera)
+        camera = Camera(points, camera=config.camera)
     else:
-        camera = Camera(canvas, [Point(1, 0), Point(canvas.width, 0), Point(0, canvas.height),
-                                 Point(canvas.width - 1, canvas.height)], camera=config.camera)
+        camera = Camera([Point(1, 0), Point(canvas.width, 0), Point(0, canvas.height),
+                         Point(canvas.width - 1, canvas.height)], camera=config.camera)
+
+    camera.update_image_ptm(canvas.width, canvas.height)
+    cv2.setMouseCallback(camera.name, mouse_click)
+
     counter: int = 0
 
     hands = mp_hand.Hands(
@@ -209,6 +213,13 @@ def main(config: Settings) -> int:
             return 1
 
     camera.capture.release()
+
+
+# TODO: Figure out how to pass camera and canvas objects to the event
+def mouse_click(event, x, y, flags, param) -> None:
+    # TODO: Write docstring for function
+    if event == cv2.EVENT_LBUTTONUP:
+        camera.update_calibration_point(Point(x, y), canvas.width, canvas.height)
 
 
 if __name__ == "__main__":

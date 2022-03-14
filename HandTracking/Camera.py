@@ -13,8 +13,7 @@ import cv2
 
 
 class Camera:
-    def __init__(self, canvas: Canvas, calibration_points: list[Point], name: str = 'camera',
-                 camera: int = 0) -> None:
+    def __init__(self, calibration_points: list[Point], name: str = 'camera', camera: int = 0) -> None:
         # TODO: Needs to be dynamically found
         self.capture: VideoCapture = cv2.VideoCapture(camera)
         self.calibration_points: list[Point] = calibration_points
@@ -24,11 +23,8 @@ class Camera:
         self.width: int = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.name: str = name
         self.ptm: Optional[ndarray] = None
-        self.canvas: Canvas = canvas
 
         cv2.namedWindow(self.name)
-        cv2.setMouseCallback(self.name, self.mouse_click)
-        self.update_image_ptm()
 
     def show_frame(self) -> None:
         """
@@ -49,27 +45,17 @@ class Camera:
             return self.frame
         return None
 
-    def mouse_click(self, event, x, y, flags, param) -> None:
-        """
-        Sets the calibration points from the x and y position of the mouse.
-        If 4 are set, an additional left click of the mouse will clear them.
-
-        :param event: An object containing the type of the event
-        :param x: The x position of the mouse
-        :param y: The y position of the mouse
-        :param flags: Currently unused
-        :param param: Currently unused
-        """
-        if event == cv2.EVENT_LBUTTONUP:
-            if len(self.calibration_points) > 3:
-                self.calibration_points.clear()
-            elif len(self.calibration_points) == 3:
-                self.calibration_points.append(Point(x, y))
-                self.sorted_calibration_points = self.sort_calibration_points()
-                self.update_image_ptm()
-                Config.save_calibration_points(self.calibration_points)
-            else:
-                self.calibration_points.append(Point(x, y))
+    def update_calibration_point(self, point: Point, width: int, height: int) -> None:
+        # TODO: Write docstring for method
+        if len(self.calibration_points) > 3:
+            self.calibration_points.clear()
+        elif len(self.calibration_points) == 3:
+            self.calibration_points.append(point)
+            self.sorted_calibration_points = self.sort_calibration_points()
+            self.update_image_ptm(width, height)
+            Config.save_calibration_points(self.calibration_points)
+        else:
+            self.calibration_points.append(point)
 
     def draw_calibration_points(self) -> None:
         """
@@ -95,10 +81,10 @@ class Camera:
                 cap.release()
         return arr
 
-    def update_image_ptm(self) -> None:
+    def update_image_ptm(self, width: int, height: int) -> None:
         # TODO: Write docstring for method
         if not len(self.calibration_points) <= 3:
-            self.ptm = fpt(self.sorted_calibration_points, self.canvas.width, self.canvas.height)
+            self.ptm = fpt(self.sorted_calibration_points, width, height)
 
     def sort_calibration_points(self) -> list[Point]:
         """
