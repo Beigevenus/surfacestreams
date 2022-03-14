@@ -1,9 +1,4 @@
-from typing import cast
-from unittest.mock import patch
-
 from HandTracking.Camera import Camera
-from HandTracking.Canvas import Canvas
-from HandTracking.DrawArea import DrawArea
 from HandTracking.Point import Point
 import pytest
 
