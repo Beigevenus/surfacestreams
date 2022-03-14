@@ -38,7 +38,9 @@ class Canvas:
         self.width = width
         self.height = height
 
-    def draw_line(self, previous_point: Point, point: Point) -> None:
+    # TODO: Make it so that the smoothing is an option, so that you can erase with ease
+    def draw_line(self, previous_point, point, color, size) -> None:
+
         """
         Draws a circle at the current point, and a line between the old and current point.
 
@@ -47,14 +49,16 @@ class Canvas:
         """
         if previous_point is None:
             previous_point = point
+        
+        self.toolbox.line_size = size
 
         cv2.circle(self.image, (int(point.x), int(point.y)),
-                   int(self.toolbox.circle_size), self.toolbox.color, cv2.FILLED)
+                   int(self.toolbox.circle_size), self.toolbox.color[color], cv2.FILLED)
 
         # Draws line between old index finger tip position, and actual position
         cv2.line(self.image, (int(previous_point.x), int(previous_point.y)),
                  (int(point.x), int(point.y)),
-                 self.toolbox.color, self.toolbox.line_size)
+                 self.toolbox.color[color], self.toolbox.line_size)
 
     def draw_mask_points(self, points: list[Point]) -> None:
         """
@@ -62,9 +66,12 @@ class Canvas:
 
         :param points: A list of Point objects to draw mask circles at
         """
+        if size is None:
+            size = int(self.toolbox.mask_circle_radius)
+
         for point in points:
             cv2.circle(self.image, (int(point.x), int(point.y)),
-                       int(self.toolbox.mask_circle), self.toolbox.mask_color, cv2.FILLED)
+                       size, self.toolbox.color[color], cv2.FILLED)
 
     def show(self) -> None:
         """

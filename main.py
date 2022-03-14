@@ -26,6 +26,8 @@ def main(config: Settings) -> int:
     drawing_precision: int = 30
     old_point: Optional[Point] = None
     point_on_canvas: Optional[Point] = None
+    draw_color: str = 'WHITE'
+    draw_size: int = 5
 
     hand: Hand = Hand(mp_hand)
     canvas: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height)
@@ -80,21 +82,15 @@ def main(config: Settings) -> int:
 
                 hand.update(hand_landmarks)
 
-                print(hand.get_hand_sign(camera.frame, hand_landmarks))
-
                 # The actual check whether the program should be drawing or not
-                if hand.is_drawing():
-                    if len(camera.calibration_points) > 3:
+                if len(camera.calibration_points) > 3:
+                    if hand.is_erasing():
                         camera_point: Point = Point(
-                            (limit((float(hand.get_drawing_point().x) * camera.width), 0, camera.width)),
-                            (limit((float(hand.get_drawing_point().y) * camera.height), 0, camera.height)))
+                            (limit((float(hand.get_erasing_point().x) * camera.width), 0, camera.width)),
+                            (limit((float(hand.get_erasing_point().y) * camera.height), 0, camera.height)))
 
-                        # TODO: This is also the reason why the accuracy is bad, if it is not a rectangular
-                        #  shaped box. This is where the finger will be registered, so this needs to be more
-                        #  accurate. One way to do this is to calculate the linear functions between the four
-                        #  points, and then check whether a point is within the box that the lines create.
                         if draw_area.is_position_in_calibration_area(camera_point):
-                            point_on_canvas = DrawArea.get_position_on_canvas(camera_point, camera.ptm)
+                            point_on_canvas = draw_area.get_position_on_canvas(camera_point, canvas, camera)
 
                             if drawing_point is None:
                                 drawing_point = point_on_canvas
@@ -102,22 +98,92 @@ def main(config: Settings) -> int:
                             if old_point is None:
                                 old_point = point_on_canvas
 
+                        draw_color = 'BLACK'
+                        draw_size = 50
+                        finger_tip_point = Point(hand.get_erasing_point().x * camera.width,
+                                                 hand.get_drawing_point().y * camera.height)
+                        finger_tip_point_on_camera = draw_area.get_position_on_canvas(finger_tip_point, canvas, camera)
+                        finger_dot = (finger_tip_point_on_camera, "RED")
+
+                    elif hand.is_drawing():
+                        print(hand.get_drawing_point())
+                        camera_point: Point = Point(
+                            (round(limit((float(hand.get_drawing_point().x) * camera.width), 0, camera.width))),
+                            (round(limit((float(hand.get_drawing_point().y) * camera.height), 0, camera.height))))
+
+                        if draw_area.is_position_in_calibration_area(camera_point):
+                            point_on_canvas = DrawArea.get_position_on_canvas(camera_point, canvas, camera)
+
+
+                            ############# MADS TEST!!! ################################
+                            print("top left:")
+                            topleft = draw_area.get_position_on_canvas(camera.sorted_calibration_points[0],canvas ,camera)
+                            print(int(topleft.x), int(topleft.y))
+
+                            print("top right:")
+                            topright = draw_area.get_position_on_canvas(camera.sorted_calibration_points[1],canvas, camera)
+                            print(int(topright.x), int(topright.y))
+
+                            print("bot left:")
+                            botleft = draw_area.get_position_on_canvas(camera.sorted_calibration_points[2], canvas, camera)
+                            print(int(botleft.x), int(botleft.y))
+
+                            print("bot right:")
+                            botright = draw_area.get_position_on_canvas(camera.sorted_calibration_points[3], canvas, camera)
+                            print(int(botright.x), int(botright.y))
+
+
+
+                            
+
+                            canvas.draw_line(topleft, topright, "RED", 4)
+                            canvas.draw_line(topright, botright, "RED", 4)
+                            canvas.draw_line(botright, botleft, "RED", 4)
+                            canvas.draw_line(botleft, topleft, "RED", 4)
+
+                            # normal_point_on_canvas = Point(normalizedx, normalizedy)
+                            # print(normal_point_on_canvas)
+
+                            #point_on_canvas = normal_point_on_canvas
+                            #############################################################
+
+
+                            if drawing_point is None:
+                                drawing_point = point_on_canvas
+
+                            if old_point is None:
+                                old_point = point_on_canvas
+
+                        draw_color = 'WHITE'
+                        draw_size = 5
+                        finger_tip_point = Point(hand.get_drawing_point().x * camera.width,
+                                                 hand.get_drawing_point().y * camera.height)
+                        finger_tip_point_on_camera = draw_area.get_position_on_canvas(finger_tip_point, canvas, camera)
+                        finger_dot = (finger_tip_point_on_camera, "GREEN")
+                    else:
+                        finger_dot = None
+
                 else:
                     old_point = None
                     drawing_point = None
+                    finger_dot = None
 
                 if drawing_point is not None:
                     if drawing_point.distance_to(point_on_canvas) > drawing_precision:
                         drawing_point = drawing_point.offset_to(point_on_canvas, 2)
-                        canvas.draw_line(old_point, drawing_point)
+                        canvas.draw_line(old_point, drawing_point, draw_color, draw_size)
                         old_point = drawing_point
 
+                # Mask for removing the hand
                 mask_points = []
                 for point in hand.get_mask_points():
                     p: Point = Point(point.x * camera.width, point.y * camera.height)
-                    mask_points.append(DrawArea.get_position_on_canvas(p, camera.ptm))
+                    mask_points.append(DrawArea.get_position_on_canvas(p, canvas, camera))
 
-                hand_mask.draw_mask_points(mask_points)
+                hand_mask.draw_mask_points(mask_points, color='BLACK')
+                if finger_dot is not None:
+                    hand_mask.draw_points([finger_dot[0]], color=finger_dot[1], size=5)
+
 
         camera.show_frame()
 
