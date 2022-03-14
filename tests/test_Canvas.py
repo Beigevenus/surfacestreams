@@ -1,3 +1,5 @@
+import numpy as np
+
 from HandTracking.Canvas import Canvas
 import pytest
 
@@ -8,7 +10,7 @@ class TestCanvas:
     @pytest.mark.parametrize("width, height", [(-1920, 1080), (1920, -1080)])
     def test_resize_negative_raises_value_error(self, width, height):
         # Arrange
-        canvas: Canvas = Canvas()
+        canvas: Canvas = Canvas.__new__(Canvas)
 
         # Act & Assert
         with pytest.raises(ValueError):
@@ -17,7 +19,7 @@ class TestCanvas:
     @pytest.mark.parametrize("width, height", [(0, 1080), (1920, 0)])
     def test_resize_zero_raises_value_error(self, width, height):
         # Arrange
-        canvas: Canvas = Canvas()
+        canvas: Canvas = Canvas.__new__(Canvas)
 
         # Act & Assert
         with pytest.raises(ValueError):
@@ -28,7 +30,8 @@ class TestCanvas:
                                                                                 (3840, 2160, 3840, 2160)])
     def test_resize_positive_successful(self, width, height, expected_width, expected_height):
         # Arrange
-        canvas: Canvas = Canvas()
+        canvas: Canvas = Canvas.__new__(Canvas)
+        canvas.image = np.zeros(shape=[height, width, 4], dtype=np.uint8)
 
         # Act
         canvas.resize(width, height)

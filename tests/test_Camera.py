@@ -27,12 +27,11 @@ class TestCamera:
                               (Point(10, 11), Point(70, 85), Point(50, 0), Point(20, 120),
                                [Point(10, 11), Point(50, 0), Point(20, 120), Point(70, 85)])
                               ])
-    @patch.object(Camera, "__init__", lambda obj, draw_area, canvas, cal_points: None)
     def test_sort_calibration_points(self, point1: Point, point2: Point, point3: Point, point4: Point,
                                      expected_order: list[Point]):
         # Arrange
         calibration_points: list[Point] = [point1, point2, point3, point4]
-        camera: Camera = Camera(cast(DrawArea, None), cast(Canvas, None), cast(list[Point], None))
+        camera: Camera = Camera.__new__(Camera)
         camera.calibration_points = calibration_points
 
         # Act
