@@ -51,33 +51,18 @@ class Point:
         calculation: float = (self.x - other.x) ** 2 + (self.y - other.y) ** 2
         return sqrt(calculation)
 
-    def offset_to(self, other: 'Point', precision: int = 2) -> 'Point':
+    def next_point_to(self, other: 'Point', precision: int = 3) -> 'Point':
         # TODO: Write docstring for method
-        point: Point = self.midpoint_to(other)
+        point: Point = self.__midpoint_to(other)
 
         for i in range(0, precision):
-            point = self.midpoint_to(point)
+            point = self.__midpoint_to(point)
 
         return point
 
-    def midpoint_to(self, other) -> 'Point':
+    def __midpoint_to(self, other) -> 'Point':
         # TODO: Write docstring for method
         return Point((self.x + other.x)/2, (self.y + other.y)/2)
-
-    def get_position_on_canvas(self, area_width: int, area_height: int, canvas_width: int,
-                               canvas_height: int) -> 'Point':
-        """
-        Gets the position of the Point in the actual canvas given its current position.
-
-        :param area_width: The width of the area the current Point exists within
-        :param area_height: The height of the area the current Point exists within
-        :param canvas_width: The width of the canvas
-        :param canvas_height: The height of the canvas
-        :return: A new Point object with coordinates corresponding to the position on the canvas
-        """
-        x: float = canvas_width * (canvas_width * (self.x / area_width) / canvas_width)
-        y: float = canvas_height * (canvas_height * (self.y / area_height) / canvas_height)
-        return Point(x, y)
 
     def as_list(self) -> list[float]:
         """

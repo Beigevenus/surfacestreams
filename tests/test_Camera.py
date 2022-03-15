@@ -8,19 +8,19 @@ x_fail = pytest.mark.xfail
 class TestCamera:
     @pytest.mark.parametrize('point1, point2, point3, point4, expected_order',
                              [(Point(10, 11), Point(50, 0), Point(70, 85), Point(20, 120),
-                               [Point(10, 11), Point(50, 0), Point(20, 120), Point(70, 85)]),
+                               [Point(10, 11), Point(50, 0), Point(70, 85), Point(20, 120)]),
                               (Point(10, 11), Point(50, 0), Point(20, 120), Point(70, 85),
-                               [Point(10, 11), Point(50, 0), Point(20, 120), Point(70, 85)]),
+                               [Point(10, 11), Point(50, 0), Point(70, 85), Point(20, 120)]),
                               (Point(10, 11), Point(70, 85), Point(50, 0), Point(20, 120),
-                               [Point(10, 11), Point(50, 0), Point(20, 120), Point(70, 85)]),
+                               [Point(10, 11), Point(50, 0), Point(70, 85), Point(20, 120)]),
                               (Point(10, 11), Point(70, 85), Point(20, 120), Point(50, 0),
-                               [Point(10, 11), Point(50, 0), Point(20, 120), Point(70, 85)]),
+                               [Point(10, 11), Point(50, 0), Point(70, 85), Point(20, 120)]),
                               (Point(10, 11), Point(50, 0), Point(70, 85), Point(20, 120),
-                               [Point(10, 11), Point(50, 0), Point(20, 120), Point(70, 85)]),
+                               [Point(10, 11), Point(50, 0), Point(70, 85), Point(20, 120)]),
                               (Point(20, 120), Point(10, 11), Point(50, 0), Point(70, 85),
-                               [Point(10, 11), Point(50, 0), Point(20, 120), Point(70, 85)]),
+                               [Point(10, 11), Point(50, 0), Point(70, 85), Point(20, 120)]),
                               (Point(10, 11), Point(70, 85), Point(50, 0), Point(20, 120),
-                               [Point(10, 11), Point(50, 0), Point(20, 120), Point(70, 85)])
+                               [Point(10, 11), Point(50, 0), Point(70, 85), Point(20, 120)])
                               ])
     def test_sort_calibration_points(self, point1: Point, point2: Point, point3: Point, point4: Point,
                                      expected_order: list[Point]):

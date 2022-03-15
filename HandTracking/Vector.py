@@ -1,6 +1,7 @@
 from HandTracking.Point import Point
 
 
+# TODO: delete when the model work
 class Vector:
     def __init__(self, start_p: Point, end_p: Point) -> None:
         self.x: float = end_p.x - start_p.x

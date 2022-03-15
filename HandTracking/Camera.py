@@ -121,7 +121,7 @@ class Camera:
             right_top = right_bot
             right_bot = temp
 
-        return [left_top, right_top, left_bot, right_bot]
+        return [left_top, right_top, right_bot, left_bot]
 
     def transform_point(self, point):
         # TODO: Write docstring for method

@@ -18,12 +18,6 @@ class Canvas:
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
         # self.move_window(2500)
 
-    def change_color(self, new_color: list[int], size: int = 5):
-        # TODO: Write docstring for method
-        self.toolbox.color = new_color
-        self.toolbox.line_size = int(size)
-        self.toolbox.circle_size = int(size / 2)
-
     def resize(self, width: int, height: int) -> None:
         """
         Changes the width and height of the canvas resolution to the given lengths.
@@ -39,7 +33,7 @@ class Canvas:
         self.height = height
 
     # TODO: Make it so that the smoothing is an option, so that you can erase with ease
-    def draw_line(self, previous_point, point, color, size) -> None:
+    def draw_line(self, previous_point, point) -> None:
 
         """
         Draws a circle at the current point, and a line between the old and current point.
@@ -49,16 +43,14 @@ class Canvas:
         """
         if previous_point is None:
             previous_point = point
-        
-        self.toolbox.line_size = size
 
         cv2.circle(self.image, (int(point.x), int(point.y)),
-                   int(self.toolbox.circle_size), self.toolbox.color[color], cv2.FILLED)
+                   int(self.toolbox.circle_size), self.toolbox.current_color, cv2.FILLED)
 
         # Draws line between old index finger tip position, and actual position
         cv2.line(self.image, (int(previous_point.x), int(previous_point.y)),
                  (int(point.x), int(point.y)),
-                 self.toolbox.color[color], self.toolbox.line_size)
+                 self.toolbox.current_color, self.toolbox.line_size)
 
     def draw_mask_points(self, points: list[Point], color: str, size: int) -> None:
         """

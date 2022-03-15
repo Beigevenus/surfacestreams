@@ -11,7 +11,7 @@ class Settings:
     def __init__(self, monitor: Monitor = Monitor(width=640, height=360, x=0, y=0), fullscreen: int = 1,
                  camera: int = 0) -> None:
         self.monitor: Monitor = monitor
-        self.isFullscreen: int = fullscreen
+        self.is_fullscreen: int = fullscreen
         self.camera: int = camera
 
     @classmethod
@@ -27,7 +27,7 @@ class Settings:
                                    x=dictionary["monitor"]["x"],
                                    y=dictionary["monitor"]["y"])
 
-        return Settings(monitor, dictionary["isFullscreen"], dictionary["camera"])
+        return Settings(monitor, dictionary["is_fullscreen"], dictionary["camera"])
 
     def to_dict(self) -> dict:
         """
@@ -88,18 +88,6 @@ class SettingsApp:
         self.Webcambox.current(0)
         self.Webcambox['state'] = 'readonly'
 
-        # calibrate hand stuff
-        self.Hand = ttk.Button(self.toplevel1)
-        self.Hand.configure(text='Calibrate hand')
-        self.Hand.pack(anchor='w', padx='10', pady='10', side='top')
-        self.Hand.configure(command=self.calibrate_hands)
-
-        # calibrate corners stuff
-        self.Corner = ttk.Button(self.toplevel1)
-        self.Corner.configure(text='Calibrate corners')
-        self.Corner.pack(anchor='w', padx='10', pady='10', side='top')
-        self.Corner.configure(command=self.calibrate_corners)
-
         # cancel button stuff
         self.Cancel = ttk.Button(self.toplevel1)
         self.Cancel.configure(text='Cancel')
@@ -129,12 +117,7 @@ class SettingsApp:
 
         return self.appliedSettings
 
-    def calibrate_hands(self) -> None:
-        pass
-
-    def calibrate_corners(self) -> None:
-        pass
-
+    # TODO: make it destroy everything
     def cancel(self) -> None:
         """
         Closes the settings window.
@@ -146,7 +129,7 @@ class SettingsApp:
         Saves the chosen values in memory as well as calling the writing to a config file.
         """
         self.appliedSettings.monitor = self.monitor_list[self.selected_monitor.get()]
-        self.appliedSettings.isFullscreen = int(self.radioVar.get())
+        self.appliedSettings.is_fullscreen = int(self.radioVar.get())
         self.appliedSettings.camera = int(self.selected_cam.get())
         if int(self.radioVar.get()) == 0:
             self.appliedSettings.monitor.width = 640

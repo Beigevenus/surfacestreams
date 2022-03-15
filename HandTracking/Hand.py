@@ -45,14 +45,6 @@ class Hand:
         for finger in self.fingers.values():
             finger.distance_to_wrist = self.wrist.distance_to(finger.tip)
 
-    def set_finger_length(self) -> None:
-        """
-        Sets the length of each finger and their stretched guard.
-        """
-        for finger in self.fingers.values():
-            finger.length = finger.distance_to_wrist
-            finger.stretched_guard = 0.9 * finger.length
-
     def is_drawing(self) -> bool:
         """
         Determines whether the hand is in 'drawing mode' or not, depending on the position of the fingers.
