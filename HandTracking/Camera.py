@@ -128,3 +128,11 @@ class Camera:
         corrected_coordinates = np.matmul(self.ptm, [point.x, point.y, 1])
 
         return Point(round(corrected_coordinates[0]), round(corrected_coordinates[1]))
+
+    def convert_point_to_res(self, point: Point):
+        # TODO: If needed add limit and round to the x and y
+        # TODO: Add docstring
+        return Point(point.x * self.width, point.y * self.height)
+
+    def calibration_is_done(self):
+        return len(self.calibration_points) > 3

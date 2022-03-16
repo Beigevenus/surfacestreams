@@ -1,7 +1,6 @@
 from typing import Optional
 
 from HandTracking.Point import Point
-from HandTracking.Vector import Vector
 from HandTracking.keypoint_classifier.keypoint_classifier import KeyPointClassifier
 
 
@@ -36,57 +35,7 @@ class Hand:
                     Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_TIP"]]),
                     self.wrist)
 
-        # self.calc_distances()
-
-    def calc_distances(self) -> None:
-        """
-        Calculates the distance from each finger to the wrist and saves them.
-        """
-        for finger in self.fingers.values():
-            finger.distance_to_wrist = self.wrist.distance_to(finger.tip)
-
-    def is_drawing(self) -> bool:
-        """
-        Determines whether the hand is in 'drawing mode' or not, depending on the position of the fingers.
-        Drawing mode is defined as a stretched index finger, and all other fingers being bent.
-
-        :return: Whether the hand is drawing or not
-        """
-        # TODO: Optimize. we ignore thumb for now
-        one_extra: bool = False
-        for key, finger in self.fingers.items():
-            if key == "INDEX_FINGER":
-                if not finger.is_stretched():
-                    return False
-            elif key == "THUMB":
-                # TODO: Stop ignoring thumb at some point
-                None
-            else:
-                if finger.is_stretched():
-                    if one_extra:
-                        return False
-                    else:
-                        one_extra = True
-        return True
-    
-    def is_erasing(self) -> bool:
-        """
-        Determines whether the hand is in 'erasing mode' or not, depending on the position of the fingers.
-        Drawing mode is defined as a stretched index, middle and ring finger, with the pinky not stretched.
-
-        :return: Whether the hand is erasing or not
-        """
-        # TODO: Optimize. we ignore thumb for now
-        for key, finger in self.fingers.items():
-            if key == "THUMB":
-                if not finger.is_stretched():
-                    return False
-            else:
-                if finger.is_stretched():
-                    return False
-        return True
-
-    def get_drawing_point(self) -> Point:
+    def get_index_tip(self) -> Point:
         """
         Returns the position of the part of the hand that is used for drawing.
         Currently, this is the tip of the index finger.
@@ -94,16 +43,6 @@ class Hand:
         :return: The Point that is used for drawing
         """
         return self.fingers["INDEX_FINGER"].tip
-
-    def get_erasing_point(self) -> Point:
-        """
-        Returns the position of the the tip of the thumb, currently used
-        for simple erasing, before the utilization of a ML model to 
-        recognize positions and gestures
-
-        :return: The Point that is used for erasing
-        """
-        return self.fingers["THUMB"].tip
 
     def get_mask_points(self) -> list[Point]:
         # TODO: Write docstring for method
@@ -134,22 +73,6 @@ class Hand:
 
         def __str__(self) -> str:
             return f"({self.mcp}, {self.pip}, {self.dip}, {self.tip})"
-
-        def is_stretched(self) -> bool:
-            """
-            Determines whether a finger is stretched or not.
-
-            :return: Whether the finger is stretched or not
-            """
-            if self.pip is None or self.mcp is None or self.tip is None:
-                return False
-
-            a: Vector = Vector(self.tip, self.pip)
-            b: Vector = Vector(self.pip, self.wrist)
-            angle: float = a.angle_between(b)
-            if angle > 0:
-                return True
-            return False
 
         def update_finger(self, mcp: Point = None, pip: Point = None, dip: Point = None, tip: Point = None,
                           wrist: Point = None):
