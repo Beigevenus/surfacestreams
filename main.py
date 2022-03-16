@@ -33,9 +33,9 @@ def main(config: Settings) -> int:
     if config.is_fullscreen == 1:
         hand_mask.fullscreen()
 
-    points: list[Point] = Config.load_calibration_points()
-    if points:
-        camera = Camera(points, camera=config.camera)
+    cal_points: list[Point] = Config.load_calibration_points()
+    if cal_points:
+        camera = Camera(cal_points, camera=config.camera)
     else:
         camera = Camera([Point(1, 0), Point(canvas.width, 0), Point(0, canvas.height),
                          Point(canvas.width - 1, canvas.height)], camera=config.camera)
@@ -62,7 +62,7 @@ def main(config: Settings) -> int:
 
         camera.show_frame()
 
-        # TODO: Save the black spots so we can save the spots
+        # TODO: Save the black spots so we can remember the last seen hand position
         counter = update_hand_mask(counter, canvas, hand_mask)
 
         status = check_key_presses(canvas, camera)
@@ -75,10 +75,11 @@ def main(config: Settings) -> int:
     camera.capture.release()
 
 
-def analyse_frame(camera, hands, hand, canvas, hand_mask, drawing_point, old_point, drawing_precision, point_on_canvas: Optional[Point], draw_color: str = 'WHITE', draw_size: int = 5):
+def analyse_frame(camera, hands, hand, canvas, hand_mask, drawing_point, old_point, drawing_precision, point_on_canvas: Optional[Point]):
     camera.frame = cv2.cvtColor(camera.frame, cv2.COLOR_BGR2RGB)
 
     camera.frame.flags.writeable = False
+    # TODO: make highlighting work again
     hand_position: NamedTuple = hands.process(camera.frame)
     camera.frame.flags.writeable = True
 
@@ -127,30 +128,7 @@ def analyse_frame(camera, hands, hand, canvas, hand_mask, drawing_point, old_poi
 
                     point_on_canvas = camera.transform_point(camera_point)
 
-                    # MADS TEST!!!
-                    print("top left:")
-                    top_left = camera.transform_point(camera.sorted_calibration_points[0])
-                    print(int(top_left.x), int(top_left.y))
-
-                    print("top right:")
-                    top_right = camera.transform_point(camera.sorted_calibration_points[1])
-                    print(int(top_right.x), int(top_right.y))
-
-                    print("bot left:")
-                    bot_left = camera.transform_point(camera.sorted_calibration_points[2])
-                    print(int(bot_left.x), int(bot_left.y))
-
-                    print("bot right:")
-                    bot_right = camera.transform_point(camera.sorted_calibration_points[3])
-                    print(int(bot_right.x), int(bot_right.y))
-
-                    canvas.draw_line(top_left, top_right)
-                    canvas.draw_line(top_right, bot_right)
-                    canvas.draw_line(bot_right, bot_left)
-                    canvas.draw_line(bot_left, top_left)
-
-                    #############################################################
-
+                    print_red_lines(camera, canvas)
                     if drawing_point is None:
                         drawing_point = point_on_canvas
 
@@ -188,6 +166,30 @@ def analyse_frame(camera, hands, hand, canvas, hand_mask, drawing_point, old_poi
                 hand_mask.draw_mask_points([finger_dot[0]], finger_dot[1], 5)
 
     return drawing_point, old_point, point_on_canvas
+
+
+def print_red_lines(camera: Camera, canvas: Canvas):
+    # MADS TEST!!!
+    print("top left:")
+    top_left = camera.transform_point(camera.sorted_calibration_points[0])
+    print(int(top_left.x), int(top_left.y))
+
+    print("top right:")
+    top_right = camera.transform_point(camera.sorted_calibration_points[1])
+    print(int(top_right.x), int(top_right.y))
+
+    print("bot left:")
+    bot_left = camera.transform_point(camera.sorted_calibration_points[2])
+    print(int(bot_left.x), int(bot_left.y))
+
+    print("bot right:")
+    bot_right = camera.transform_point(camera.sorted_calibration_points[3])
+    print(int(bot_right.x), int(bot_right.y))
+
+    canvas.draw_line(top_left, top_right)
+    canvas.draw_line(top_right, bot_right)
+    canvas.draw_line(bot_right, bot_left)
+    canvas.draw_line(bot_left, top_left)
 
 
 def update_hand_mask(counter, canvas, hand_mask):

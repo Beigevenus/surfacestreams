@@ -5,7 +5,7 @@ from numpy import ndarray
 from HandTracking.PaintingToolbox import PaintingToolbox
 from HandTracking.Point import Point
 
-
+# TODO: lots of new layers
 class Canvas:
     def __init__(self, width: int = 1920, height: int = 1080, name: str = 'canvas',
                  toolbox: PaintingToolbox = PaintingToolbox()) -> None:
