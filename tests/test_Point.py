@@ -21,32 +21,3 @@ class TestPoint:
 
         # Assert
         assert round(distance, 4) == expected_distance
-
-    @pytest.mark.parametrize("x, y, area_width, area_height, canvas_width, canvas_height, expected_x, expected_y",
-                             [(30, 65, 1280, 720, 1920, 1080, 45.0000, 97.5000),
-                              (8, 3, 600, 400, 1280, 720, 17.0667, 5.4000),
-                              (-14, 52, 3840, 2160, 2560, 1440, -9.3333, 34.6667)])
-    def test_get_position_on_canvas(self, x, y, area_width, area_height, canvas_width, canvas_height, expected_x,
-                                    expected_y):
-        # Arrange
-        point: Point = Point(x, y)
-
-        # Act
-        actual: Point = point.get_position_on_canvas(area_width, area_height, canvas_width, canvas_height)
-
-        # Assert
-        assert round(actual.x, 4) == expected_x
-        assert round(actual.y, 4) == expected_y
-
-    @pytest.mark.parametrize("area_width, area_height, canvas_width, canvas_height", [(0, 720, 1920, 1080),
-                                                                                      (1280, 0, 1920, 1080),
-                                                                                      (1280, 720, 0, 1080),
-                                                                                      (1280, 720, 1920, 0)])
-    def test_get_position_on_canvas_raises_zero_division_error(self, area_width, area_height, canvas_width,
-                                                               canvas_height):
-        # Arrange
-        point: Point = Point(40, 60)
-
-        # Act & Assert
-        with pytest.raises(ZeroDivisionError):
-            point.get_position_on_canvas(area_width, area_height, canvas_width, canvas_height)

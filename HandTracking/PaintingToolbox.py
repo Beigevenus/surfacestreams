@@ -12,3 +12,20 @@ class PaintingToolbox:
         self.circle_size: int = int(size/2)
         self.color: dict = color
         self.mask_circle_radius: int = int(size * 12)
+        self.current_color = self.color['WHITE']
+
+    def change_color(self, new_color: str):
+        # TODO: Write docstring for method
+        try:
+            self.current_color = self.color[new_color]
+        except KeyError:
+            self.current_color = self.color['WHITE']
+
+    def change_color_rgba(self, new_color: list[int]):
+        # TODO: Write docstring for method
+        self.current_color = new_color
+
+    def change_line_size(self, size: int = 5):
+        # TODO: Write docstring for method
+        self.line_size = int(size)
+        self.circle_size = int(size / 2)

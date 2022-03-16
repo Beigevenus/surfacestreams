@@ -1,11 +1,11 @@
-from typing import List, Optional
+from typing import Optional
 
+import numpy as np
 from cv2 import VideoCapture
 from numpy import ndarray
 
 from HandTracking.Canvas import Canvas
 from HandTracking.Config import Config
-from HandTracking.DrawArea import DrawArea
 from HandTracking.Point import Point
 from HandTracking.image_wrap import four_point_transform as fpt
 
@@ -13,8 +13,7 @@ import cv2
 
 
 class Camera:
-    def __init__(self, draw_area: DrawArea, canvas: Canvas, calibration_points: list[Point], name: str = 'camera',
-                 camera: int = 0) -> None:
+    def __init__(self, calibration_points: list[Point], name: str = 'camera', camera: int = 0) -> None:
         # TODO: Needs to be dynamically found
         self.capture: VideoCapture = cv2.VideoCapture(camera)
         self.calibration_points: list[Point] = calibration_points
@@ -24,15 +23,8 @@ class Camera:
         self.width: int = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.name: str = name
         self.ptm: Optional[ndarray] = None
-        self.warped_width: Optional[int] = None
-        self.warped_height: Optional[int] = None
-        self.draw_area: DrawArea = draw_area
-        self.canvas: Canvas = canvas
 
         cv2.namedWindow(self.name)
-        cv2.setMouseCallback(self.name, self.mouse_click)
-        self.draw_area.update_calibration_borders(self.sorted_calibration_points)
-        self.update_image_ptm()
 
     def show_frame(self) -> None:
         """
@@ -53,28 +45,17 @@ class Camera:
             return self.frame
         return None
 
-    def mouse_click(self, event, x, y, flags, param) -> None:
-        """
-        Sets the calibration points from the x and y position of the mouse.
-        If 4 are set, an additional left click of the mouse will clear them.
-
-        :param event: An object containing the type of the event
-        :param x: The x position of the mouse
-        :param y: The y position of the mouse
-        :param flags: Currently unused
-        :param param: Currently unused
-        """
-        if event == cv2.EVENT_LBUTTONUP:
-            if len(self.calibration_points) > 3:
-                self.calibration_points.clear()
-            elif len(self.calibration_points) == 3:
-                self.calibration_points.append(Point(x, y))
-                self.sorted_calibration_points = self.sort_calibration_points()
-                self.draw_area.update_calibration_borders(self.sorted_calibration_points)
-                self.update_image_ptm()
-                Config.save_calibration_points(self.calibration_points)
-            else:
-                self.calibration_points.append(Point(x, y))
+    def update_calibration_point(self, point: Point, width: int, height: int) -> None:
+        # TODO: Write docstring for method
+        if len(self.calibration_points) > 3:
+            self.calibration_points.clear()
+        elif len(self.calibration_points) == 3:
+            self.calibration_points.append(point)
+            self.sorted_calibration_points = self.sort_calibration_points()
+            self.update_image_ptm(width, height)
+            Config.save_calibration_points(self.calibration_points)
+        else:
+            self.calibration_points.append(point)
 
     def draw_calibration_points(self) -> None:
         """
@@ -85,7 +66,7 @@ class Camera:
                        [255, 255, 0], cv2.FILLED)
 
     @staticmethod
-    def return_camera_indexes() -> List[int]:
+    def return_camera_indexes() -> list[int]:
         """
         Checks the 20 first camera devices, and if they are live, adds them to a list of usable cameras.
 
@@ -100,12 +81,12 @@ class Camera:
                 cap.release()
         return arr
 
-    def update_image_ptm(self) -> None:
+    def update_image_ptm(self, width: int, height: int) -> None:
         # TODO: Write docstring for method
         if not len(self.calibration_points) <= 3:
-            self.ptm, self.warped_width, self.warped_height = fpt(self.sorted_calibration_points)
+            self.ptm = fpt(self.sorted_calibration_points, width, height)
 
-    def sort_calibration_points(self) -> List[Point]:
+    def sort_calibration_points(self) -> list[Point]:
         """
         Sorts the list of calibration points using the following order:
         top left, top right, bottom left, bottom right.
@@ -140,4 +121,10 @@ class Camera:
             right_top = right_bot
             right_bot = temp
 
-        return [left_top, right_top, left_bot, right_bot]
+        return [left_top, right_top, right_bot, left_bot]
+
+    def transform_point(self, point):
+        # TODO: Write docstring for method
+        corrected_coordinates = np.matmul(self.ptm, [point.x, point.y, 1])
+
+        return Point(round(corrected_coordinates[0]), round(corrected_coordinates[1]))
