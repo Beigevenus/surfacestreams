@@ -103,62 +103,25 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
             hand.update(hand_landmarks)
 
             # The actual check whether the program should be drawing or not
-            if len(camera.calibration_points) > 3:
-                if hand.is_erasing():
-                    camera_point: Point = Point(
-                        (limit((float(hand.get_erasing_point().x) * camera.width), 0, camera.width)),
-                        (limit((float(hand.get_erasing_point().y) * camera.height), 0, camera.height)))
+            if camera.calibration_is_done():
+                # TODO: Add erasing when working on the wheel
+                hand_sign: str = hand.get_hand_sign(camera.frame, hand_landmarks)
+                if hand_sign == "Pointer":
+                    point_on_camera = camera.convert_point_to_res(hand.get_index_tip())
+                    point_on_canvas = camera.transform_point(point_on_camera)
 
-                    point_on_canvas = camera.transform_point(camera_point)
+                    drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
+                                                             drawing_point, old_point, drawing_precision)
 
-                    if drawing_point is None:
-                        drawing_point = point_on_canvas
-
-                    if old_point is None:
-                        old_point = point_on_canvas
-
-                    canvas.get_layer("DRAWING").toolbox.change_color('BLACK')
-                    canvas.get_layer("DRAWING").toolbox.change_line_size(50)
-                    finger_tip_point = Point(hand.get_erasing_point().x * camera.width,
-                                             hand.get_drawing_point().y * camera.height)
-                    finger_tip_point_on_camera = camera.transform_point(finger_tip_point)
-                    finger_dot = (finger_tip_point_on_camera, "RED")
-
-                elif hand.is_drawing():
-                    print(hand.get_drawing_point())
-                    camera_point: Point = Point(
-                        (round(limit((float(hand.get_drawing_point().x) * camera.width), 0, camera.width))),
-                        (round(limit((float(hand.get_drawing_point().y) * camera.height), 0, camera.height))))
-
-                    point_on_canvas = camera.transform_point(camera_point)
-
-                    canvas.print_calibration_cross(camera)
-
-                    if drawing_point is None:
-                        drawing_point = point_on_canvas
-
-                    if old_point is None:
-                        old_point = point_on_canvas
-
-                    canvas.get_layer("DRAWING").toolbox.change_color('WHITE')
-                    canvas.get_layer("DRAWING").toolbox.change_line_size(3)
-                    finger_tip_point = Point(hand.get_drawing_point().x * camera.width,
-                                             hand.get_drawing_point().y * camera.height)
-                    finger_tip_point_on_camera = camera.transform_point(finger_tip_point)
-                    finger_dot = (finger_tip_point_on_camera, "GREEN")
                 else:
-                    finger_dot = None
+                    old_point = None
+                    drawing_point = None
 
-            else:
-                old_point = None
-                drawing_point = None
-                finger_dot = None
+                if hand_sign == "Close":
+                    pass
 
-            if drawing_point is not None:
-                if drawing_point.distance_to(point_on_canvas) > drawing_precision:
-                    drawing_point = drawing_point.next_point_to(point_on_canvas, 2)
-                    canvas.get_layer("DRAWING").draw_line(old_point, drawing_point)
-                    old_point = drawing_point
+                if hand_sign == "Open":
+                    pass
 
             # Mask for removing the hand
             mask_points = []
@@ -166,6 +129,9 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                 p: Point = Point(point.x * camera.width, point.y * camera.height)
                 mask_points.append(camera.transform_point(p))
 
+#             if point_on_canvas is not None:
+#                 canvas.toolbox.change_color('GREEN')
+#                 hand_mask.draw_point(point_on_canvas)
             canvas.draw_mask_points(mask_points)
             if finger_dot is not None:
                 canvas.draw_mask_points([finger_dot[0]])
@@ -218,6 +184,27 @@ def mouse_click(camera, width, height, event, x, y, flags, param) -> None:
     # TODO: Write docstring for function
     if event == cv2.EVENT_LBUTTONUP:
         camera.update_calibration_point(Point(x, y), width, height)
+
+
+def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, old_point: Point,
+                  drawing_precision: int):
+
+    if drawing_point is None:
+        drawing_point = point_on_canvas
+
+    if old_point is None:
+        old_point = point_on_canvas
+
+    canvas.get_layer("DRAWING").toolbox.change_color('WHITE')
+    canvas.get_layer("DRAWING").toolbox.change_line_size(3)
+
+    if drawing_point is not None:
+        if drawing_point.distance_to(point_on_canvas) > drawing_precision:
+            drawing_point = drawing_point.next_point_to(point_on_canvas, 2)
+            canvas.get_layer("DRAWING").draw_line(old_point, drawing_point)
+            old_point = drawing_point
+
+    return drawing_point, old_point
 
 
 if __name__ == "__main__":
