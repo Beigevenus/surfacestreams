@@ -15,12 +15,12 @@ class Canvas:
         self.width: int = width
         self.height: int = height
         self.name: str = name
-        self.layers: dict[str, Layer] = {"MASK": Layer(width, height, PaintingToolbox(50, current_color="BLACK"))}
+        self.layers: dict[str, Layer] = {"MASK": Layer(width, height, PaintingToolbox(50, current_color="RED"))}
 
         # TODO: Remove when it is no longer necessary
         self.create_layer("CAL_CROSS", PaintingToolbox(5, current_color="RED"))
 
-        cv2.namedWindow("Canvas", cv2.WINDOW_NORMAL)
+        cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
         # self.move_window(2500)
 
     def create_layer(self, name: str, toolbox: PaintingToolbox) -> None:
@@ -43,17 +43,9 @@ class Canvas:
         combined_image: ndarray = np.zeros(shape=[self.height, self.width, 4], dtype=np.uint8)
 
         for layer in self.layers.values():
-            src_rgb = layer.image[..., :3]
-            dst_rgb = combined_image[..., :3]
+            src_a = layer.image[..., 3] > 0
 
-            src_a = layer.image[..., 3] / 255.0
-            dst_a = combined_image[..., 3] / 255.0
-
-            out_a = src_a + dst_a * (1 - src_a)
-            out_rgb = (src_rgb * src_a[..., np.newaxis] + dst_rgb * dst_a[..., np.newaxis] *
-                       (1 - src_a[..., np.newaxis])) / out_a[..., np.newaxis]
-
-            combined_image = np.dstack((out_rgb, out_a * 255)).astype(np.uint8)
+            combined_image[src_a] = layer.image[src_a]
 
         return combined_image
 
@@ -67,7 +59,7 @@ class Canvas:
         if width <= 0 or height <= 0:
             raise ValueError("Width and height of a resized canvas must be larger than 0.")
 
-        for layer in self.layers:
+        for name, layer in self.layers.items():
             layer.image = cv2.resize(layer.image, (width, height), interpolation=cv2.INTER_AREA)
             layer.width = width
             layer.height = height

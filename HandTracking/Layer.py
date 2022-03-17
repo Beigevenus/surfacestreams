@@ -10,12 +10,12 @@ class Layer:
     def __init__(self, width: int, height: int, toolbox: PaintingToolbox):
         self.width: int = width
         self.height: int = height
-        self.image: ndarray = np.zeros(shape=[height, width, 4], dtype=np.uint8)
+        self.image: ndarray = np.full(shape=[height, width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
         self.toolbox: PaintingToolbox = toolbox
 
     def wipe(self) -> None:
         # TODO: Write docstring for method
-        self.image: ndarray = np.zeros(shape=[self.height, self.width, 4], dtype=np.uint8)
+        self.image: ndarray = np.full(shape=[self.height, self.width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
 
     # TODO: Make it so that the smoothing is an option, so that you can erase with ease
     def draw_line(self, previous_point: Point, point: Point) -> None:
