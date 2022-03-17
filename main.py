@@ -133,8 +133,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
 #                 canvas.toolbox.change_color('GREEN')
 #                 hand_mask.draw_point(point_on_canvas)
             canvas.draw_mask_points(mask_points)
-            if finger_dot is not None:
-                canvas.draw_mask_points([finger_dot[0]])
+            canvas.print_calibration_cross(camera)
 
     return drawing_point, old_point, point_on_canvas
 

@@ -6,7 +6,7 @@ class PaintingToolbox:
     def __init__(self, size: int = 5, colors: Optional[dict[str, list[int]]] = None,
                  current_color: str = "WHITE") -> None:
         color_palette = {'WHITE': [150, 150, 150, 255], 'BLACK': [1, 1, 1, 1], 'RED': [0, 0, 255, 255],
-                         'GREEN': [0, 255, 0, 255]}
+                         'GREEN': [0, 255, 0, 255], 'BLUE': [255, 0, 0, 255]}
 
         if colors:
             for name, color in colors.items():
