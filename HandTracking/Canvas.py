@@ -1,26 +1,57 @@
+from typing import Optional
+
 import cv2
 import numpy as np
 from numpy import ndarray
 
+from HandTracking.Camera import Camera
+from HandTracking.Layer import Layer
 from HandTracking.PaintingToolbox import PaintingToolbox
 from HandTracking.Point import Point
 
-# TODO: lots of new layers
+
 class Canvas:
-    def __init__(self, width: int = 1920, height: int = 1080, name: str = 'canvas',
-                 toolbox: PaintingToolbox = PaintingToolbox()) -> None:
+    def __init__(self, name, width: int = 1920, height: int = 1080) -> None:
         self.width: int = width
         self.height: int = height
-        self.toolbox: PaintingToolbox = toolbox
-        self.image: ndarray = np.zeros(shape=[height, width, 4], dtype=np.uint8)
         self.name: str = name
+        self.layers: dict[str, Layer] = {"MASK": Layer(width, height, PaintingToolbox(50, current_color="RED"))}
+
+        # TODO: Remove when it is no longer necessary
+        self.create_layer("CAL_CROSS", PaintingToolbox(5, current_color="RED"))
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
         # self.move_window(2500)
 
+    def create_layer(self, name: str, toolbox: PaintingToolbox) -> None:
+        # TODO: Write docstring for method
+        self.layers[name] = Layer(self.width, self.height, toolbox)
+
+    def delete_layer(self, name: str) -> None:
+        # TODO: Write docstring for method
+        self.layers.pop(name)
+
+    def get_layer(self, name: str) -> Optional[Layer]:
+        # TODO: Write docstring for method
+        try:
+            return self.layers[name]
+        except KeyError:
+            return None
+
+    def combine_layers(self) -> ndarray:
+        # TODO: Write docstring for method
+        combined_image: ndarray = np.zeros(shape=[self.height, self.width, 4], dtype=np.uint8)
+
+        for layer in self.layers.values():
+            src_a = layer.image[..., 3] > 0
+
+            combined_image[src_a] = layer.image[src_a]
+
+        return combined_image
+
     def resize(self, width: int, height: int) -> None:
         """
-        Changes the width and height of the canvas resolution to the given lengths.
+        Changes the width and height of the canvas resolution and its layers to the given lengths.
 
         :param width: The desired width
         :param height: The desired height
@@ -28,48 +59,25 @@ class Canvas:
         if width <= 0 or height <= 0:
             raise ValueError("Width and height of a resized canvas must be larger than 0.")
 
-        self.image = cv2.resize(self.image, (width, height), interpolation=cv2.INTER_AREA)
+        for name, layer in self.layers.items():
+            layer.image = cv2.resize(layer.image, (width, height), interpolation=cv2.INTER_AREA)
+            layer.width = width
+            layer.height = height
+
         self.width = width
         self.height = height
 
-    # TODO: Make it so that the smoothing is an option, so that you can erase with ease
-    def draw_line(self, previous_point, point) -> None:
-
-        """
-        Draws a circle at the current point, and a line between the old and current point.
-
-        :param previous_point: The start position of the line segment
-        :param point: The end position of the line segment
-        """
-        if previous_point is None:
-            previous_point = point
-
-        cv2.circle(self.image, (int(point.x), int(point.y)),
-                   int(self.toolbox.circle_size), self.toolbox.current_color, cv2.FILLED)
-
-        # Draws line between old index finger tip position, and actual position
-        cv2.line(self.image, (int(previous_point.x), int(previous_point.y)),
-                 (int(point.x), int(point.y)),
-                 self.toolbox.current_color, self.toolbox.line_size)
-
-    def draw_mask_points(self, points: list[Point], color: str, size: int) -> None:
-        """
-        Draws mask circles (black circles to cover the hand) at every point given.
-
-        :param points: A list of Point objects to draw mask circles at
-        """
-        if size is None:
-            size = int(self.toolbox.mask_circle_radius)
+    def draw_mask_points(self, points: list[Point]) -> None:
+        # TODO: Write docstring for method
 
         for point in points:
-            cv2.circle(self.image, (int(point.x), int(point.y)),
-                       size, self.toolbox.color[color], cv2.FILLED)
+            self.layers["MASK"].draw_circle(point)
 
     def show(self) -> None:
         """
         Updates the shown canvas in its window.
         """
-        cv2.imshow(self.name, cv2.flip(self.image, 1))
+        cv2.imshow(self.name, cv2.flip(self.combine_layers(), 1))
         self.__check_for_resize()
 
     def __check_for_resize(self) -> None:
@@ -96,3 +104,26 @@ class Canvas:
         :param offset_y: The number of pixels to move the window in the vertical plane
         """
         cv2.moveWindow(self.name, offset_x, offset_y)
+
+    # TODO: Remove when it is no longer necessary
+    def print_calibration_cross(self, camera: Camera):
+        print("top left:")
+        top_left = camera.transform_point(camera.sorted_calibration_points[0])
+        print(int(top_left.x), int(top_left.y))
+
+        print("top right:")
+        top_right = camera.transform_point(camera.sorted_calibration_points[1])
+        print(int(top_right.x), int(top_right.y))
+
+        print("bot left:")
+        bot_left = camera.transform_point(camera.sorted_calibration_points[2])
+        print(int(bot_left.x), int(bot_left.y))
+
+        print("bot right:")
+        bot_right = camera.transform_point(camera.sorted_calibration_points[3])
+        print(int(bot_right.x), int(bot_right.y))
+
+        self.layers["CAL_CROSS"].draw_line(top_left, top_right)
+        self.layers["CAL_CROSS"].draw_line(top_right, bot_right)
+        self.layers["CAL_CROSS"].draw_line(bot_right, bot_left)
+        self.layers["CAL_CROSS"].draw_line(bot_left, top_left)

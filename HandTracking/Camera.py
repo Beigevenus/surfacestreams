@@ -4,7 +4,6 @@ import numpy as np
 from cv2 import VideoCapture
 from numpy import ndarray
 
-from HandTracking.Canvas import Canvas
 from HandTracking.Config import Config
 from HandTracking.Point import Point
 from HandTracking.image_wrap import four_point_transform as fpt
