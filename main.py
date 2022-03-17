@@ -2,6 +2,9 @@ from collections import namedtuple
 from typing import Optional
 
 from HandTracking.Config import Config
+from HandTracking.PaintingToolbox import PaintingToolbox
+from HandTracking.MenuWheel import MenuWheel
+from HandTracking.Layer import Layer
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
 from HandTracking.Hand import Hand
@@ -40,9 +43,12 @@ def main(config: Settings) -> int:
     camera.update_image_ptm(canvas.width, canvas.height)
     cv2.setMouseCallback(camera.name, lambda event, x, y, flags, param: mouse_click(camera, canvas.width,
                                                                                     canvas.height, event, x,
-                                                                                    y))
+                                                                                    y, flags, param))
 
     counter: int = 0
+
+    canvas.create_layer('MENU_WHEEL', PaintingToolbox(), 0)
+    menu_wheel = MenuWheel(canvas.get_layer('MENU_WHEEL'))
 
     hands = mp_hand.Hands(
         static_image_mode=False,
@@ -77,7 +83,6 @@ def main(config: Settings) -> int:
 
 def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing_precision,
                   point_on_canvas: Optional[Point]):
-    # TODO: Write docstring for function
     camera.frame = cv2.cvtColor(camera.frame, cv2.COLOR_BGR2RGB)
 
     camera.frame.flags.writeable = False
@@ -109,7 +114,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                     drawing_point = None
 
                 if hand_sign == "Close":
-                    pass
+                    menu_wheel
 
                 if hand_sign == "Open":
                     pass
@@ -196,7 +201,6 @@ def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, 
     if drawing_point is not None:
         if drawing_point.distance_to(point_on_canvas) > drawing_precision:
             drawing_point = drawing_point.next_point_to(point_on_canvas, 2)
-            # Color is white
             canvas.get_layer("DRAWING").draw_line(old_point, drawing_point, "WHITE", 3)
             old_point = drawing_point
 
