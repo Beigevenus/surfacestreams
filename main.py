@@ -2,7 +2,8 @@ from typing import NamedTuple, Optional
 
 from HandTracking.Config import Config
 from HandTracking.PaintingToolbox import PaintingToolbox
-from HandTracking.utility import limit
+from HandTracking.MenuWheel import MenuWheel
+from HandTracking.Layer import Layer
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
 from HandTracking.Hand import Hand
@@ -47,6 +48,9 @@ def main(config: Settings) -> int:
 
     counter: int = 0
 
+    canvas.create_layer('MENU_WHEEL', PaintingToolbox(), 0)
+    menu_wheel = MenuWheel(canvas.get_layer('MENU_WHEEL'))
+
     hands = mp_hand.Hands(
         static_image_mode=False,
         max_num_hands=1,
@@ -61,7 +65,8 @@ def main(config: Settings) -> int:
             continue
 
         drawing_point, old_point, point_on_canvas = analyse_frame(camera, hands, hand, canvas, drawing_point,
-                                                                  old_point, drawing_precision, point_on_canvas)
+                                                                  old_point, drawing_precision, point_on_canvas,
+                                                                  menu_wheel)
 
         camera.show_frame()
 
@@ -79,7 +84,7 @@ def main(config: Settings) -> int:
 
 
 def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing_precision,
-                  point_on_canvas: Optional[Point]):
+                  point_on_canvas: Optional[Point], menu_wheel):
     camera.frame = cv2.cvtColor(camera.frame, cv2.COLOR_BGR2RGB)
 
     camera.frame.flags.writeable = False
@@ -118,7 +123,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                     drawing_point = None
 
                 if hand_sign == "Close":
-                    pass
+                    menu_wheel
 
                 if hand_sign == "Open":
                     pass
