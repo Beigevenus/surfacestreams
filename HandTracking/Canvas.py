@@ -15,7 +15,7 @@ class Canvas:
         self.width: int = width
         self.height: int = height
         self.name: str = name
-        self.layers: dict[str, Layer] = {"MASK": Layer(width, height, PaintingToolbox(50, current_color="BLACK"))}
+        self.layers: list[(str, Layer)] = [("MASK", Layer(width, height, PaintingToolbox(50, current_color="BLACK")))]
 
         # TODO: Remove when it is no longer necessary
         self.create_layer("CAL_CROSS", PaintingToolbox(5, current_color="BLUE"))
@@ -23,26 +23,41 @@ class Canvas:
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
         # self.move_window(2500)
 
-    def create_layer(self, name: str, toolbox: PaintingToolbox) -> None:
+    def create_layer(self, name: str, toolbox: PaintingToolbox, position: int = -1) -> None:
         # TODO: Write docstring for method
-        self.layers[name] = Layer(self.width, self.height, toolbox)
+        if position == -1:
+            self.layers.append((name, Layer(self.width, self.height, toolbox)))
+        else:
+            self.layers.insert(position, (name, Layer(self.width, self.height, toolbox)))
 
     def delete_layer(self, name: str) -> None:
         # TODO: Write docstring for method
-        self.layers.pop(name)
+        layer = self.find_layer(name)
+
+        if layer:
+            self.layers.remove(layer)
 
     def get_layer(self, name: str) -> Optional[Layer]:
         # TODO: Write docstring for method
-        try:
-            return self.layers[name]
-        except KeyError:
+        layer = self.find_layer(name)
+
+        if layer:
+            return self.find_layer(name)[1]
+        else:
             return None
+
+    def find_layer(self, name: str) -> Optional[tuple[str, Layer]]:
+        # TODO: Write docstring for method
+        for layer_name, layer in self.layers:
+            if name == layer_name:
+                return layer_name, layer
+        return None
 
     def combine_layers(self) -> ndarray:
         # TODO: Write docstring for method
         combined_image: ndarray = np.zeros(shape=[self.height, self.width, 4], dtype=np.uint8)
 
-        for layer in self.layers.values():
+        for name, layer in self.layers[::-1]:
             src_a = layer.image[..., 3] > 0
 
             combined_image[src_a] = layer.image[src_a]
@@ -59,7 +74,7 @@ class Canvas:
         if width <= 0 or height <= 0:
             raise ValueError("Width and height of a resized canvas must be larger than 0.")
 
-        for name, layer in self.layers.items():
+        for name, layer in self.layers:
             layer.image = cv2.resize(layer.image, (width, height), interpolation=cv2.INTER_AREA)
             layer.width = width
             layer.height = height
@@ -71,7 +86,7 @@ class Canvas:
         # TODO: Write docstring for method
 
         for point in points:
-            self.layers["MASK"].draw_circle(point)
+            self.get_layer("MASK").draw_circle(point)
 
     def show(self) -> None:
         """
@@ -123,7 +138,8 @@ class Canvas:
         bot_right = camera.transform_point(camera.sorted_calibration_points[3])
         print(int(bot_right.x), int(bot_right.y))
 
-        self.layers["CAL_CROSS"].draw_line(top_left, top_right)
-        self.layers["CAL_CROSS"].draw_line(top_right, bot_right)
-        self.layers["CAL_CROSS"].draw_line(bot_right, bot_left)
-        self.layers["CAL_CROSS"].draw_line(bot_left, top_left)
+        self.get_layer("CAL_CROSS").wipe()
+        self.get_layer("CAL_CROSS").draw_line(top_left, top_right)
+        self.get_layer("CAL_CROSS").draw_line(top_right, bot_right)
+        self.get_layer("CAL_CROSS").draw_line(bot_right, bot_left)
+        self.get_layer("CAL_CROSS").draw_line(bot_left, top_left)
