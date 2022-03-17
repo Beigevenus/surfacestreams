@@ -1,7 +1,7 @@
 from typing import NamedTuple, Optional
-from numpy import ndarray
 
 from HandTracking.Config import Config
+from HandTracking.PaintingToolbox import PaintingToolbox
 from HandTracking.utility import limit
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
@@ -11,8 +11,6 @@ from HandTracking.Settings import run_settings as run_settings, Settings
 
 import cv2
 import mediapipe as mp
-import numpy as np
-import copy
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -26,12 +24,14 @@ def main(config: Settings) -> int:
     old_point: Optional[Point] = None
     point_on_canvas: Optional[Point] = None
 
+    drawing_toolbox: PaintingToolbox = PaintingToolbox(5, current_color="WHITE")
+
     hand: Hand = Hand(mp_hand)
-    canvas: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height)
-    hand_mask: Canvas = Canvas(width=config.monitor.width, height=config.monitor.height, name='mask')
-    hand_mask.move_window(config.monitor.x, config.monitor.y)
+    canvas: Canvas = Canvas("Canvas", config.monitor.width, config.monitor.height)
+    canvas.create_layer("DRAWING", drawing_toolbox)
+    canvas.move_window(config.monitor.x, config.monitor.y)
     if config.is_fullscreen == 1:
-        hand_mask.fullscreen()
+        canvas.fullscreen()
 
     cal_points: list[Point] = Config.load_calibration_points()
     if cal_points:
@@ -41,7 +41,9 @@ def main(config: Settings) -> int:
                          Point(canvas.width - 1, canvas.height)], camera=config.camera)
 
     camera.update_image_ptm(canvas.width, canvas.height)
-    cv2.setMouseCallback(camera.name, lambda event, x, y, flags, param: mouse_click(camera, canvas.width, canvas.height, event, x, y, flags, param))
+    cv2.setMouseCallback(camera.name, lambda event, x, y, flags, param: mouse_click(camera, canvas.width,
+                                                                                    canvas.height, event, x,
+                                                                                    y, flags, param))
 
     counter: int = 0
 
@@ -58,12 +60,13 @@ def main(config: Settings) -> int:
             # If loading a video, use 'break' instead of 'continue'.
             continue
 
-        drawing_point, old_point, point_on_canvas = analyse_frame(camera, hands, hand, canvas, hand_mask, drawing_point, old_point, drawing_precision, point_on_canvas)
+        drawing_point, old_point, point_on_canvas = analyse_frame(camera, hands, hand, canvas, drawing_point,
+                                                                  old_point, drawing_precision, point_on_canvas)
 
         camera.show_frame()
 
         # TODO: Save the black spots so we can remember the last seen hand position
-        counter = update_hand_mask(counter, canvas, hand_mask)
+        counter = update_hand_mask(counter, canvas)
 
         status = check_key_presses(canvas, camera)
 
@@ -75,7 +78,8 @@ def main(config: Settings) -> int:
     camera.capture.release()
 
 
-def analyse_frame(camera, hands, hand, canvas, hand_mask, drawing_point, old_point, drawing_precision, point_on_canvas: Optional[Point]):
+def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing_precision,
+                  point_on_canvas: Optional[Point]):
     camera.frame = cv2.cvtColor(camera.frame, cv2.COLOR_BGR2RGB)
 
     camera.frame.flags.writeable = False
@@ -125,53 +129,24 @@ def analyse_frame(camera, hands, hand, canvas, hand_mask, drawing_point, old_poi
                 p: Point = Point(point.x * camera.width, point.y * camera.height)
                 mask_points.append(camera.transform_point(p))
 
-            canvas.toolbox.change_color('BLACK')
-            hand_mask.draw_points(mask_points)
-            if point_on_canvas is not None:
-                canvas.toolbox.change_color('GREEN')
-                hand_mask.draw_point(point_on_canvas)
+#             if point_on_canvas is not None:
+#                 canvas.toolbox.change_color('GREEN')
+#                 hand_mask.draw_point(point_on_canvas)
+            canvas.draw_mask_points(mask_points)
+            if finger_dot is not None:
+                canvas.draw_mask_points([finger_dot[0]])
 
     return drawing_point, old_point, point_on_canvas
 
 
-def print_red_lines(camera: Camera, canvas: Canvas):
-    canvas.toolbox.change_color('RED')
-    # MADS TEST!!!
-    print("top left:")
-    top_left = camera.transform_point(camera.sorted_calibration_points[0])
-    print(int(top_left.x), int(top_left.y))
+def update_hand_mask(counter, canvas):
+    # if counter >= 5:
+    #     canvas.draw_mask_points()
+    # elif counter < 5:
+    #     counter += 1
 
-    print("top right:")
-    top_right = camera.transform_point(camera.sorted_calibration_points[1])
-    print(int(top_right.x), int(top_right.y))
-
-    print("bot left:")
-    bot_left = camera.transform_point(camera.sorted_calibration_points[2])
-    print(int(bot_left.x), int(bot_left.y))
-
-    print("bot right:")
-    bot_right = camera.transform_point(camera.sorted_calibration_points[3])
-    print(int(bot_right.x), int(bot_right.y))
-
-    canvas.draw_line(top_left, top_right)
-    canvas.draw_line(top_right, bot_right)
-    canvas.draw_line(bot_right, bot_left)
-    canvas.draw_line(bot_left, top_left)
-
-
-def update_hand_mask(counter, canvas, hand_mask):
-    if counter >= 5:
-        canvas_copy: ndarray = copy.deepcopy(canvas.image)
-        res = canvas_copy
-        layer2 = hand_mask.image[:, :, 3] > 0
-        if res.shape[0] == hand_mask.image.shape[0]:
-            res[layer2] = hand_mask.image[layer2]
-            hand_mask.image = res
-    elif counter < 5:
-        counter = counter + 1
-
-    hand_mask.show()
-    hand_mask.image = np.zeros(shape=[hand_mask.height, hand_mask.width, 4], dtype=np.uint8)
+    canvas.show()
+    canvas.get_layer("MASK").wipe()
 
     return counter
 
@@ -220,13 +195,13 @@ def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, 
     if old_point is None:
         old_point = point_on_canvas
 
-    canvas.toolbox.change_color('WHITE')
-    canvas.toolbox.change_line_size(3)
+    canvas.get_layer("DRAWING").toolbox.change_color('WHITE')
+    canvas.get_layer("DRAWING").toolbox.change_line_size(3)
 
     if drawing_point is not None:
         if drawing_point.distance_to(point_on_canvas) > drawing_precision:
             drawing_point = drawing_point.next_point_to(point_on_canvas, 2)
-            canvas.draw_line(old_point, drawing_point)
+            canvas.get_layer("DRAWING").draw_line(old_point, drawing_point)
             old_point = drawing_point
 
     return drawing_point, old_point
