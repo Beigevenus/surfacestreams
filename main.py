@@ -123,8 +123,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
 
                 if hand_sign == "Close":
                     menu_wheel.layer.wipe()
-                    menu_point = camera.convert_point_to_res(hand.wrist)
-                    menu_point = camera.transform_point(menu_point)
+                    menu_point = camera.transform_point(hand.wrist, canvas.width, canvas.height)
                     if not menu_wheel.is_open:
                         menu_wheel.center_point = menu_point
 
