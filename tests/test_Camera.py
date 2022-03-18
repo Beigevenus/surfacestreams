@@ -42,10 +42,33 @@ class TestCamera:
     def test_transform_point(self):
         pass
 
-    # TODO: Write test case
-    def test_convert_point_to_res(self):
-        pass
+    @pytest.mark.parametrize("point, expected_point", [(Point(0, 0), Point(0, 0)),
+                                                       (Point(32, 7), Point(40960, 5040)),
+                                                       (Point(-2, -8), Point(-2560, -5760))])
+    def test_convert_point_to_res(self, point, expected_point):
+        # Arrange
+        camera: Camera = Camera.__new__(Camera)
+        camera.width = 1280
+        camera.height = 720
 
-    # TODO: Write test case
-    def test_calibration_is_done(self):
-        pass
+        # Act
+        actual = camera.convert_point_to_res(point)
+
+        # Assert
+        assert actual == expected_point
+
+    @pytest.mark.parametrize("cal_points, expected", [([], False),
+                                                      ([Point(0, 0)], False),
+                                                      ([Point(0, 0), Point(0, 0)], False),
+                                                      ([Point(0, 0), Point(0, 0), Point(0, 0)], False),
+                                                      ([Point(0, 0), Point(0, 0), Point(0, 0), Point(0, 0)], True)])
+    def test_calibration_is_done(self, cal_points, expected):
+        # Arrange
+        camera: Camera = Camera.__new__(Camera)
+        camera.calibration_points = cal_points
+
+        # Act
+        actual = camera.calibration_is_done()
+
+        # Assert
+        assert actual == expected
