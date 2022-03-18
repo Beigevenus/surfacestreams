@@ -37,3 +37,15 @@ class TestCamera:
         assert camera.sorted_calibration_points[1] == expected_order[1]
         assert camera.sorted_calibration_points[2] == expected_order[2]
         assert camera.sorted_calibration_points[3] == expected_order[3]
+
+    # TODO: Write test case
+    def test_transform_point(self):
+        pass
+
+    # TODO: Write test case
+    def test_convert_point_to_res(self):
+        pass
+
+    # TODO: Write test case
+    def test_calibration_is_done(self):
+        pass

@@ -24,41 +24,69 @@ class Canvas:
         # self.move_window(2500)
 
     def create_layer(self, name: str, toolbox: PaintingToolbox, position: int = -1) -> None:
-        # TODO: Write docstring for method
-        if position == -1:
+        """
+        Creates a new Layer object and adds it to the canvas' list of layers, at the specified position.
+
+        :param name: The name of the layer
+        :param toolbox: The PaintingToolbox for the layer to use
+        :param position: The position of the layer in the order of layers
+        """
+        try:
+            if position == -1:
+                self.layers.append((name, Layer(self.width, self.height, toolbox)))
+            else:
+                self.layers.insert(position, (name, Layer(self.width, self.height, toolbox)))
+        except IndexError:
             self.layers.append((name, Layer(self.width, self.height, toolbox)))
-        else:
-            self.layers.insert(position, (name, Layer(self.width, self.height, toolbox)))
 
     def delete_layer(self, name: str) -> None:
-        # TODO: Write docstring for method
-        layer = self.find_layer(name)
+        """
+        Removes the specified layer from the list of layers.
+
+        :param name: The name of the layer to remove
+        """
+        layer: tuple[str, Layer] = self.__find_layer(name)
 
         if layer:
             self.layers.remove(layer)
 
     def get_layer(self, name: str) -> Optional[Layer]:
-        # TODO: Write docstring for method
-        layer = self.find_layer(name)
+        """
+        Returns a reference to a Layer object given its name if it exists in the list of layers.
+
+        :param name: The name of the layer to get the reference of
+        :return: A reference to the layer matching the specified name, or None if it doesn't exist
+        """
+        layer: tuple[str, Layer] = self.__find_layer(name)
 
         if layer:
-            return self.find_layer(name)[1]
+            return self.__find_layer(name)[1]
         else:
             return None
 
-    def find_layer(self, name: str) -> Optional[tuple[str, Layer]]:
-        # TODO: Write docstring for method
+    def __find_layer(self, name: str) -> Optional[tuple[str, Layer]]:
+        """
+        Returns a tuple containing a layer's name and object reference given its name.
+
+        :param name: The name of the layer to find
+        :return: A tuple containing the name and object reference of the layer, or None if it doesn't exist
+        """
         for layer_name, layer in self.layers:
             if name == layer_name:
                 return layer_name, layer
         return None
 
     def combine_layers(self) -> ndarray:
-        # TODO: Write docstring for method
+        """
+        Merges all layers in the list of layers together, to create *one* layer containing the images of all combined
+        layers.
+
+        :return: An ndarray representing the image of the merged layers
+        """
         combined_image: ndarray = np.zeros(shape=[self.height, self.width, 4], dtype=np.uint8)
 
         for name, layer in self.layers[::-1]:
-            src_a = layer.image[..., 3] > 0
+            src_a: ndarray = layer.image[..., 3] > 0
 
             combined_image[src_a] = layer.image[src_a]
 
@@ -83,7 +111,11 @@ class Canvas:
         self.height = height
 
     def draw_mask_points(self, points: list[Point]) -> None:
-        # TODO: Write docstring for method
+        """
+        Draws multiple circles on the MASK layer of the canvas corresponding to the given points' coordinates.
+
+        :param points: The list of Points to draw circles at
+        """
 
         for point in points:
             self.get_layer("MASK").draw_circle(point)
@@ -121,7 +153,12 @@ class Canvas:
         cv2.moveWindow(self.name, offset_x, offset_y)
 
     # TODO: Remove when it is no longer necessary
-    def print_calibration_cross(self, camera: Camera):
+    def print_calibration_cross(self, camera: Camera) -> None:
+        """
+        TEMPORARY METHOD: Creates the calibration cross drawing on the CAL_CROSS layer.
+
+        :param camera: A reference to the camera
+        """
         print("top left:")
         top_left = camera.transform_point(camera.sorted_calibration_points[0])
         print(int(top_left.x), int(top_left.y))

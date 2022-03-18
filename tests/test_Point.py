@@ -21,3 +21,7 @@ class TestPoint:
 
         # Assert
         assert round(distance, 4) == expected_distance
+
+    # TODO: Write test case
+    def test_next_point_to(self):
+        pass

@@ -1,8 +1,8 @@
-from typing import NamedTuple, Optional
+from collections import namedtuple
+from typing import Optional
 
 from HandTracking.Config import Config
 from HandTracking.PaintingToolbox import PaintingToolbox
-from HandTracking.utility import limit
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
 from HandTracking.Hand import Hand
@@ -43,7 +43,7 @@ def main(config: Settings) -> int:
     camera.update_image_ptm(canvas.width, canvas.height)
     cv2.setMouseCallback(camera.name, lambda event, x, y, flags, param: mouse_click(camera, canvas.width,
                                                                                     canvas.height, event, x,
-                                                                                    y, flags, param))
+                                                                                    y))
 
     counter: int = 0
 
@@ -80,11 +80,11 @@ def main(config: Settings) -> int:
 
 def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing_precision,
                   point_on_canvas: Optional[Point]):
+    # TODO: Write docstring for function
     camera.frame = cv2.cvtColor(camera.frame, cv2.COLOR_BGR2RGB)
 
     camera.frame.flags.writeable = False
-    # TODO: make highlighting work again
-    hand_position: NamedTuple = hands.process(camera.frame)
+    hand_position: namedtuple = hands.process(camera.frame)
     camera.frame.flags.writeable = True
 
     # TODO: figure out the structure of the hand position and landmarks
@@ -92,13 +92,8 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
         for hand_landmarks, handedness in zip(hand_position.multi_hand_landmarks,
                                               hand_position.multi_handedness):
 
-            # TODO: This is the drawing part don't need it in the final product. Only for Debugging
-            mp_drawing.draw_landmarks(
-                camera.frame,
-                hand_landmarks,
-                mp_hand.HAND_CONNECTIONS,
-                mp_drawing_styles.get_default_hand_landmarks_style(),
-                mp_drawing_styles.get_default_hand_connections_style())
+            # TODO: Remove call when no longer needed. For debugging only
+            draw_hand_landmarks(hand_landmarks, camera.frame)
 
             hand.update(hand_landmarks)
 
@@ -139,6 +134,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
 
 
 def update_hand_mask(counter, canvas):
+    # TODO: Write docstring for function
     # if counter >= 5:
     #     canvas.draw_mask_points()
     # elif counter < 5:
@@ -151,6 +147,7 @@ def update_hand_mask(counter, canvas):
 
 
 def check_key_presses(canvas, camera):
+    # TODO: Write docstring for function
     # Exit program when Esc is pressed
     key = cv2.waitKey(1)
     if key == 27:  # ESC
@@ -179,14 +176,25 @@ def check_key_presses(canvas, camera):
     return 0
 
 
-def mouse_click(camera, width, height, event, x, y, flags, param) -> None:
-    # TODO: Write docstring for function
+def mouse_click(camera, width, height, event, x, y) -> None:
+    """
+    Callback function for mouse clicks in the camera window.
+    Left-clicking will update the calibration points.
+
+    :param camera: A reference to the camera
+    :param width: The width of the canvas
+    :param height: The height of the canvas
+    :param event: The event object, specifying the type of event
+    :param x: The x position of the mouse when the event is triggered
+    :param y: The y position of the mouse when the event is triggered
+    """
     if event == cv2.EVENT_LBUTTONUP:
         camera.update_calibration_point(Point(x, y), width, height)
 
 
 def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, old_point: Point,
                   drawing_precision: int):
+    # TODO: Write docstring for function
 
     if drawing_point is None:
         drawing_point = point_on_canvas
@@ -204,6 +212,21 @@ def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, 
             old_point = drawing_point
 
     return drawing_point, old_point
+
+
+def draw_hand_landmarks(hand_landmarks, frame) -> None:
+    """
+    TEMPORARY FUNCTION. Draws the hand landmarks in the camera window, for ease of debugging.
+
+    :param hand_landmarks: The hand landmarks to draw
+    :param frame: The frame to draw the landmarks in
+    """
+    mp_drawing.draw_landmarks(
+        frame,
+        hand_landmarks,
+        mp_hand.HAND_CONNECTIONS,
+        mp_drawing_styles.get_default_hand_landmarks_style(),
+        mp_drawing_styles.get_default_hand_connections_style())
 
 
 if __name__ == "__main__":

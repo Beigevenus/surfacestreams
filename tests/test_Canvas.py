@@ -3,6 +3,8 @@ import numpy as np
 from HandTracking.Canvas import Canvas
 import pytest
 
+from HandTracking.PaintingToolbox import PaintingToolbox
+
 x_fail = pytest.mark.xfail
 
 
@@ -32,6 +34,7 @@ class TestCanvas:
         # Arrange
         canvas: Canvas = Canvas.__new__(Canvas)
         canvas.image = np.zeros(shape=[height, width, 4], dtype=np.uint8)
+        canvas.layers = []
 
         # Act
         canvas.resize(width, height)
@@ -39,3 +42,31 @@ class TestCanvas:
         # Assert
         assert canvas.width == expected_width
         assert canvas.height == expected_height
+
+    @pytest.mark.parametrize("name, position, expected_position", [("TEST1", 0, 0),
+                                                                   ("TEST2", 1, 1),
+                                                                   ("TEST3", -1, -1),
+                                                                   ("TEST4", 35, 3),
+                                                                   ("TEST5", 2, 2)])
+    def test_create_layer(self, name, position, expected_position):
+        # Arrange
+        canvas: Canvas = Canvas.__new__(Canvas)
+        canvas.layers = [(), (), ()]
+        canvas.width = 100
+        canvas.height = 100
+        toolbox: PaintingToolbox = PaintingToolbox()
+
+        # Act
+        canvas.create_layer(name, toolbox, position)
+
+        # Assert
+        assert canvas.layers[expected_position][0] == name
+
+    # TODO: Write test case
+    def test_delete_layer(self):
+        pass
+
+    # TODO: Write test case
+    @pytest.mark.parametrize("layer_list", [()])
+    def test_get_layer(self, layer_list):
+        pass
