@@ -65,9 +65,10 @@ class Camera:
         """
         Draws the calibration points as circles on the camera window.
         """
-        for point in self.calibration_points:
-            cv2.circle(self.frame, (int(point.x), int(point.y)), int(int(10 / 2) * 2),
-                       [255, 255, 0], cv2.FILLED)
+        if len(self.calibration_points) < 4:
+            for point in self.calibration_points:
+                cv2.circle(self.frame, (int(point.x), int(point.y)), int(int(10 / 2) * 2),
+                           [255, 255, 0], cv2.FILLED)
 
     @staticmethod
     def return_camera_indexes() -> list[int]:

@@ -107,7 +107,6 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                 # TODO: Add erasing when working on the wheel
                 hand_sign: str = hand.get_hand_sign(camera.frame, hand_landmarks)
                 if hand_sign == "Pointer":
-                    # point_on_camera = camera.convert_point_to_res(hand.get_index_tip())
                     point_on_canvas = camera.transform_point(hand.get_index_tip(), canvas.width, canvas.height)
 
                     drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
@@ -126,12 +125,11 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
             # Mask for removing the hand
             mask_points = []
             for point in hand.get_mask_points():
-                p: Point = Point(point.x * camera.width, point.y * camera.height)
-                mask_points.append(camera.transform_point(p, canvas.width, canvas.height))
+                mask_points.append(camera.transform_point(point, canvas.width, canvas.height))
 
-#             if point_on_canvas is not None:
-#                 canvas.toolbox.change_color('GREEN')
-#                 hand_mask.draw_point(point_on_canvas)
+            canvas.get_layer("TIP").wipe()
+            canvas.get_layer("TIP").draw_circle(camera.transform_point(hand.fingers["INDEX_FINGER"].tip, canvas.width, canvas.height))
+
             canvas.draw_mask_points(mask_points)
             canvas.print_calibration_cross(camera, canvas.width, canvas.height)
 
@@ -139,11 +137,6 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
 
 
 def update_hand_mask(counter, canvas):
-    # if counter >= 5:
-    #     canvas.draw_mask_points()
-    # elif counter < 5:
-    #     counter += 1
-
     canvas.show()
     canvas.get_layer("MASK").wipe()
 
