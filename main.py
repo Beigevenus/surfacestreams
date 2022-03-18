@@ -49,7 +49,7 @@ def main(config: Settings) -> int:
     counter: int = 0
 
     canvas.create_layer('MENU_WHEEL', PaintingToolbox(), 0)
-    menu_wheel = MenuWheel(canvas.get_layer('MENU_WHEEL'))
+    menu_wheel = MenuWheel(canvas.get_layer('MENU_WHEEL'), canvas.get_layer('DRAWING'))
 
     hands = mp_hand.Hands(
         static_image_mode=False,
@@ -123,9 +123,24 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                     drawing_point = None
 
                 if hand_sign == "Close":
-                    menu_wheel
+                    menu_wheel.layer.wipe()
+                    menu_point = camera.convert_point_to_res(hand.wrist)
+                    menu_point = camera.transform_point(menu_point)
+                    if not menu_wheel.is_open:
+                        menu_wheel.center_point = menu_point
+
+                    menu_wheel.open_menu()
+                    menu_wheel.layer.toolbox.change_color('GREEN')
+                    menu_wheel.layer.toolbox.circle_size = 5
+                    menu_wheel.layer.draw_circle(menu_point)
+
+
+
+
 
                 if hand_sign == "Open":
+                    if menu_wheel.is_open:
+                        menu_wheel.close_menu()
                     pass
 
             # Mask for removing the hand
