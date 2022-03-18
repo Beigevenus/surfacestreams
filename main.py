@@ -107,8 +107,8 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                 # TODO: Add erasing when working on the wheel
                 hand_sign: str = hand.get_hand_sign(camera.frame, hand_landmarks)
                 if hand_sign == "Pointer":
-                    point_on_camera = camera.convert_point_to_res(hand.get_index_tip())
-                    point_on_canvas = camera.transform_point(point_on_camera)
+                    # point_on_camera = camera.convert_point_to_res(hand.get_index_tip())
+                    point_on_canvas = camera.transform_point(hand.get_index_tip(), canvas.width, canvas.height)
 
                     drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
                                                              drawing_point, old_point, drawing_precision)
@@ -127,13 +127,13 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
             mask_points = []
             for point in hand.get_mask_points():
                 p: Point = Point(point.x * camera.width, point.y * camera.height)
-                mask_points.append(camera.transform_point(p))
+                mask_points.append(camera.transform_point(p, canvas.width, canvas.height))
 
 #             if point_on_canvas is not None:
 #                 canvas.toolbox.change_color('GREEN')
 #                 hand_mask.draw_point(point_on_canvas)
             canvas.draw_mask_points(mask_points)
-            canvas.print_calibration_cross(camera)
+            canvas.print_calibration_cross(camera, canvas.width, canvas.height)
 
     return drawing_point, old_point, point_on_canvas
 

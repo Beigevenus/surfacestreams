@@ -121,21 +121,21 @@ class Canvas:
         cv2.moveWindow(self.name, offset_x, offset_y)
 
     # TODO: Remove when it is no longer necessary
-    def print_calibration_cross(self, camera: Camera):
+    def print_calibration_cross(self, camera: Camera, width, height):
         print("top left:")
-        top_left = camera.transform_point(camera.sorted_calibration_points[0])
+        top_left = camera.transform_point(Point(0, 0), width, height)
         print(int(top_left.x), int(top_left.y))
 
         print("top right:")
-        top_right = camera.transform_point(camera.sorted_calibration_points[1])
+        top_right = camera.transform_point(Point(0, 1), width, height)
         print(int(top_right.x), int(top_right.y))
 
         print("bot left:")
-        bot_left = camera.transform_point(camera.sorted_calibration_points[2])
+        bot_left = camera.transform_point(Point(1, 0), width, height)
         print(int(bot_left.x), int(bot_left.y))
 
         print("bot right:")
-        bot_right = camera.transform_point(camera.sorted_calibration_points[3])
+        bot_right = camera.transform_point(Point(1, 1), width, height)
         print(int(bot_right.x), int(bot_right.y))
 
         self.get_layer("CAL_CROSS").wipe()
