@@ -161,19 +161,19 @@ class Canvas:
         :param camera: A reference to the camera
         """
         print("top left:")
-        top_left = camera.transform_point(Point(0, 0), self.width, self.height)
+        top_left = camera.transform_point(Point(0, 0))
         print(int(top_left.x), int(top_left.y))
 
         print("top right:")
-        top_right = camera.transform_point(Point(0, 1), self.width, self.height)
+        top_right = camera.transform_point(Point(0, 1))
         print(int(top_right.x), int(top_right.y))
 
         print("bot left:")
-        bot_left = camera.transform_point(Point(1, 0), self.width, self.height)
+        bot_left = camera.transform_point(Point(1, 0))
         print(int(bot_left.x), int(bot_left.y))
 
         print("bot right:")
-        bot_right = camera.transform_point(Point(1, 1), self.width, self.height)
+        bot_right = camera.transform_point(Point(1, 1))
         print(int(bot_right.x), int(bot_right.y))
 
         self.get_layer("CAL_CROSS").wipe()
