@@ -23,4 +23,4 @@ def four_point_transform(points: list[Point], width: int, height: int):
     m = cv2.getPerspectiveTransform(rect, dst)
 
     # return the warped image
-    return m
+    return m, width, height
