@@ -15,10 +15,11 @@ class Canvas:
         self.width: int = width
         self.height: int = height
         self.name: str = name
-        self.layers: list[(str, Layer)] = [("MASK", Layer(width, height, PaintingToolbox(50, current_color="BLACK")))]
+        self.layers: list[(str, Layer)] = [("MASK", Layer(width, height, PaintingToolbox(75, current_color="BLACK")))]
 
         # TODO: Remove when it is no longer necessary
         self.create_layer("CAL_CROSS", PaintingToolbox(5, current_color="BLUE"))
+        self.create_layer("TIP", PaintingToolbox(5, current_color="GREEN"), 0)
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
         # self.move_window(2500)
@@ -153,26 +154,26 @@ class Canvas:
         cv2.moveWindow(self.name, offset_x, offset_y)
 
     # TODO: Remove when it is no longer necessary
-    def print_calibration_cross(self, camera: Camera) -> None:
+    def print_calibration_cross(self, camera: Camera, width: int, height: int) -> None:
         """
         TEMPORARY METHOD: Creates the calibration cross drawing on the CAL_CROSS layer.
 
         :param camera: A reference to the camera
         """
         print("top left:")
-        top_left = camera.transform_point(camera.sorted_calibration_points[0])
+        top_left = camera.transform_point(Point(0, 0), width, height)
         print(int(top_left.x), int(top_left.y))
 
         print("top right:")
-        top_right = camera.transform_point(camera.sorted_calibration_points[1])
+        top_right = camera.transform_point(Point(0, 1), width, height)
         print(int(top_right.x), int(top_right.y))
 
         print("bot left:")
-        bot_left = camera.transform_point(camera.sorted_calibration_points[2])
+        bot_left = camera.transform_point(Point(1, 0), width, height)
         print(int(bot_left.x), int(bot_left.y))
 
         print("bot right:")
-        bot_right = camera.transform_point(camera.sorted_calibration_points[3])
+        bot_right = camera.transform_point(Point(1, 1), width, height)
         print(int(bot_right.x), int(bot_right.y))
 
         self.get_layer("CAL_CROSS").wipe()

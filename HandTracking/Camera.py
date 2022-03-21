@@ -17,11 +17,13 @@ class Camera:
         self.capture: VideoCapture = cv2.VideoCapture(camera)
         self.calibration_points: list[Point] = calibration_points
         self.sorted_calibration_points: list[Point] = self.sort_calibration_points()
+        self.ptm: Optional[ndarray] = None
+        self.wwidth = 0
+        self.wheight = 0
         self.frame: ndarray = self.update_frame()
         self.height: int = self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
         self.width: int = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.name: str = name
-        self.ptm: Optional[ndarray] = None
 
         cv2.namedWindow(self.name)
 
@@ -41,6 +43,9 @@ class Camera:
         success, self.frame = self.capture.read()
         self.frame = cv2.flip(self.frame, 1)
         if success:
+            if self.ptm is not None and len(self.calibration_points) > 3:
+                self.frame = cv2.warpPerspective(self.frame, self.ptm, (self.wwidth, self.wheight), flags=cv2.INTER_LINEAR)
+                self.frame = cv2.resize(self.frame, (1200, 600))
             return self.frame
         return None
 
@@ -67,9 +72,10 @@ class Camera:
         """
         Draws the calibration points as circles on the camera window.
         """
-        for point in self.calibration_points:
-            cv2.circle(self.frame, (int(point.x), int(point.y)), int(int(10 / 2) * 2),
-                       [255, 255, 0], cv2.FILLED)
+        if len(self.calibration_points) < 4:
+            for point in self.calibration_points:
+                cv2.circle(self.frame, (int(point.x), int(point.y)), int(int(10 / 2) * 2),
+                           [255, 255, 0], cv2.FILLED)
 
     @staticmethod
     def return_camera_indexes() -> list[int]:
@@ -90,7 +96,7 @@ class Camera:
     def update_image_ptm(self, width: int, height: int) -> None:
         # TODO: Write docstring for method
         if not len(self.calibration_points) <= 3:
-            self.ptm = fpt(self.sorted_calibration_points, width, height)
+            self.ptm, self.wwidth, self.wheight = fpt(self.sorted_calibration_points, width, height)
 
     def sort_calibration_points(self) -> list[Point]:
         """
@@ -129,11 +135,11 @@ class Camera:
 
         return [left_top, right_top, right_bot, left_bot]
 
-    def transform_point(self, point: Point) -> Point:
+    def transform_point(self, point, width, height) -> Point:
         # TODO: Write docstring for method
-        corrected_coordinates = np.matmul(self.ptm, [point.x, point.y, 1])
+        # corrected_coordinates = np.matmul(self.ptm, [point.x, point.y, 1])
 
-        return Point(round(corrected_coordinates[0]), round(corrected_coordinates[1]))
+        return Point(round((point.x) * width), round((point.y) * height))
 
     # TODO: Reconsider the location of this method
     def convert_point_to_res(self, point: Point) -> Point:
