@@ -50,7 +50,14 @@ class Camera:
         return None
 
     def update_calibration_point(self, point: Point, width: int, height: int) -> None:
-        # TODO: Write docstring for method
+        """
+        Appends calibration points to the list of points when there is less than 3, sorts them and saves them to the
+        config file when there is 3, and clears them when there is more than 3.
+
+        :param point: The calibration point to add
+        :param width: The width of the canvas
+        :param height: The height of the canvas
+        """
         if len(self.calibration_points) > 3:
             self.calibration_points.clear()
         elif len(self.calibration_points) == 3:
@@ -128,16 +135,22 @@ class Camera:
 
         return [left_top, right_top, right_bot, left_bot]
 
-    def transform_point(self, point, width, height):
+    def transform_point(self, point, width, height) -> Point:
         # TODO: Write docstring for method
         # corrected_coordinates = np.matmul(self.ptm, [point.x, point.y, 1])
 
         return Point(round((point.x) * width), round((point.y) * height))
 
-    def convert_point_to_res(self, point: Point):
+    # TODO: Reconsider the location of this method
+    def convert_point_to_res(self, point: Point) -> Point:
         # TODO: If needed add limit and round to the x and y
         # TODO: Add docstring
         return Point(point.x * self.width, point.y * self.height)
 
-    def calibration_is_done(self):
+    def calibration_is_done(self) -> bool:
+        """
+        Determines whether calibration has been performed or not, by checking the current number of calibration points.
+
+        :return: True, when there's 3 or more points, and False when there is not
+        """
         return len(self.calibration_points) > 3
