@@ -51,8 +51,7 @@ class Point:
         calculation: float = (self.x - other.x) ** 2 + (self.y - other.y) ** 2
         return sqrt(calculation)
 
-    def next_point_to(self, other: 'Point', precision: int = 2) -> 'Point':
-        # TODO: Write docstring for method
+    def next_point_to(self, other: 'Point', precision: int = 3) -> 'Point':
         """
         Finds the midpoint between two points repeatedly in the range from 0 to the given precision.
 
@@ -60,7 +59,6 @@ class Point:
         :param precision: An integer determining how many times an additional midpoint will be calculated iteratively
         :return: The new midpoint
         """
-
         point: Point = self.__midpoint_to(other)
 
         for i in range(0, precision):
