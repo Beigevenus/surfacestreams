@@ -1,6 +1,5 @@
 from typing import Optional
 
-import numpy as np
 from cv2 import VideoCapture
 from numpy import ndarray
 
@@ -44,7 +43,8 @@ class Camera:
         self.frame = cv2.flip(self.frame, 1)
         if success:
             if self.ptm is not None and len(self.calibration_points) > 3:
-                self.frame = cv2.warpPerspective(self.frame, self.ptm, (self.wwidth, self.wheight), flags=cv2.INTER_LINEAR)
+                self.frame = cv2.warpPerspective(self.frame, self.ptm, (self.wwidth, self.wheight),
+                                                 flags=cv2.INTER_LINEAR)
                 self.frame = cv2.resize(self.frame, (1200, 600))
             return self.frame
         return None
@@ -139,7 +139,7 @@ class Camera:
         # TODO: Write docstring for method
         # corrected_coordinates = np.matmul(self.ptm, [point.x, point.y, 1])
 
-        return Point(round((point.x) * width), round((point.y) * height))
+        return Point(round(point.x * width), round(point.y * height))
 
     # TODO: Reconsider the location of this method
     def convert_point_to_res(self, point: Point) -> Point:

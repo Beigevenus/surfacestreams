@@ -123,7 +123,8 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                 mask_points.append(camera.transform_point(point, canvas.width, canvas.height))
 
             canvas.get_layer("TIP").wipe()
-            canvas.get_layer("TIP").draw_circle(camera.transform_point(hand.fingers["INDEX_FINGER"].tip, canvas.width, canvas.height))
+            canvas.get_layer("TIP").draw_circle(camera.transform_point(hand.fingers["INDEX_FINGER"].tip,
+                                                                       canvas.width, canvas.height))
 
             canvas.draw_mask_points(mask_points)
             canvas.print_calibration_cross(camera, canvas.width, canvas.height)
