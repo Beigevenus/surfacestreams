@@ -117,6 +117,7 @@ class Canvas:
 
         :param points: The list of Points to draw circles at
         """
+        self.get_layer('MASK').toolbox.change_line_size(75)
 
         for point in points:
             self.get_layer("MASK").draw_circle(point)
