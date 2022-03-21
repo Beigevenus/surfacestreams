@@ -14,9 +14,7 @@ class Layer:
         self.toolbox: PaintingToolbox = toolbox
 
     def wipe(self) -> None:
-        """
-        Resets the values of all "pixels" in the layer, making them black.
-        """
+        # TODO: Write docstring for method
         self.image: ndarray = np.full(shape=[self.height, self.width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
 
     # TODO: Make it so that the smoothing is an option, so that you can erase with ease
@@ -37,12 +35,7 @@ class Layer:
                  (int(point.x), int(point.y)),
                  self.toolbox.current_color, self.toolbox.line_size)
 
-    def draw_circle(self, point: Point) -> None:
-        """
-        Draws a circle at the specified point's coordinates.
-
-        :param point: The point to draw a circle at
-        """
+    def draw_circle(self, point: Point):
         cv2.circle(self.image, (int(point.x), int(point.y)),
                    self.toolbox.circle_size, self.toolbox.current_color, cv2.FILLED)
 

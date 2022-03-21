@@ -1,5 +1,6 @@
 from typing import Optional
 
+import numpy as np
 from cv2 import VideoCapture
 from numpy import ndarray
 
@@ -16,13 +17,11 @@ class Camera:
         self.capture: VideoCapture = cv2.VideoCapture(camera)
         self.calibration_points: list[Point] = calibration_points
         self.sorted_calibration_points: list[Point] = self.sort_calibration_points()
-        self.ptm: Optional[ndarray] = None
-        self.wwidth = 0
-        self.wheight = 0
         self.frame: ndarray = self.update_frame()
         self.height: int = self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
         self.width: int = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.name: str = name
+        self.ptm: Optional[ndarray] = None
 
         cv2.namedWindow(self.name)
 
@@ -42,22 +41,11 @@ class Camera:
         success, self.frame = self.capture.read()
         self.frame = cv2.flip(self.frame, 1)
         if success:
-            if self.ptm is not None and len(self.calibration_points) > 3:
-                self.frame = cv2.warpPerspective(self.frame, self.ptm, (self.wwidth, self.wheight),
-                                                 flags=cv2.INTER_LINEAR)
-                self.frame = cv2.resize(self.frame, (1200, 600))
             return self.frame
         return None
 
     def update_calibration_point(self, point: Point, width: int, height: int) -> None:
-        """
-        Appends calibration points to the list of points when there is less than 3, sorts them and saves them to the
-        config file when there is 3, and clears them when there is more than 3.
-
-        :param point: The calibration point to add
-        :param width: The width of the canvas
-        :param height: The height of the canvas
-        """
+        # TODO: Write docstring for method
         if len(self.calibration_points) > 3:
             self.calibration_points.clear()
         elif len(self.calibration_points) == 3:
@@ -72,10 +60,9 @@ class Camera:
         """
         Draws the calibration points as circles on the camera window.
         """
-        if len(self.calibration_points) < 4:
-            for point in self.calibration_points:
-                cv2.circle(self.frame, (int(point.x), int(point.y)), int(int(10 / 2) * 2),
-                           [255, 255, 0], cv2.FILLED)
+        for point in self.calibration_points:
+            cv2.circle(self.frame, (int(point.x), int(point.y)), int(int(10 / 2) * 2),
+                       [255, 255, 0], cv2.FILLED)
 
     @staticmethod
     def return_camera_indexes() -> list[int]:
@@ -96,7 +83,7 @@ class Camera:
     def update_image_ptm(self, width: int, height: int) -> None:
         # TODO: Write docstring for method
         if not len(self.calibration_points) <= 3:
-            self.ptm, self.wwidth, self.wheight = fpt(self.sorted_calibration_points, width, height)
+            self.ptm = fpt(self.sorted_calibration_points, width, height)
 
     def sort_calibration_points(self) -> list[Point]:
         """
@@ -135,22 +122,16 @@ class Camera:
 
         return [left_top, right_top, right_bot, left_bot]
 
-    def transform_point(self, point, width, height) -> Point:
+    def transform_point(self, point):
         # TODO: Write docstring for method
-        # corrected_coordinates = np.matmul(self.ptm, [point.x, point.y, 1])
+        corrected_coordinates = np.matmul(self.ptm, [point.x, point.y, 1])
 
-        return Point(round(point.x * width), round(point.y * height))
+        return Point(round(corrected_coordinates[0]), round(corrected_coordinates[1]))
 
-    # TODO: Reconsider the location of this method
-    def convert_point_to_res(self, point: Point) -> Point:
+    def convert_point_to_res(self, point: Point):
         # TODO: If needed add limit and round to the x and y
         # TODO: Add docstring
         return Point(point.x * self.width, point.y * self.height)
 
-    def calibration_is_done(self) -> bool:
-        """
-        Determines whether calibration has been performed or not, by checking the current number of calibration points.
-
-        :return: True, when there's 3 or more points, and False when there is not
-        """
+    def calibration_is_done(self):
         return len(self.calibration_points) > 3

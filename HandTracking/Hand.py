@@ -16,12 +16,7 @@ class Hand:
         self.keypoint_classifier = KeyPointClassifier()
 
     def update(self, landmarks) -> None:
-        """
-        Given hand landmarks from Mediapipe, this method updates the position of each of the Finger objects pertaining
-        to the hand.
-
-        :param landmarks: Hand landmarks from Mediapipe
-        """
+        # TODO: Write docstring for method
         self.wrist = Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark.WRIST])
         # TODO: Make thumb great again
         for key in self.fingers.keys():
@@ -30,13 +25,15 @@ class Hand:
                     Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_CMC"]]),
                     Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_MCP"]]),
                     Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_IP"]]),
-                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_TIP"]]))
+                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"THUMB_TIP"]]),
+                    self.wrist)
             else:
                 self.fingers[key].update_finger(
                     Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_MCP"]]),
                     Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_PIP"]]),
                     Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_DIP"]]),
-                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_TIP"]]))
+                    Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark[f"{key}_TIP"]]),
+                    self.wrist)
 
     def get_index_tip(self) -> Point:
         """
@@ -48,11 +45,7 @@ class Hand:
         return self.fingers["INDEX_FINGER"].tip
 
     def get_mask_points(self) -> list[Point]:
-        """
-        Returns a list of points corresponding to the position of the user's fingers and wrist.
-
-        :return: A list of points
-        """
+        # TODO: Write docstring for method
         points: list[Point] = []
 
         for finger in self.fingers.values():
@@ -74,11 +67,13 @@ class Hand:
         return self.keypoint_classifier.get_hand_sign(camera_frame, landmarks)
 
     class Finger:
-        def __init__(self, mcp: Point = None, pip: Point = None, dip: Point = None, tip: Point = None):
+        def __init__(self, mcp: Point = None, pip: Point = None, dip: Point = None, tip: Point = None,
+                     wrist: Point = None):
             self.mcp: Point = mcp
             self.pip: Point = pip
             self.dip: Point = dip
             self.tip: Point = tip
+            self.wrist: Point = wrist
             self.distance_to_wrist: float = 0
             self.length: float = 0
             self.stretched_guard: float = 0
@@ -86,16 +81,11 @@ class Hand:
         def __str__(self) -> str:
             return f"({self.mcp}, {self.pip}, {self.dip}, {self.tip})"
 
-        def update_finger(self, mcp: Point = None, pip: Point = None, dip: Point = None, tip: Point = None) -> None:
-            """
-            Updates the coordinates of each part of the finger.
-
-            :param mcp: A point corresponding to the MCP position
-            :param pip: A point corresponding to the PIP position
-            :param dip: A point corresponding to the DIP position
-            :param tip: A point corresponding to the TIP position
-            """
+        def update_finger(self, mcp: Point = None, pip: Point = None, dip: Point = None, tip: Point = None,
+                          wrist: Point = None):
+            # TODO: Write docstring for method
             self.mcp = mcp
             self.pip = pip
             self.dip = dip
             self.tip = tip
+            self.wrist = wrist
