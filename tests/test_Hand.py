@@ -29,6 +29,18 @@ class TestHand:
     def test_get_mask_points(self):
         pass
 
-    # TODO: Write test case
-    def test_update_finger(self):
-        pass
+    @pytest.mark.parametrize("mcp, pip, dip, tip", [(Point(0, 0), Point(0, 0), Point(0, 0), Point(0, 0)),
+                                                    (Point(-6, 9), Point(8, -35), Point(634, -824), Point(1, 1)),
+                                                    (None, None, None, None)])
+    def test_update_finger(self, mcp, pip, dip, tip):
+        # Arrange
+        finger: Hand.Finger = Hand.Finger()
+
+        # Act
+        finger.update_finger(mcp, pip, dip, tip)
+
+        # Assert
+        assert finger.mcp == mcp
+        assert finger.pip == pip
+        assert finger.dip == dip
+        assert finger.tip == tip

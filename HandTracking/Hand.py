@@ -16,7 +16,12 @@ class Hand:
         self.keypoint_classifier = KeyPointClassifier()
 
     def update(self, landmarks) -> None:
-        # TODO: Write docstring for method
+        """
+        Given hand landmarks from Mediapipe, this method updates the position of each of the Finger objects pertaining
+        to the hand.
+
+        :param landmarks: Hand landmarks from Mediapipe
+        """
         self.wrist = Point.from_landmark(landmarks.landmark[self.mp_hand.HandLandmark.WRIST])
         # TODO: Make thumb great again
         for key in self.fingers.keys():

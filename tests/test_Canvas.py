@@ -3,6 +3,7 @@ import numpy as np
 from HandTracking.Canvas import Canvas
 import pytest
 
+from HandTracking.Layer import Layer
 from HandTracking.PaintingToolbox import PaintingToolbox
 
 x_fail = pytest.mark.xfail
@@ -62,11 +63,36 @@ class TestCanvas:
         # Assert
         assert canvas.layers[expected_position][0] == name
 
-    # TODO: Write test case
     def test_delete_layer(self):
-        pass
+        # Arrange
+        canvas: Canvas = Canvas.__new__(Canvas)
+        layer: Layer = Layer.__new__(Layer)
+        canvas.layers = [("OTHER1", layer), ("DELETE_ME", layer), ("OTHER2", layer)]
 
-    # TODO: Write test case
-    @pytest.mark.parametrize("layer_list", [()])
-    def test_get_layer(self, layer_list):
-        pass
+        # Act
+        canvas.delete_layer("DELETE_ME")
+
+        # Assert
+        assert ("DELETE_ME", layer) not in canvas.layers
+        assert ("OTHER1", layer) in canvas.layers
+        assert ("OTHER2", layer) in canvas.layers
+
+    def test_get_layer(self):
+        # Arrange
+        canvas: Canvas = Canvas.__new__(Canvas)
+        layer1 = Layer.__new__(Layer)
+        layer2 = Layer.__new__(Layer)
+        layer3 = Layer.__new__(Layer)
+        canvas.layers = [("LAYER1", layer1), ("LAYER2", layer2), ("LAYER3", layer3)]
+
+        # Act
+        actual1 = canvas.get_layer("LAYER1")
+        actual2 = canvas.get_layer("LAYER2")
+        actual3 = canvas.get_layer("LAYER3")
+        actual4 = canvas.get_layer("LAYER4")
+
+        # Assert
+        assert actual1 == layer1
+        assert actual2 == layer2
+        assert actual3 == layer3
+        assert actual4 is None
