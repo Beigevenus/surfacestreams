@@ -130,7 +130,9 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, point_o
                         drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
                                                                  drawing_point, old_point,
                                                                  1, 'BLACK',
-                                                                 50)
+                                                                 100)
+
+                    switch_mode = True
 
                 elif hand_sign == "Open":
                     old_point = None
@@ -226,7 +228,7 @@ def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, 
 
     if drawing_point is not None:
         if drawing_point.distance_to(point_on_canvas) > drawing_precision:
-            drawing_point = drawing_point.next_point_to(point_on_canvas, 2)
+            drawing_point = drawing_point.next_point_to(point_on_canvas)
             canvas.get_layer("DRAWING").draw_line(old_point, drawing_point)
             old_point = drawing_point
 

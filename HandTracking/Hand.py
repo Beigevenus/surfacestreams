@@ -53,7 +53,14 @@ class Hand:
             points.append(finger.pip)
             points.append(finger.dip)
 
-        points.append(self.wrist)
+        wrist = self.wrist
+        imcp = self.fingers["INDEX_FINGER"].mcp
+        pmcp = self.fingers["PINKY"].mcp
+
+        points.append(Point((imcp.x + wrist.x) / 2, (imcp.y + wrist.y) / 2))
+        points.append(Point((pmcp.x + wrist.x) / 2, (pmcp.y + wrist.y) / 2))
+
+        points.append(wrist)
         return points
 
     def get_hand_sign(self, camera_frame, landmarks) -> str:

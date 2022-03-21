@@ -84,6 +84,7 @@ class Canvas:
 
     def draw_mask_points(self, points: list[Point]) -> None:
         # TODO: Write docstring for method
+        self.get_layer('MASK').toolbox.change_line_size(75)
 
         for point in points:
             self.get_layer("MASK").draw_circle(point)

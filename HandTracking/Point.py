@@ -51,7 +51,7 @@ class Point:
         calculation: float = (self.x - other.x) ** 2 + (self.y - other.y) ** 2
         return sqrt(calculation)
 
-    def next_point_to(self, other: 'Point', precision: int = 3) -> 'Point':
+    def next_point_to(self, other: 'Point', precision: int = 2) -> 'Point':
         # TODO: Write docstring for method
         point: Point = self.__midpoint_to(other)
 
