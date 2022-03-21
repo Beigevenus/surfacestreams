@@ -35,6 +35,14 @@ class Layer:
                  (int(point.x), int(point.y)),
                  self.toolbox.current_color, self.toolbox.line_size)
 
-    def draw_circle(self, point: Point):
+    def draw_circle(self, point: Point, size = None, color=None):
+        if color is None:
+            color = self.toolbox.current_color
+        else:
+            color = self.toolbox.color_palette[color]
+
+        if size is None:
+            size = self.toolbox.circle_size
+
         cv2.circle(self.image, (int(point.x), int(point.y)),
-                   self.toolbox.circle_size, self.toolbox.current_color, cv2.FILLED)
+                   size, color, cv2.FILLED)

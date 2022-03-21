@@ -15,7 +15,7 @@ class Canvas:
         self.width: int = width
         self.height: int = height
         self.name: str = name
-        self.layers: list[(str, Layer)] = []# [("MASK", Layer(width, height, PaintingToolbox(75, current_color="BLACK")))]
+        self.layers: list[(str, Layer)] = [("MASK", Layer(width, height, PaintingToolbox(75, current_color="BLACK")))]
 
         # TODO: Remove when it is no longer necessary
         # self.create_layer("CAL_CROSS", PaintingToolbox(5, current_color="BLUE"))
@@ -139,8 +139,8 @@ class Canvas:
         bot_right = camera.transform_point(Point(1, 1), width, height)
         print(int(bot_right.x), int(bot_right.y))
 
-        self.get_layer("CAL_CROSS").wipe()
-        self.get_layer("CAL_CROSS").draw_line(top_left, top_right)
-        self.get_layer("CAL_CROSS").draw_line(top_right, bot_right)
-        self.get_layer("CAL_CROSS").draw_line(bot_right, bot_left)
-        self.get_layer("CAL_CROSS").draw_line(bot_left, top_left)
+        self.get_layer("DRAWING").wipe()
+        self.get_layer("DRAWING").draw_line(top_left, top_right)
+        self.get_layer("DRAWING").draw_line(top_right, bot_right)
+        self.get_layer("DRAWING").draw_line(bot_right, bot_left)
+        self.get_layer("DRAWING").draw_line(bot_left, top_left)

@@ -20,7 +20,7 @@ mp_hand = mp.solutions.hands
 def main(config: Settings) -> int:
     # TODO: Remove when auto calibration is implemented
     drawing_point: Optional[Point] = None
-    drawing_precision: int = 15
+    drawing_precision: int = 5
     old_point: Optional[Point] = None
     point_on_canvas: Optional[Point] = None
 
@@ -41,6 +41,7 @@ def main(config: Settings) -> int:
                          Point(canvas.width - 1, canvas.height)], camera=config.camera)
 
     camera.update_image_ptm(canvas.width, canvas.height)
+    canvas.print_calibration_cross(camera, canvas.width, canvas.height)
     cv2.setMouseCallback(camera.name, lambda event, x, y, flags, param: mouse_click(camera, canvas.width,
                                                                                     canvas.height, event, x,
                                                                                     y, flags, param))
@@ -106,7 +107,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
             if camera.calibration_is_done():
                 # TODO: Add erasing when working on the wheel
                 hand_sign: str = hand.get_hand_sign(camera.frame, hand_landmarks)
-                if hand_sign == "Pointer":
+                if hand_sign == "Pointer" or hand_sign == "Close":
                     point_on_canvas = camera.transform_point(hand.get_index_tip(), canvas.width, canvas.height)
 
                     drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
@@ -128,9 +129,9 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                 mask_points.append(camera.transform_point(point, canvas.width, canvas.height))
 
             # canvas.get_layer("TIP").wipe()
-            canvas.get_layer("DRAWING").draw_circle(camera.transform_point(hand.fingers["INDEX_FINGER"].tip, canvas.width, canvas.height))
             #
-            # canvas.draw_mask_points(mask_points)
+            canvas.draw_mask_points(mask_points)
+            canvas.get_layer("MASK").draw_circle(camera.transform_point(hand.fingers["INDEX_FINGER"].tip, canvas.width, canvas.height), color="GREEN", size=3)
             # canvas.print_calibration_cross(camera, canvas.width, canvas.height)
 
     return drawing_point, old_point, point_on_canvas
@@ -138,7 +139,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
 
 def update_hand_mask(counter, canvas):
     canvas.show()
-    # canvas.get_layer("MASK").wipe()
+    canvas.get_layer("MASK").wipe()
 
     return counter
 
