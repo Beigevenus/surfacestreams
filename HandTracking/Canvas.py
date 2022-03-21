@@ -83,8 +83,11 @@ class Canvas:
         self.height = height
 
     def draw_mask_points(self, points: list[Point]) -> None:
-        # TODO: Write docstring for method
-        self.get_layer('MASK').toolbox.change_line_size(75)
+        """
+        Draws multiple circles on the MASK layer of the canvas corresponding to the given points' coordinates.
+
+        :param points: The list of Points to draw circles at
+        """
 
         for point in points:
             self.get_layer("MASK").draw_circle(point)
