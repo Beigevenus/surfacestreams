@@ -45,3 +45,8 @@ class Layer:
         """
         cv2.circle(self.image, (int(point.x), int(point.y)),
                    self.toolbox.circle_size, self.toolbox.current_color, cv2.FILLED)
+
+    def fill(self, color: int):
+        self.image = np.full(shape=[self.height, self.width, 4],
+                             fill_value=[color, color, color, color],
+                             dtype=np.uint8)
