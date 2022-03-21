@@ -20,7 +20,7 @@ mp_hand = mp.solutions.hands
 def main(config: Settings) -> int:
     # TODO: Remove when auto calibration is implemented
     drawing_point: Optional[Point] = None
-    drawing_precision: int = 30
+    drawing_precision: int = 15
     old_point: Optional[Point] = None
     point_on_canvas: Optional[Point] = None
 
@@ -127,18 +127,18 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
             for point in hand.get_mask_points():
                 mask_points.append(camera.transform_point(point, canvas.width, canvas.height))
 
-            canvas.get_layer("TIP").wipe()
-            canvas.get_layer("TIP").draw_circle(camera.transform_point(hand.fingers["INDEX_FINGER"].tip, canvas.width, canvas.height))
-
-            canvas.draw_mask_points(mask_points)
-            canvas.print_calibration_cross(camera, canvas.width, canvas.height)
+            # canvas.get_layer("TIP").wipe()
+            canvas.get_layer("DRAWING").draw_circle(camera.transform_point(hand.fingers["INDEX_FINGER"].tip, canvas.width, canvas.height))
+            #
+            # canvas.draw_mask_points(mask_points)
+            # canvas.print_calibration_cross(camera, canvas.width, canvas.height)
 
     return drawing_point, old_point, point_on_canvas
 
 
 def update_hand_mask(counter, canvas):
     canvas.show()
-    canvas.get_layer("MASK").wipe()
+    # canvas.get_layer("MASK").wipe()
 
     return counter
 
