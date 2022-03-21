@@ -1,6 +1,5 @@
 from typing import Optional
 
-import numpy as np
 from cv2 import VideoCapture
 from numpy import ndarray
 
@@ -136,11 +135,11 @@ class Camera:
 
         return [left_top, right_top, right_bot, left_bot]
 
-    def transform_point(self, point) -> Point:
+    def transform_point(self, point, width, height) -> Point:
         # TODO: Write docstring for method
-        corrected_coordinates = np.matmul(self.ptm, [point.x, point.y, 1])
+        # corrected_coordinates = np.matmul(self.ptm, [point.x, point.y, 1])
 
-        return Point(round(corrected_coordinates[0]), round(corrected_coordinates[1]))
+        return Point(round(point.x * width), round(point.y * height))
 
     # TODO: Reconsider the location of this method
     def convert_point_to_res(self, point: Point) -> Point:

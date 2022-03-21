@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import Optional, NamedTuple
+from typing import Optional
 
 from HandTracking.Config import Config
 from HandTracking.PaintingToolbox import PaintingToolbox
@@ -20,6 +20,7 @@ mp_hand = mp.solutions.hands
 def main(config: Settings) -> int:
     # TODO: Remove when auto calibration is implemented
     drawing_point: Optional[Point] = None
+    drawing_precision: int = 30
     old_point: Optional[Point] = None
     point_on_canvas: Optional[Point] = None
 
@@ -45,9 +46,6 @@ def main(config: Settings) -> int:
                                                                                     y))
 
     counter: int = 0
-    calibration_color_flag: bool = True
-    draw_mode: str = 'DRAW'
-    switch_draw_mode: bool = True
 
     hands = mp_hand.Hands(
         static_image_mode=False,
@@ -62,9 +60,8 @@ def main(config: Settings) -> int:
             # If loading a video, use 'break' instead of 'continue'.
             continue
 
-        drawing_point, old_point, point_on_canvas, calibration_color_flag, switch_draw_mode, draw_mode = \
-            analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, point_on_canvas,
-                          calibration_color_flag, switch_draw_mode, draw_mode)
+        drawing_point, old_point, point_on_canvas = analyse_frame(camera, hands, hand, canvas, drawing_point,
+                                                                  old_point, drawing_precision, point_on_canvas)
 
         camera.show_frame()
 
@@ -81,81 +78,58 @@ def main(config: Settings) -> int:
     camera.capture.release()
 
 
-def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, point_on_canvas: Optional[Point],
-                  calibration_color_flag, switch_mode, draw_mode):
+def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing_precision,
+                  point_on_canvas: Optional[Point]):
     # TODO: Write docstring for function
     camera.frame = cv2.cvtColor(camera.frame, cv2.COLOR_BGR2RGB)
+
     camera.frame.flags.writeable = False
-    # TODO: make highlighting work again
     hand_position: namedtuple = hands.process(camera.frame)
     camera.frame.flags.writeable = True
 
-    if camera.calibration_is_done():
-        if calibration_color_flag:
-            canvas.get_layer('DRAWING').fill(0)
-            calibration_color_flag = False
+    # TODO: figure out the structure of the hand position and landmarks
+    if hand_position.multi_hand_landmarks:
+        for hand_landmarks, handedness in zip(hand_position.multi_hand_landmarks,
+                                              hand_position.multi_handedness):
 
-        # TODO: figure out the structure of the hand position and landmarks
-        if hand_position.multi_hand_landmarks:
-            for hand_landmarks, handedness in zip(hand_position.multi_hand_landmarks,
-                                                  hand_position.multi_handedness):
+            # TODO: Remove call when no longer needed. For debugging only
+            draw_hand_landmarks(hand_landmarks, camera.frame)
 
-                # TODO: Remove call when no longer needed. For debugging only
-                draw_hand_landmarks(hand_landmarks, camera.frame)
+            hand.update(hand_landmarks)
 
-                hand.update(hand_landmarks)
-
-                # The actual check whether the program should be drawing or not
+            # The actual check whether the program should be drawing or not
+            if camera.calibration_is_done():
+                # TODO: Add erasing when working on the wheel
                 hand_sign: str = hand.get_hand_sign(camera.frame, hand_landmarks)
                 if hand_sign == "Pointer":
-                    point_on_camera = camera.convert_point_to_res(hand.get_index_tip())
-                    point_on_canvas = camera.transform_point(point_on_camera)
+                    point_on_canvas = camera.transform_point(hand.get_index_tip(), canvas.width, canvas.height)
 
-                    if draw_mode == 'DRAW':
-                        drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
-                                                                 drawing_point, old_point,
-                                                                 15)
+                    drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
+                                                             drawing_point, old_point, drawing_precision)
 
-                    if draw_mode == 'ERASE':
-                        drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
-                                                                 drawing_point, old_point,
-                                                                 1, 'BLACK',
-                                                                 100)
-
-                    switch_mode = True
-
-                elif hand_sign == "Open":
+                else:
                     old_point = None
                     drawing_point = None
-                    switch_mode = True
 
-                elif hand_sign == "Close":
-                    if switch_mode:
-                        switch_mode = False
-                        if draw_mode == 'ERASE':
-                            draw_mode = 'DRAW'
-                            break
-                        if draw_mode == 'DRAW':
-                            draw_mode = 'ERASE'
-                            break
+                if hand_sign == "Close":
+                    pass
 
-                # Mask for removing the hand
-                mask_points = []
-                for point in hand.get_mask_points():
-                    p: Point = Point(point.x * camera.width, point.y * camera.height)
-                    mask_points.append(camera.transform_point(p))
+                if hand_sign == "Open":
+                    pass
 
-                # if point_on_canvas is not None:
-                #     canvas.toolbox.change_color('GREEN')
-                #     hand_mask.draw_point(point_on_canvas)
-                canvas.draw_mask_points(mask_points)
-                # canvas.print_calibration_cross(camera)
+            # Mask for removing the hand
+            mask_points = []
+            for point in hand.get_mask_points():
+                mask_points.append(camera.transform_point(point, canvas.width, canvas.height))
 
-    else:
-        canvas.get_layer('DRAWING').fill(255)
-        calibration_color_flag = True
+            canvas.get_layer("TIP").wipe()
+            canvas.get_layer("TIP").draw_circle(camera.transform_point(hand.fingers["INDEX_FINGER"].tip,
+                                                                       canvas.width, canvas.height))
 
-    return drawing_point, old_point, point_on_canvas, calibration_color_flag, switch_mode, draw_mode
+            canvas.draw_mask_points(mask_points)
+            canvas.print_calibration_cross(camera)
+
+    return drawing_point, old_point, point_on_canvas
 
 
 def update_hand_mask(counter, canvas):
@@ -212,20 +186,21 @@ def mouse_click(camera, width, height, event, x, y) -> None:
 
 
 def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, old_point: Point,
-                  drawing_precision: int, draw_color: str = 'WHITE', draw_size: int = 4):
+                  drawing_precision: int):
     # TODO: Write docstring for function
+
     if drawing_point is None:
         drawing_point = point_on_canvas
 
     if old_point is None:
         old_point = point_on_canvas
 
-    canvas.get_layer("DRAWING").toolbox.change_color(draw_color)
-    canvas.get_layer("DRAWING").toolbox.change_line_size(draw_size)
+    canvas.get_layer("DRAWING").toolbox.change_color('WHITE')
+    canvas.get_layer("DRAWING").toolbox.change_line_size(3)
 
     if drawing_point is not None:
         if drawing_point.distance_to(point_on_canvas) > drawing_precision:
-            drawing_point = drawing_point.next_point_to(point_on_canvas)
+            drawing_point = drawing_point.next_point_to(point_on_canvas, 2)
             canvas.get_layer("DRAWING").draw_line(old_point, drawing_point)
             old_point = drawing_point
 
