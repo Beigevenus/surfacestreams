@@ -21,18 +21,3 @@ class TestPoint:
 
         # Assert
         assert round(distance, 4) == expected_distance
-
-    @pytest.mark.parametrize("point1, point2, precision, expected_point",
-                             [(Point(6, 32), Point(1, 22), -1, Point(3.5, 27)),
-                              (Point(-2, 9), Point(22, 19), 0, Point(10, 14)),
-                              (Point(0, 0), Point(0, 0), 1, Point(0, 0)),
-                              (Point(0, 0), Point(10, 42), 1, Point(2.5, 10.5)),
-                              (Point(15, -2), Point(82, 75), 2, Point(23.375, 7.625)),
-                              (Point(-62, -17), Point(-5, -8), 3, Point(-58.4375, -16.4375))])
-    def test_next_point_to(self, point1: Point, point2: Point, precision: int, expected_point: Point):
-        # Arrange & Act
-        actual = point1.next_point_to(point2, precision)
-
-        # Assert
-        print(point1.x, point1.y, actual.x, actual.y)
-        assert actual == expected_point
