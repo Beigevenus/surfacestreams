@@ -4,7 +4,6 @@ from HandTracking.Canvas import Canvas
 import pytest
 
 from HandTracking.Layer import Layer
-from HandTracking.PaintingToolbox import PaintingToolbox
 
 x_fail = pytest.mark.xfail
 
@@ -55,10 +54,9 @@ class TestCanvas:
         canvas.layers = [(), (), ()]
         canvas.width = 100
         canvas.height = 100
-        toolbox: PaintingToolbox = PaintingToolbox()
 
         # Act
-        canvas.create_layer(name, toolbox, position)
+        canvas.create_layer(name, position)
 
         # Assert
         assert canvas.layers[expected_position][0] == name
