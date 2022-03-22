@@ -89,7 +89,42 @@ class Camera:
     def update_image_ptm(self, width: int, height: int) -> None:
         # TODO: Write docstring for method
         if not len(self.calibration_points) <= 3:
-            self.ptm, self.wwidth, self.wheight = fpt(self.sorted_calibration_points, width, height)
+
+            self.ptm, self.wwidth, self.wheight = fpt(self.get_expanded_corners(), width, height)
+
+    def get_expanded_corners(self):
+        min_x = min(self.sorted_calibration_points[0].x, self.sorted_calibration_points[3].x)
+        min_y = min(self.sorted_calibration_points[0].y, self.sorted_calibration_points[1].y)
+        max_x = max(self.sorted_calibration_points[1].x, self.sorted_calibration_points[2].x)
+        max_y = max(self.sorted_calibration_points[2].y, self.sorted_calibration_points[3].y)
+
+        inner_width = max_x - min_x
+        inner_height = max_y - min_y
+
+        aspect_ratio_inner = inner_width / inner_height
+        aspect_ratio_outer = self.width / self.height
+
+        if aspect_ratio_outer > aspect_ratio_inner:
+            target_aspect = (inner_width * (self.height / inner_height), self.height)
+            step_width = (self.width - inner_width) / 2
+            if step_width + inner_width > self.width:
+                step_width = self.width - inner_width
+            step_height = 0
+        else:
+            target_aspect = (self.width, inner_height * (self.width / inner_width))
+            step_width = 0
+            step_height = (self.height - inner_height) / 2
+            if step_height + inner_height > self.height:
+                step_height = self.height - inner_height
+
+        rel_top_left = Point(((self.sorted_calibration_points[0].x - min_x) / inner_width)*target_aspect[0] + step_width, ((self.sorted_calibration_points[0].y - min_y) / inner_height)*target_aspect[1] + step_height)
+        rel_top_right = Point(((self.sorted_calibration_points[1].x - min_x) / inner_width)*target_aspect[0] + step_width, ((self.sorted_calibration_points[1].y - min_y) / inner_height)*target_aspect[1] + step_height)
+        rel_bot_left = Point(((self.sorted_calibration_points[3].x - min_x) / inner_width)*target_aspect[0] + step_width, ((self.sorted_calibration_points[3].y - min_y) / inner_height)*target_aspect[1] + step_height)
+        rel_bot_right = Point(((self.sorted_calibration_points[2].x - min_x) / inner_width)*target_aspect[0] + step_width, ((self.sorted_calibration_points[2].y - min_y) / inner_height)*target_aspect[1] + step_height)
+
+        print(rel_top_left, rel_top_right, rel_bot_right, rel_bot_left)
+
+        return [rel_top_left, rel_top_right, rel_bot_right, rel_bot_left]
 
     def sort_calibration_points(self) -> list[Point]:
         """
