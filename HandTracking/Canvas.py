@@ -18,25 +18,31 @@ class Canvas:
 
         # TODO: Remove when it is no longer necessary
         self.create_layer("CAL_CROSS")
-        self.create_layer("TIP", 0)
+        self.create_layer("TIP", position=0)
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
         # self.move_window(2500)
 
-    def create_layer(self, name: str, position: int = -1) -> None:
+    def create_layer(self, name: str, colors: dict[str, list[int]] = None, position: int = -1) -> None:
         """
         Creates a new Layer object and adds it to the canvas' list of layers, at the specified position.
 
         :param name: The name of the layer
+        :param colors: The additional colors to add to the layer's color palette
         :param position: The position of the layer in the order of layers
         """
+        if colors:
+            actual_colors = colors
+        else:
+            actual_colors = {}
+
         try:
             if position == -1:
-                self.layers.append((name, Layer(self.width, self.height)))
+                self.layers.append((name, Layer(self.width, self.height, actual_colors)))
             else:
-                self.layers.insert(position, (name, Layer(self.width, self.height)))
+                self.layers.insert(position, (name, Layer(self.width, self.height, actual_colors)))
         except IndexError:
-            self.layers.append((name, Layer(self.width, self.height)))
+            self.layers.append((name, Layer(self.width, self.height, actual_colors)))
 
     def delete_layer(self, name: str) -> None:
         """
@@ -161,21 +167,21 @@ class Canvas:
         color: str = "RED"
         size: int = 5
 
-        print("top left:")
+        # print("top left:")
         top_left = camera.transform_point(Point(0, 0), self.width, self.height)
-        print(int(top_left.x), int(top_left.y))
+        # print(int(top_left.x), int(top_left.y))
 
-        print("top right:")
+        # print("top right:")
         top_right = camera.transform_point(Point(0, 1), self.width, self.height)
-        print(int(top_right.x), int(top_right.y))
+        # print(int(top_right.x), int(top_right.y))
 
-        print("bot left:")
+        # print("bot left:")
         bot_left = camera.transform_point(Point(1, 0), self.width, self.height)
-        print(int(bot_left.x), int(bot_left.y))
+        # print(int(bot_left.x), int(bot_left.y))
 
-        print("bot right:")
+        # print("bot right:")
         bot_right = camera.transform_point(Point(1, 1), self.width, self.height)
-        print(int(bot_right.x), int(bot_right.y))
+        # print(int(bot_right.x), int(bot_right.y))
 
         self.get_layer("CAL_CROSS").wipe()
         self.get_layer("CAL_CROSS").draw_line(top_left, top_right, color, size)

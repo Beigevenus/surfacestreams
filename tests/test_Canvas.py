@@ -56,7 +56,7 @@ class TestCanvas:
         canvas.height = 100
 
         # Act
-        canvas.create_layer(name, position)
+        canvas.create_layer(name, position=position)
 
         # Assert
         assert canvas.layers[expected_position][0] == name

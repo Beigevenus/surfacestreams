@@ -2,9 +2,7 @@ from collections import namedtuple
 from typing import Optional
 
 from HandTracking.Config import Config
-from HandTracking.PaintingToolbox import PaintingToolbox
 from HandTracking.MenuWheel import MenuWheel
-from HandTracking.Layer import Layer
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
 from HandTracking.Hand import Hand
@@ -43,11 +41,11 @@ def main(config: Settings) -> int:
     camera.update_image_ptm(canvas.width, canvas.height)
     cv2.setMouseCallback(camera.name, lambda event, x, y, flags, param: mouse_click(camera, canvas.width,
                                                                                     canvas.height, event, x,
-                                                                                    y, flags, param))
+                                                                                    y))
 
     counter: int = 0
 
-    canvas.create_layer('MENU_WHEEL', PaintingToolbox(), 0)
+    canvas.create_layer('MENU_WHEEL', {"ACTIVE_BLUE": [255, 201, 99, 255]}, 0)
     menu_wheel = MenuWheel(canvas.get_layer('MENU_WHEEL'), canvas.get_layer('DRAWING'))
 
     hands = mp_hand.Hands(
@@ -64,7 +62,8 @@ def main(config: Settings) -> int:
             continue
 
         drawing_point, old_point, point_on_canvas = analyse_frame(camera, hands, hand, canvas, drawing_point,
-                                                                  old_point, drawing_precision, point_on_canvas)
+                                                                  old_point, drawing_precision, point_on_canvas,
+                                                                  menu_wheel)
 
         camera.show_frame()
 
@@ -82,7 +81,7 @@ def main(config: Settings) -> int:
 
 
 def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing_precision,
-                  point_on_canvas: Optional[Point]):
+                  point_on_canvas: Optional[Point], menu_wheel):
     camera.frame = cv2.cvtColor(camera.frame, cv2.COLOR_BGR2RGB)
 
     camera.frame.flags.writeable = False
@@ -107,7 +106,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                     point_on_canvas = camera.transform_point(hand.get_index_tip(), canvas.width, canvas.height)
 
                     drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
-                                                             drawing_point, old_point, drawing_precision)
+                                                             drawing_point, old_point, drawing_precision, menu_wheel)
 
                 else:
                     old_point = None
@@ -120,13 +119,8 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                         menu_wheel.center_point = menu_point
 
                     menu_wheel.open_menu()
-                    menu_wheel.layer.toolbox.change_color('GREEN')
-                    menu_wheel.layer.toolbox.circle_size = 5
-                    menu_wheel.layer.draw_circle(menu_point)
-
-
-
-
+                    menu_wheel.layer.draw_circle(menu_point, "GREEN", 5)
+                    menu_wheel.check_button_click(menu_point)
 
                 if hand_sign == "Open":
                     if menu_wheel.is_open:
@@ -203,7 +197,7 @@ def mouse_click(camera, width, height, event, x, y) -> None:
 
 
 def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, old_point: Point,
-                  drawing_precision: int):
+                  drawing_precision: int, menu_wheel: MenuWheel):
     # TODO: Write docstring for function
 
     if drawing_point is None:
@@ -215,7 +209,7 @@ def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, 
     if drawing_point is not None:
         if drawing_point.distance_to(point_on_canvas) > drawing_precision:
             drawing_point = drawing_point.next_point_to(point_on_canvas, 2)
-            canvas.get_layer("DRAWING").draw_line(old_point, drawing_point, "WHITE", 3)
+            canvas.get_layer("DRAWING").draw_line(old_point, drawing_point, menu_wheel.drawing_color, 3)
             old_point = drawing_point
 
     return drawing_point, old_point

@@ -11,6 +11,7 @@ class MenuWheel:
         self.layer = layer
         self.center_point = Point(0, 0)
         self.drawing_layer = drawing_layer
+        self.drawing_color: str = "WHITE"
 
         self.initialize_buttons()
 
@@ -19,8 +20,7 @@ class MenuWheel:
         self.add_tool_button(self.__select_drawer)
         self.add_tool_button(self.__select_color_wheel)
 
-        for color in self.drawing_layer.toolbox.color_palette:
-            print(color)
+        for color in self.drawing_layer.color_palette:
             self.add_color_button(self.__change_color, color)
 
     def open(self):
@@ -30,42 +30,36 @@ class MenuWheel:
         self.tool_buttons.append(Button(callback))
 
     def add_color_button(self, callback, color):
-        if self.drawing_layer.toolbox.current_color == self.drawing_layer.toolbox.color_palette[color]:
+        if self.drawing_color == color:
             self.color_buttons.append(Button(callback, color=color, active=True))
         else:
             self.color_buttons.append(Button(callback, color=color))
 
     def draw_buttons(self):
-        self.layer.toolbox.circle_size = round(self.layer.width*0.03)
-        self.layer.toolbox.change_color("WHITE")
         bot_left = Point(self.layer.width, self.layer.height)
-        circle_size = self.layer.toolbox.circle_size
+        circle_size = round(self.layer.width * 0.03)
+
         for idx, button in enumerate(self.tool_buttons):
-            button_location = Point(round(bot_left.x-circle_size-(circle_size/2)), round(bot_left.y-((circle_size*2+10)*(idx+1))-(circle_size*2)))
+            button.size = circle_size
+            button_location = Point(round(bot_left.x - circle_size - (circle_size / 2)),
+                                    round(bot_left.y - ((circle_size * 2 + 10) * (idx + 1)) - (circle_size * 2)))
             button.set_location(button_location)
             
             if button.active:
-                self.layer.toolbox.circle_size += 4
-                self.layer.toolbox.change_color_rgba([255, 201, 99, 255])
-                self.layer.draw_circle(button.location)
-                self.layer.toolbox.circle_size = circle_size
+                self.layer.draw_circle(button.location, "ACTIVE_BLUE", circle_size + 4)
 
-            self.layer.draw_circle(button.location)
+            self.layer.draw_circle(button.location, "WHITE", circle_size)
 
         for idx, button in enumerate(self.color_buttons):
+            button.size = circle_size
             button_location = Point(round(bot_left.x - ((circle_size * 2 + 10) * (idx + 1)) - (circle_size * 2)),
                                     round(bot_left.y - circle_size - (circle_size / 2)))
             button.set_location(button_location)
 
             if button.active:
-                self.layer.toolbox.circle_size += 4
-                self.layer.toolbox.change_color_rgba([255, 201, 99, 255])
-                self.layer.draw_circle(button.location)
-                self.layer.toolbox.circle_size = circle_size
+                self.layer.draw_circle(button.location, "ACTIVE_BLUE", circle_size + 4)
 
-            self.layer.toolbox.change_color(button.color)
-            self.layer.draw_circle(button.location)
-
+            self.layer.draw_circle(button.location, button.color, circle_size)
 
     def __select_eraser(self):
         print('selected: Eraser')
@@ -76,8 +70,20 @@ class MenuWheel:
     def __select_color_wheel(self):
         print('selected: Color')
 
-    def __change_color(self):
-        print('selected: a color like red maybe?')
+    def __change_color(self, button: Button):
+        actual_color = self.drawing_layer.color_palette[button.color]
+
+        for button in self.color_buttons:
+            if actual_color == self.drawing_layer.color_palette[button.color]:
+                button.active = True
+                self.drawing_color = button.color
+            else:
+                button.active = False
+
+    def check_button_click(self, point: Point):
+        for button in self.color_buttons:
+            if button.is_point_in_circle(point):
+                button.callback(button)
 
     def open_menu(self):
         self.is_open = True
