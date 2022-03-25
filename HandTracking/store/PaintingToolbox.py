@@ -17,18 +17,30 @@ class PaintingToolbox:
         self.color_palette: dict = color_palette
         self.current_color = self.color_palette[current_color]
 
-    def change_color(self, new_color: str):
-        # TODO: Write docstring for method
+    def change_color(self, new_color: str) -> None:
+        """
+        Changes the current color of the toolbox to the specified color if it exists in its list of possible colors.
+
+        :param new_color: A string representing the new color to replace the current with
+        """
         try:
             self.current_color = self.color_palette[new_color]
         except KeyError:
             self.current_color = self.color_palette['WHITE']
 
-    def change_color_rgba(self, new_color: list[int]):
-        # TODO: Write docstring for method
+    def change_color_rgba(self, new_color: list[int]) -> None:
+        """
+        Changes the current color of the toolbox based on an RGBA value.
+
+        :param new_color: The RGBA value to change the current color to
+        """
         self.current_color = new_color
 
-    def change_line_size(self, size: int = 5):
-        # TODO: Write docstring for method
+    def change_line_size(self, size: int = 5) -> None:
+        """
+        Changes the current line size of the toolbox, and thereby also the circle size.
+
+        :param size: An integer representing the new line size to set
+        """
         self.line_size = int(size)
         self.circle_size = int(size / 2)

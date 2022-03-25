@@ -1,13 +1,12 @@
 from typing import NamedTuple, Optional
 
 from HandTracking.Config import Config
-from HandTracking.PaintingToolbox import PaintingToolbox
-from HandTracking.utility import limit
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
 from HandTracking.Hand import Hand
 from HandTracking.Camera import Camera
 from HandTracking.Settings import run_settings as run_settings, Settings
+from HandTracking.MenuWheel import MenuWheel
 
 import cv2
 import mediapipe as mp
@@ -24,11 +23,9 @@ def main(config: Settings) -> int:
     old_point: Optional[Point] = None
     point_on_canvas: Optional[Point] = None
 
-    drawing_toolbox: PaintingToolbox = PaintingToolbox(5, current_color="WHITE")
-
     hand: Hand = Hand(mp_hand)
     canvas: Canvas = Canvas("Canvas", config.monitor.width, config.monitor.height)
-    canvas.create_layer("DRAWING", drawing_toolbox)
+    canvas.create_layer("DRAWING")
     canvas.move_window(config.monitor.x, config.monitor.y)
     if config.is_fullscreen == 1:
         canvas.fullscreen()
@@ -41,12 +38,15 @@ def main(config: Settings) -> int:
                          Point(canvas.width - 1, canvas.height)], camera=config.camera)
 
     camera.update_image_ptm(canvas.width, canvas.height)
-    canvas.print_calibration_cross(camera, canvas.width, canvas.height)
+    canvas.print_calibration_cross(camera)
     cv2.setMouseCallback(camera.name, lambda event, x, y, flags, param: mouse_click(camera, canvas.width,
                                                                                     canvas.height, event, x,
-                                                                                    y, flags, param))
+                                                                                    y))
 
     counter: int = 0
+
+    canvas.create_layer('MENU_WHEEL', {"ACTIVE_BLUE": [255, 201, 99, 255]}, 0)
+    menu_wheel = MenuWheel(canvas.get_layer('MENU_WHEEL'), canvas.get_layer('DRAWING'))
 
     hands = mp_hand.Hands(
         static_image_mode=False,
@@ -62,7 +62,8 @@ def main(config: Settings) -> int:
             continue
 
         drawing_point, old_point, point_on_canvas = analyse_frame(camera, hands, hand, canvas, drawing_point,
-                                                                  old_point, drawing_precision, point_on_canvas)
+                                                                  old_point, drawing_precision, point_on_canvas,
+                                                                  menu_wheel)
 
         camera.show_frame()
 
@@ -80,12 +81,11 @@ def main(config: Settings) -> int:
 
 
 def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing_precision,
-                  point_on_canvas: Optional[Point]):
+                  point_on_canvas: Optional[Point], menu_wheel):
     camera.frame = cv2.cvtColor(camera.frame, cv2.COLOR_BGR2RGB)
 
     camera.frame.flags.writeable = False
-    # TODO: make highlighting work again
-    hand_position: NamedTuple = hands.process(camera.frame)
+    hand_position: namedtuple = hands.process(camera.frame)
     camera.frame.flags.writeable = True
 
     # TODO: figure out the structure of the hand position and landmarks
@@ -93,13 +93,8 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
         for hand_landmarks, handedness in zip(hand_position.multi_hand_landmarks,
                                               hand_position.multi_handedness):
 
-            # TODO: This is the drawing part don't need it in the final product. Only for Debugging
-            mp_drawing.draw_landmarks(
-                camera.frame,
-                hand_landmarks,
-                mp_hand.HAND_CONNECTIONS,
-                mp_drawing_styles.get_default_hand_landmarks_style(),
-                mp_drawing_styles.get_default_hand_connections_style())
+            # TODO: Remove call when no longer needed. For debugging only
+            draw_hand_landmarks(hand_landmarks, camera.frame)
 
             hand.update(hand_landmarks)
 
@@ -112,18 +107,26 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                     if normalised_point is not None:
                         point_on_canvas = camera.transform_point(normalised_point, canvas.width, canvas.height)
 
-                        drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
-                                                                 drawing_point, old_point, drawing_precision)
+                    drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
+                                                             drawing_point, old_point, drawing_precision, menu_wheel)
 
                 else:
                     old_point = None
                     drawing_point = None
 
                 if hand_sign == "Close":
-                    pass
+                    menu_wheel.layer.wipe()
+                    menu_point = camera.transform_point(hand.wrist, canvas.width, canvas.height)
+                    if not menu_wheel.is_open:
+                        menu_wheel.center_point = menu_point
+
+                    menu_wheel.open_menu()
+                    menu_wheel.layer.draw_circle(menu_point, "GREEN", 5)
+                    menu_wheel.check_button_click(menu_point)
 
                 if hand_sign == "Open":
-                    pass
+                    if menu_wheel.is_open:
+                        menu_wheel.close_menu()
 
             # Mask for removing the hand
             mask_points = []
@@ -146,6 +149,7 @@ def update_hand_mask(counter, canvas):
 
 
 def check_key_presses(canvas, camera):
+    # TODO: Write docstring for function
     # Exit program when Esc is pressed
     key = cv2.waitKey(1)
     if key == 27:  # ESC
@@ -174,14 +178,25 @@ def check_key_presses(canvas, camera):
     return 0
 
 
-def mouse_click(camera, width, height, event, x, y, flags, param) -> None:
-    # TODO: Write docstring for function
+def mouse_click(camera, width, height, event, x, y) -> None:
+    """
+    Callback function for mouse clicks in the camera window.
+    Left-clicking will update the calibration points.
+
+    :param camera: A reference to the camera
+    :param width: The width of the canvas
+    :param height: The height of the canvas
+    :param event: The event object, specifying the type of event
+    :param x: The x position of the mouse when the event is triggered
+    :param y: The y position of the mouse when the event is triggered
+    """
     if event == cv2.EVENT_LBUTTONUP:
         camera.update_calibration_point(Point(x, y), width, height)
 
 
 def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, old_point: Point,
-                  drawing_precision: int):
+                  drawing_precision: int, menu_wheel: MenuWheel):
+    # TODO: Write docstring for function
 
     if drawing_point is None:
         drawing_point = point_on_canvas
@@ -189,16 +204,28 @@ def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, 
     if old_point is None:
         old_point = point_on_canvas
 
-    canvas.get_layer("DRAWING").toolbox.change_color('WHITE')
-    canvas.get_layer("DRAWING").toolbox.change_line_size(3)
-
     if drawing_point is not None:
         if drawing_point.distance_to(point_on_canvas) > drawing_precision:
             drawing_point = drawing_point.next_point_to(point_on_canvas, 2)
-            canvas.get_layer("DRAWING").draw_line(old_point, drawing_point)
+            canvas.get_layer("DRAWING").draw_line(old_point, drawing_point, menu_wheel.drawing_color, 3)
             old_point = drawing_point
 
     return drawing_point, old_point
+
+
+def draw_hand_landmarks(hand_landmarks, frame) -> None:
+    """
+    TEMPORARY FUNCTION. Draws the hand landmarks in the camera window, for ease of debugging.
+
+    :param hand_landmarks: The hand landmarks to draw
+    :param frame: The frame to draw the landmarks in
+    """
+    mp_drawing.draw_landmarks(
+        frame,
+        hand_landmarks,
+        mp_hand.HAND_CONNECTIONS,
+        mp_drawing_styles.get_default_hand_landmarks_style(),
+        mp_drawing_styles.get_default_hand_connections_style())
 
 
 if __name__ == "__main__":

@@ -6,7 +6,6 @@ from numpy import ndarray
 
 from HandTracking.Camera import Camera
 from HandTracking.Layer import Layer
-from HandTracking.PaintingToolbox import PaintingToolbox
 from HandTracking.Point import Point
 
 
@@ -15,46 +14,79 @@ class Canvas:
         self.width: int = width
         self.height: int = height
         self.name: str = name
-        self.layers: list[(str, Layer)] = [("MASK", Layer(width, height, PaintingToolbox(75, current_color="BLACK")))]
+        self.layers: list[(str, Layer)] = [("MASK", Layer(width, height))]
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
 
-    def create_layer(self, name: str, toolbox: PaintingToolbox, position: int = -1) -> None:
-        # TODO: Write docstring for method
-        if position == -1:
-            self.layers.append((name, Layer(self.width, self.height, toolbox)))
+    def create_layer(self, name: str, colors: dict[str, list[int]] = None, position: int = -1) -> None:
+        """
+        Creates a new Layer object and adds it to the canvas' list of layers, at the specified position.
+
+        :param name: The name of the layer
+        :param colors: The additional colors to add to the layer's color palette
+        :param position: The position of the layer in the order of layers
+        """
+        if colors:
+            actual_colors = colors
         else:
-            self.layers.insert(position, (name, Layer(self.width, self.height, toolbox)))
+            actual_colors = {}
+
+        try:
+            if position == -1:
+                self.layers.append((name, Layer(self.width, self.height, actual_colors)))
+            else:
+                self.layers.insert(position, (name, Layer(self.width, self.height, actual_colors)))
+        except IndexError:
+            self.layers.append((name, Layer(self.width, self.height, actual_colors)))
 
     def delete_layer(self, name: str) -> None:
-        # TODO: Write docstring for method
-        layer = self.find_layer(name)
+        """
+        Removes the specified layer from the list of layers.
+
+        :param name: The name of the layer to remove
+        """
+        layer: tuple[str, Layer] = self.__find_layer(name)
 
         if layer:
             self.layers.remove(layer)
 
     def get_layer(self, name: str) -> Optional[Layer]:
-        # TODO: Write docstring for method
-        layer = self.find_layer(name)
+        """
+        Returns a reference to a Layer object given its name if it exists in the list of layers.
+
+        :param name: The name of the layer to get the reference of
+        :return: A reference to the layer matching the specified name, or None if it doesn't exist
+        """
+        layer: tuple[str, Layer] = self.__find_layer(name)
 
         if layer:
-            return self.find_layer(name)[1]
+            return self.__find_layer(name)[1]
         else:
             return None
 
-    def find_layer(self, name: str) -> Optional[tuple[str, Layer]]:
-        # TODO: Write docstring for method
+    def __find_layer(self, name: str) -> Optional[tuple[str, Layer]]:
+        """
+        Returns a tuple containing a layer's name and object reference given its name.
+
+        :param name: The name of the layer to find
+        :return: A tuple containing the name and object reference of the layer, or None if it doesn't exist
+        """
         for layer_name, layer in self.layers:
             if name == layer_name:
                 return layer_name, layer
         return None
 
     def combine_layers(self) -> ndarray:
-        # TODO: Write docstring for method
+        """
+        Merges all layers in the list of layers together, to create *one* layer containing the images of all combined
+        layers.
+
+        :return: An ndarray representing the image of the merged layers
+        """
         combined_image: ndarray = np.zeros(shape=[self.height, self.width, 4], dtype=np.uint8)
 
         for name, layer in self.layers[::-1]:
-            src_a = layer.image[..., 3] > 0
+            src_a: ndarray = layer.image[..., 3] > 0
 
             combined_image[src_a] = layer.image[src_a]
 
@@ -79,10 +111,14 @@ class Canvas:
         self.height = height
 
     def draw_mask_points(self, points: list[Point]) -> None:
-        # TODO: Write docstring for method
+        """
+        Draws multiple circles on the MASK layer of the canvas corresponding to the given points' coordinates.
+
+        :param points: The list of Points to draw circles at
+        """
 
         for point in points:
-            self.get_layer("MASK").draw_circle(point)
+            self.get_layer("MASK").draw_circle(point, "BLACK", 75)
 
     def show(self) -> None:
         """
@@ -117,25 +153,33 @@ class Canvas:
         cv2.moveWindow(self.name, offset_x, offset_y)
 
     # TODO: Remove when it is no longer necessary
-    def print_calibration_cross(self, camera: Camera, width, height):
-        print("top left:")
-        top_left = camera.transform_point(Point(0, 0), width, height)
-        print(int(top_left.x), int(top_left.y))
+    def print_calibration_cross(self, camera: Camera) -> None:
+        """
+        TEMPORARY METHOD: Creates the calibration cross drawing on the CAL_CROSS layer.
 
-        print("top right:")
-        top_right = camera.transform_point(Point(0, 1), width, height)
-        print(int(top_right.x), int(top_right.y))
+        :param camera: A reference to the camera
+        """
+        color: str = "RED"
+        size: int = 5
 
-        print("bot left:")
-        bot_left = camera.transform_point(Point(1, 1), width, height) # camera.transform_point(Point(1, 0), width, height)
-        print(int(bot_left.x), int(bot_left.y))
+        # print("top left:")
+        top_left = camera.transform_point(Point(0, 0), self.width, self.height)
+        # print(int(top_left.x), int(top_left.y))
 
-        print("bot right:")
-        bot_right = camera.transform_point(Point(1, 0), width, height) # camera.transform_point(Point(1, 1), width, height)
-        print(int(bot_right.x), int(bot_right.y))
+        # print("top right:")
+        top_right = camera.transform_point(Point(0, 1), self.width, self.height)
+        # print(int(top_right.x), int(top_right.y))
+
+        # print("bot left:")
+        bot_left = camera.transform_point(Point(1, 0), self.width, self.height)
+        # print(int(bot_left.x), int(bot_left.y))
+
+        # print("bot right:")
+        bot_right = camera.transform_point(Point(1, 1), self.width, self.height)
+        # print(int(bot_right.x), int(bot_right.y))
 
         self.get_layer("DRAWING").wipe()
-        self.get_layer("DRAWING").draw_line(top_left, top_right)
-        self.get_layer("DRAWING").draw_line(top_right, bot_right)
-        self.get_layer("DRAWING").draw_line(bot_right, bot_left)
-        self.get_layer("DRAWING").draw_line(bot_left, top_left)
+        self.get_layer("DRAWING").draw_line(top_left, top_right, color, size)
+        self.get_layer("DRAWING").draw_line(top_right, bot_right, color, size)
+        self.get_layer("DRAWING").draw_line(bot_right, bot_left, color, size)
+        self.get_layer("DRAWING").draw_line(bot_left, top_left, color, size)
