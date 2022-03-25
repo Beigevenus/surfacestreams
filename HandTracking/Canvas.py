@@ -16,12 +16,7 @@ class Canvas:
         self.name: str = name
         self.layers: list[(str, Layer)] = [("MASK", Layer(width, height))]
 
-        # TODO: Remove when it is no longer necessary
-        self.create_layer("CAL_CROSS")
-        self.create_layer("TIP", position=0)
-
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
-        # self.move_window(2500)
 
     def create_layer(self, name: str, colors: dict[str, list[int]] = None, position: int = -1) -> None:
         """
@@ -123,7 +118,7 @@ class Canvas:
         """
 
         for point in points:
-            self.get_layer("MASK").draw_circle(point, "BLACK", 75)
+            self.get_layer("MASK").draw_circle(point, "BLACK", int(75/2))
 
     def show(self) -> None:
         """
@@ -164,7 +159,7 @@ class Canvas:
 
         :param camera: A reference to the camera
         """
-        color: str = "RED"
+        color: str = "WHITE"
         size: int = 5
 
         # print("top left:")
@@ -183,8 +178,8 @@ class Canvas:
         bot_right = camera.transform_point(Point(1, 1), self.width, self.height)
         # print(int(bot_right.x), int(bot_right.y))
 
-        self.get_layer("CAL_CROSS").wipe()
-        self.get_layer("CAL_CROSS").draw_line(top_left, top_right, color, size)
-        self.get_layer("CAL_CROSS").draw_line(top_right, bot_right, color, size)
-        self.get_layer("CAL_CROSS").draw_line(bot_right, bot_left, color, size)
-        self.get_layer("CAL_CROSS").draw_line(bot_left, top_left, color, size)
+        self.get_layer("DRAWING").wipe()
+        self.get_layer("DRAWING").draw_line(top_left, top_right, color, size)
+        self.get_layer("DRAWING").draw_line(top_right, bot_right, color, size)
+        self.get_layer("DRAWING").draw_line(bot_right, bot_left, color, size)
+        self.get_layer("DRAWING").draw_line(bot_left, top_left, color, size)

@@ -1,3 +1,4 @@
+from collections import namedtuple
 from typing import NamedTuple, Optional
 
 from HandTracking.Config import Config
@@ -19,7 +20,7 @@ mp_hand = mp.solutions.hands
 def main(config: Settings) -> int:
     # TODO: Remove when auto calibration is implemented
     drawing_point: Optional[Point] = None
-    drawing_precision: int = 30
+    drawing_precision: int = 5
     old_point: Optional[Point] = None
     point_on_canvas: Optional[Point] = None
 
@@ -38,6 +39,7 @@ def main(config: Settings) -> int:
                          Point(canvas.width - 1, canvas.height)], camera=config.camera)
 
     camera.update_image_ptm(canvas.width, canvas.height)
+    canvas.print_calibration_cross(camera)
     cv2.setMouseCallback(camera.name, lambda event, x, y, flags, param: mouse_click(camera, canvas.width,
                                                                                     canvas.height, event, x,
                                                                                     y))
@@ -101,8 +103,10 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
             if camera.calibration_is_done():
                 # TODO: Add erasing when working on the wheel
                 hand_sign: str = hand.get_hand_sign(camera.frame, hand_landmarks)
-                if hand_sign == "Pointer":
-                    point_on_canvas = camera.transform_point(hand.get_index_tip(), canvas.width, canvas.height)
+                if hand_sign == "Pointer" or hand_sign == "Close":
+                    normalised_point = camera.normalise_in_boundary(hand.get_index_tip())
+                    if normalised_point is not None:
+                        point_on_canvas = camera.transform_point(normalised_point, canvas.width, canvas.height)
 
                     drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
                                                              drawing_point, old_point, drawing_precision, menu_wheel)
@@ -113,31 +117,29 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
 
                 if hand_sign == "Close":
                     menu_wheel.layer.wipe()
-                    menu_point = camera.transform_point(hand.wrist, canvas.width, canvas.height)
-                    if not menu_wheel.is_open:
-                        menu_wheel.center_point = menu_point
+                    normalised_point = camera.normalise_in_boundary(hand.wrist)
+                    if normalised_point is not None:
+                        menu_point = camera.transform_point(normalised_point, canvas.width, canvas.height)
+                        if not menu_wheel.is_open:
+                            menu_wheel.center_point = menu_point
 
-                    menu_wheel.open_menu()
-                    menu_wheel.layer.draw_circle(menu_point, "GREEN", 5)
-                    menu_wheel.check_button_click(menu_point)
+                        menu_wheel.open_menu()
+                        menu_wheel.layer.draw_circle(menu_point, "GREEN", 5)
+                        menu_wheel.check_button_click(menu_point)
 
-                if hand_sign == "Open":
+                if hand_sign == "Open" or hand_sign == "Pointer":
                     if menu_wheel.is_open:
                         menu_wheel.close_menu()
-                    pass
 
             # Mask for removing the hand
             mask_points = []
             for point in hand.get_mask_points():
-                mask_points.append(camera.transform_point(point, canvas.width, canvas.height))
-
-            canvas.get_layer("TIP").wipe()
-            canvas.get_layer("TIP").draw_circle(camera.transform_point(hand.fingers["INDEX_FINGER"].tip,
-                                                                       canvas.width, canvas.height),
-                                                "GREEN", 5)
+                if camera.normalise_in_boundary(point) is not None:
+                    mask_points.append(camera.transform_point(camera.normalise_in_boundary(point), canvas.width, canvas.height))
 
             canvas.draw_mask_points(mask_points)
-            canvas.print_calibration_cross(camera)
+            if camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip) is not None:
+                canvas.get_layer("MASK").draw_circle(camera.transform_point(camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip), canvas.width, canvas.height), color="GREEN", size=3)
 
     return drawing_point, old_point, point_on_canvas
 

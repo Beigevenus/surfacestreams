@@ -1,7 +1,7 @@
 from HandTracking.Point import Point
 import pytest
 
-from HandTracking.store.Vector import Vector
+from HandTracking.Vector import Vector
 
 x_fail = pytest.mark.xfail
 

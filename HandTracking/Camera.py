@@ -23,6 +23,8 @@ class Camera:
         self.height: int = self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
         self.width: int = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.name: str = name
+        self.boundary_points: list[Point] = []
+        self.boudaries: dict[str, Optional[int]] = {"x_min": None, "x_max": None, "y_min": None, "y_max": None}
 
         cv2.namedWindow(self.name)
 
@@ -45,7 +47,6 @@ class Camera:
             if self.ptm is not None and len(self.calibration_points) > 3:
                 self.frame = cv2.warpPerspective(self.frame, self.ptm, (self.wwidth, self.wheight),
                                                  flags=cv2.INTER_LINEAR)
-                self.frame = cv2.resize(self.frame, (1200, 600))
             return self.frame
         return None
 
@@ -59,7 +60,28 @@ class Camera:
         :param height: The height of the canvas
         """
         if len(self.calibration_points) > 3:
-            self.calibration_points.clear()
+            if len(self.boundary_points) == 0:
+                self.boundary_points.append(point)
+            elif len(self.boundary_points) == 1:
+                self.boundary_points.append(point)
+                min_x = min(self.boundary_points[0].x, self.boundary_points[1].x)
+                min_y = min(self.boundary_points[0].y, self.boundary_points[1].y)
+                max_x = max(self.boundary_points[0].x, self.boundary_points[1].x)
+                max_y = max(self.boundary_points[0].y, self.boundary_points[1].y)
+
+                self.boudaries["x_min"] = int(min_x)
+                self.boudaries["y_min"] = int(min_y)
+                self.boudaries["x_max"] = int(max_x)
+                self.boudaries["y_max"] = int(max_y)
+
+                print(self.boudaries)
+            else:
+                self.calibration_points.clear()
+                self.boundary_points.clear()
+                self.boudaries["x_min"] = None
+                self.boudaries["y_min"] = None
+                self.boudaries["x_max"] = None
+                self.boudaries["y_max"] = None
         elif len(self.calibration_points) == 3:
             self.calibration_points.append(point)
             self.sorted_calibration_points = self.sort_calibration_points()
@@ -67,6 +89,19 @@ class Camera:
             Config.save_calibration_points(self.calibration_points)
         else:
             self.calibration_points.append(point)
+
+    def normalise_in_boundary(self, point):
+        if self.boudaries["x_max"] is not None:
+            x_max: int = self.boudaries["x_max"]
+            x_min: int = self.boudaries["x_min"]
+            y_max: int = self.boudaries["y_max"]
+            y_min: int = self.boudaries["y_min"]
+            point_x = point.x * self.wwidth
+            point_y = point.y * self.wheight
+            if x_max >= point_x >= x_min and y_max >= point_y >= y_min:
+                return Point((point_x - x_min) / (x_max - x_min), (point_y - y_min) / (y_max - y_min))
+
+        return None
 
     def draw_calibration_points(self) -> None:
         """
@@ -76,6 +111,14 @@ class Camera:
             for point in self.calibration_points:
                 cv2.circle(self.frame, (int(point.x), int(point.y)), int(int(10 / 2) * 2),
                            [255, 255, 0], cv2.FILLED)
+        elif len(self.boundary_points) == 1:
+            cv2.circle(self.frame, (int(self.boundary_points[0].x), int(self.boundary_points[0].y)),
+                       int(int(10 / 2) * 2),
+                       [255, 255, 0], cv2.FILLED)
+        elif len(self.boundary_points) == 2:
+            cv2.rectangle(self.frame, (self.boudaries["x_min"], self.boudaries["y_min"]),
+                          (self.boudaries["x_max"], self.boudaries["y_max"]),
+                          [255, 255, 0], 10)
 
     @staticmethod
     def return_camera_indexes() -> list[int]:
@@ -96,7 +139,53 @@ class Camera:
     def update_image_ptm(self, width: int, height: int) -> None:
         # TODO: Write docstring for method
         if not len(self.calibration_points) <= 3:
-            self.ptm, self.wwidth, self.wheight = fpt(self.sorted_calibration_points, width, height)
+            self.ptm, self.wwidth, self.wheight = fpt(self.get_expanded_corners(), width, height)
+
+    def get_expanded_corners(self):
+        min_x = min(self.sorted_calibration_points[0].x, self.sorted_calibration_points[3].x)
+        min_y = min(self.sorted_calibration_points[0].y, self.sorted_calibration_points[1].y)
+        max_x = max(self.sorted_calibration_points[1].x, self.sorted_calibration_points[2].x)
+        max_y = max(self.sorted_calibration_points[2].y, self.sorted_calibration_points[3].y)
+
+        inner_width = max_x - min_x
+        inner_height = max_y - min_y
+
+        aspect_ratio_inner = inner_width / inner_height
+        aspect_ratio_outer = self.width / self.height
+
+        if aspect_ratio_outer > aspect_ratio_inner:
+            target_aspect = (inner_width * (self.height / inner_height), self.height)
+            step_width = (target_aspect[0] - inner_width) / 2
+            if min_x - step_width > 0:
+                step_width = min_x - step_width
+            else:
+                step_width = 0
+            step_height = 0
+        else:
+            target_aspect = (self.width, inner_height * (self.width / inner_width))
+            step_width = 0
+            step_height = (target_aspect[1] - inner_height) / 2
+            if min_y - step_height > 0:
+                step_height = min_y - step_height
+            else:
+                step_height = 0
+
+        rel_top_left = Point(
+            ((self.sorted_calibration_points[0].x - min_x) / inner_width) * target_aspect[0] + step_width,
+            ((self.sorted_calibration_points[0].y - min_y) / inner_height) * target_aspect[1] + step_height)
+        rel_top_right = Point(
+            ((self.sorted_calibration_points[1].x - min_x) / inner_width) * target_aspect[0] + step_width,
+            ((self.sorted_calibration_points[1].y - min_y) / inner_height) * target_aspect[1] + step_height)
+        rel_bot_left = Point(
+            ((self.sorted_calibration_points[3].x - min_x) / inner_width) * target_aspect[0] + step_width,
+            ((self.sorted_calibration_points[3].y - min_y) / inner_height) * target_aspect[1] + step_height)
+        rel_bot_right = Point(
+            ((self.sorted_calibration_points[2].x - min_x) / inner_width) * target_aspect[0] + step_width,
+            ((self.sorted_calibration_points[2].y - min_y) / inner_height) * target_aspect[1] + step_height)
+
+        print(rel_top_left, rel_top_right, rel_bot_right, rel_bot_left)
+
+        return [rel_top_left, rel_top_right, rel_bot_right, rel_bot_left]
 
     def sort_calibration_points(self) -> list[Point]:
         """
