@@ -25,7 +25,7 @@ class Camera:
         self.width: int = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.name: str = name
         self.boundary_points: list[Point] = []
-        self.boudaries = {"x_min": None, "x_max": None, "y_min": None, "y_max": None}
+        self.boudaries: dict[str, Optional[int]] = {"x_min": None, "x_max": None, "y_min": None, "y_max": None}
 
         cv2.namedWindow(self.name)
 
@@ -63,10 +63,10 @@ class Camera:
                 max_x = max(self.boundary_points[0].x, self.boundary_points[1].x)
                 max_y = max(self.boundary_points[0].y, self.boundary_points[1].y)
 
-                self.boudaries["x_min"] = min_x
-                self.boudaries["y_min"] = min_y
-                self.boudaries["x_max"] = max_x
-                self.boudaries["y_max"] = max_y
+                self.boudaries["x_min"] = int(min_x)
+                self.boudaries["y_min"] = int(min_y)
+                self.boudaries["x_max"] = int(max_x)
+                self.boudaries["y_max"] = int(max_y)
 
                 print(self.boudaries)
             else:
@@ -85,7 +85,6 @@ class Camera:
             self.calibration_points.append(point)
 
     def normalise_in_boundary(self, point):
-        print(point)
         if self.boudaries["x_max"] is not None:
             x_max: int = self.boudaries["x_max"]
             x_min: int = self.boudaries["x_min"]
@@ -94,9 +93,7 @@ class Camera:
             point_x = point.x * self.wwidth
             point_y = point.y * self.wheight
             if x_max >= point_x >= x_min and y_max >= point_y >= y_min:
-                print(Point((point_x-x_min)/(x_max-x_min), (point_y-y_min)/(y_max-y_min)))
-                print()
-                return Point((point_x-x_min)/(x_max-x_min), (point_y-y_min)/(y_max-y_min))
+                return Point((point_x - x_min) / (x_max - x_min), (point_y - y_min) / (y_max - y_min))
 
         return None
 
@@ -108,6 +105,14 @@ class Camera:
             for point in self.calibration_points:
                 cv2.circle(self.frame, (int(point.x), int(point.y)), int(int(10 / 2) * 2),
                            [255, 255, 0], cv2.FILLED)
+        elif len(self.boundary_points) == 1:
+            cv2.circle(self.frame, (int(self.boundary_points[0].x), int(self.boundary_points[0].y)),
+                       int(int(10 / 2) * 2),
+                       [255, 255, 0], cv2.FILLED)
+        elif len(self.boundary_points) == 2:
+            cv2.rectangle(self.frame, (self.boudaries["x_min"], self.boudaries["y_min"]),
+                          (self.boudaries["x_max"], self.boudaries["y_max"]),
+                          [255, 255, 0], 10)
 
     @staticmethod
     def return_camera_indexes() -> list[int]:
@@ -144,16 +149,20 @@ class Camera:
 
         if aspect_ratio_outer > aspect_ratio_inner:
             target_aspect = (inner_width * (self.height / inner_height), self.height)
-            step_width = (self.width - inner_width) / 2
-            if step_width + inner_width > self.width:
-                step_width = self.width - inner_width
+            step_width = (target_aspect[0] - inner_width) / 2
+            if min_x - step_width > 0:
+                step_width = min_x - step_width
+            else:
+                step_width = 0
             step_height = 0
         else:
             target_aspect = (self.width, inner_height * (self.width / inner_width))
             step_width = 0
-            step_height = (self.height - inner_height) / 2
-            if step_height + inner_height > self.height:
-                step_height = self.height - inner_height
+            step_height = (target_aspect[1] - inner_height) / 2
+            if min_y - step_height > 0:
+                step_height = min_y - step_height
+            else:
+                step_height = 0
 
         rel_top_left = Point(
             ((self.sorted_calibration_points[0].x - min_x) / inner_width) * target_aspect[0] + step_width,

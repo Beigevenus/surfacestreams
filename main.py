@@ -131,12 +131,9 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                 if camera.normalise_in_boundary(point) is not None:
                     mask_points.append(camera.transform_point(camera.normalise_in_boundary(point), canvas.width, canvas.height))
 
-            # canvas.get_layer("TIP").wipe()
-            #
             canvas.draw_mask_points(mask_points)
             if camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip) is not None:
                 canvas.get_layer("MASK").draw_circle(camera.transform_point(camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip), canvas.width, canvas.height), color="GREEN", size=3)
-            # canvas.print_calibration_cross(camera, canvas.width, canvas.height)
 
     return drawing_point, old_point, point_on_canvas
 

@@ -17,12 +17,7 @@ class Canvas:
         self.name: str = name
         self.layers: list[(str, Layer)] = [("MASK", Layer(width, height, PaintingToolbox(75, current_color="BLACK")))]
 
-        # TODO: Remove when it is no longer necessary
-        # self.create_layer("CAL_CROSS", PaintingToolbox(5, current_color="BLUE"))
-        # self.create_layer("TIP", PaintingToolbox(5, current_color="GREEN"), 0)
-
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
-        # self.move_window(2500)
 
     def create_layer(self, name: str, toolbox: PaintingToolbox, position: int = -1) -> None:
         # TODO: Write docstring for method
