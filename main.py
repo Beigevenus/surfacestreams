@@ -6,6 +6,7 @@ from HandTracking.Canvas import Canvas
 from HandTracking.Hand import Hand
 from HandTracking.Camera import Camera
 from HandTracking.Settings import run_settings as run_settings, Settings
+from HandTracking.MenuWheel import MenuWheel
 
 import cv2
 import mediapipe as mp
