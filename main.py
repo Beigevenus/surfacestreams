@@ -1,8 +1,6 @@
-from collections import namedtuple
-from typing import Optional
+from typing import NamedTuple, Optional
 
 from HandTracking.Config import Config
-from HandTracking.MenuWheel import MenuWheel
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
 from HandTracking.Hand import Hand
