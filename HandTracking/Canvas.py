@@ -118,7 +118,7 @@ class Canvas:
         """
 
         for point in points:
-            self.get_layer("MASK").draw_circle(point, "BLACK", 75)
+            self.get_layer("MASK").draw_circle(point, "BLACK", int(75/2))
 
     def show(self) -> None:
         """
@@ -159,7 +159,7 @@ class Canvas:
 
         :param camera: A reference to the camera
         """
-        color: str = "RED"
+        color: str = "WHITE"
         size: int = 5
 
         # print("top left:")

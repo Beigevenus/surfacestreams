@@ -1,3 +1,4 @@
+from collections import namedtuple
 from typing import NamedTuple, Optional
 
 from HandTracking.Config import Config
@@ -116,15 +117,17 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
 
                 if hand_sign == "Close":
                     menu_wheel.layer.wipe()
-                    menu_point = camera.transform_point(hand.wrist, canvas.width, canvas.height)
-                    if not menu_wheel.is_open:
-                        menu_wheel.center_point = menu_point
+                    normalised_point = camera.normalise_in_boundary(hand.wrist)
+                    if normalised_point is not None:
+                        menu_point = camera.transform_point(normalised_point, canvas.width, canvas.height)
+                        if not menu_wheel.is_open:
+                            menu_wheel.center_point = menu_point
 
-                    menu_wheel.open_menu()
-                    menu_wheel.layer.draw_circle(menu_point, "GREEN", 5)
-                    menu_wheel.check_button_click(menu_point)
+                        menu_wheel.open_menu()
+                        menu_wheel.layer.draw_circle(menu_point, "GREEN", 5)
+                        menu_wheel.check_button_click(menu_point)
 
-                if hand_sign == "Open":
+                if hand_sign == "Open" or hand_sign == "Pointer":
                     if menu_wheel.is_open:
                         menu_wheel.close_menu()
 
