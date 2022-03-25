@@ -108,10 +108,12 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                 # TODO: Add erasing when working on the wheel
                 hand_sign: str = hand.get_hand_sign(camera.frame, hand_landmarks)
                 if hand_sign == "Pointer" or hand_sign == "Close":
-                    point_on_canvas = camera.transform_point(hand.get_index_tip(), canvas.width, canvas.height)
+                    normalised_point = camera.normalise_in_boundary(hand.get_index_tip())
+                    if normalised_point is not None:
+                        point_on_canvas = camera.transform_point(normalised_point, canvas.width, canvas.height)
 
-                    drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
-                                                             drawing_point, old_point, drawing_precision)
+                        drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
+                                                                 drawing_point, old_point, drawing_precision)
 
                 else:
                     old_point = None
@@ -126,12 +128,14 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
             # Mask for removing the hand
             mask_points = []
             for point in hand.get_mask_points():
-                mask_points.append(camera.transform_point(point, canvas.width, canvas.height))
+                if camera.normalise_in_boundary(point) is not None:
+                    mask_points.append(camera.transform_point(camera.normalise_in_boundary(point), canvas.width, canvas.height))
 
             # canvas.get_layer("TIP").wipe()
             #
             canvas.draw_mask_points(mask_points)
-            canvas.get_layer("MASK").draw_circle(camera.transform_point(hand.fingers["INDEX_FINGER"].tip, canvas.width, canvas.height), color="GREEN", size=3)
+            if camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip) is not None:
+                canvas.get_layer("MASK").draw_circle(camera.transform_point(camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip), canvas.width, canvas.height), color="GREEN", size=3)
             # canvas.print_calibration_cross(camera, canvas.width, canvas.height)
 
     return drawing_point, old_point, point_on_canvas

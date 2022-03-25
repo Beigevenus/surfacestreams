@@ -132,11 +132,11 @@ class Canvas:
         print(int(top_right.x), int(top_right.y))
 
         print("bot left:")
-        bot_left = camera.transform_point(Point(1, 0), width, height)
+        bot_left = camera.transform_point(Point(1, 1), width, height) # camera.transform_point(Point(1, 0), width, height)
         print(int(bot_left.x), int(bot_left.y))
 
         print("bot right:")
-        bot_right = camera.transform_point(Point(1, 1), width, height)
+        bot_right = camera.transform_point(Point(1, 0), width, height) # camera.transform_point(Point(1, 1), width, height)
         print(int(bot_right.x), int(bot_right.y))
 
         self.get_layer("DRAWING").wipe()
