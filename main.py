@@ -2,7 +2,6 @@ from collections import namedtuple
 from typing import Optional
 
 from HandTracking.Config import Config
-from HandTracking.PaintingToolbox import PaintingToolbox
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
 from HandTracking.Hand import Hand
@@ -24,11 +23,9 @@ def main(config: Settings) -> int:
     old_point: Optional[Point] = None
     point_on_canvas: Optional[Point] = None
 
-    drawing_toolbox: PaintingToolbox = PaintingToolbox(5, current_color="WHITE")
-
     hand: Hand = Hand(mp_hand)
     canvas: Canvas = Canvas("Canvas", config.monitor.width, config.monitor.height)
-    canvas.create_layer("DRAWING", drawing_toolbox)
+    canvas.create_layer("DRAWING")
     canvas.move_window(config.monitor.x, config.monitor.y)
     if config.is_fullscreen == 1:
         canvas.fullscreen()
@@ -124,7 +121,8 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
 
             canvas.get_layer("TIP").wipe()
             canvas.get_layer("TIP").draw_circle(camera.transform_point(hand.fingers["INDEX_FINGER"].tip,
-                                                                       canvas.width, canvas.height))
+                                                                       canvas.width, canvas.height),
+                                                "GREEN", 5)
 
             canvas.draw_mask_points(mask_points)
             canvas.print_calibration_cross(camera)
@@ -195,13 +193,11 @@ def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, 
     if old_point is None:
         old_point = point_on_canvas
 
-    canvas.get_layer("DRAWING").toolbox.change_color('WHITE')
-    canvas.get_layer("DRAWING").toolbox.change_line_size(3)
-
     if drawing_point is not None:
         if drawing_point.distance_to(point_on_canvas) > drawing_precision:
             drawing_point = drawing_point.next_point_to(point_on_canvas, 2)
-            canvas.get_layer("DRAWING").draw_line(old_point, drawing_point)
+            # Color is white
+            canvas.get_layer("DRAWING").draw_line(old_point, drawing_point, "WHITE", 3)
             old_point = drawing_point
 
     return drawing_point, old_point

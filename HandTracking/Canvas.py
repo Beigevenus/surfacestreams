@@ -6,7 +6,6 @@ from numpy import ndarray
 
 from HandTracking.Camera import Camera
 from HandTracking.Layer import Layer
-from HandTracking.PaintingToolbox import PaintingToolbox
 from HandTracking.Point import Point
 
 
@@ -15,30 +14,29 @@ class Canvas:
         self.width: int = width
         self.height: int = height
         self.name: str = name
-        self.layers: list[(str, Layer)] = [("MASK", Layer(width, height, PaintingToolbox(75, current_color="BLACK")))]
+        self.layers: list[(str, Layer)] = [("MASK", Layer(width, height))]
 
         # TODO: Remove when it is no longer necessary
-        self.create_layer("CAL_CROSS", PaintingToolbox(5, current_color="BLUE"))
-        self.create_layer("TIP", PaintingToolbox(5, current_color="GREEN"), 0)
+        self.create_layer("CAL_CROSS")
+        self.create_layer("TIP", 0)
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
         # self.move_window(2500)
 
-    def create_layer(self, name: str, toolbox: PaintingToolbox, position: int = -1) -> None:
+    def create_layer(self, name: str, position: int = -1) -> None:
         """
         Creates a new Layer object and adds it to the canvas' list of layers, at the specified position.
 
         :param name: The name of the layer
-        :param toolbox: The PaintingToolbox for the layer to use
         :param position: The position of the layer in the order of layers
         """
         try:
             if position == -1:
-                self.layers.append((name, Layer(self.width, self.height, toolbox)))
+                self.layers.append((name, Layer(self.width, self.height)))
             else:
-                self.layers.insert(position, (name, Layer(self.width, self.height, toolbox)))
+                self.layers.insert(position, (name, Layer(self.width, self.height)))
         except IndexError:
-            self.layers.append((name, Layer(self.width, self.height, toolbox)))
+            self.layers.append((name, Layer(self.width, self.height)))
 
     def delete_layer(self, name: str) -> None:
         """
@@ -119,7 +117,7 @@ class Canvas:
         """
 
         for point in points:
-            self.get_layer("MASK").draw_circle(point)
+            self.get_layer("MASK").draw_circle(point, "BLACK", 75)
 
     def show(self) -> None:
         """
@@ -160,6 +158,9 @@ class Canvas:
 
         :param camera: A reference to the camera
         """
+        color: str = "RED"
+        size: int = 5
+
         print("top left:")
         top_left = camera.transform_point(Point(0, 0), self.width, self.height)
         print(int(top_left.x), int(top_left.y))
@@ -177,7 +178,7 @@ class Canvas:
         print(int(bot_right.x), int(bot_right.y))
 
         self.get_layer("CAL_CROSS").wipe()
-        self.get_layer("CAL_CROSS").draw_line(top_left, top_right)
-        self.get_layer("CAL_CROSS").draw_line(top_right, bot_right)
-        self.get_layer("CAL_CROSS").draw_line(bot_right, bot_left)
-        self.get_layer("CAL_CROSS").draw_line(bot_left, top_left)
+        self.get_layer("CAL_CROSS").draw_line(top_left, top_right, color, size)
+        self.get_layer("CAL_CROSS").draw_line(top_right, bot_right, color, size)
+        self.get_layer("CAL_CROSS").draw_line(bot_right, bot_left, color, size)
+        self.get_layer("CAL_CROSS").draw_line(bot_left, top_left, color, size)
