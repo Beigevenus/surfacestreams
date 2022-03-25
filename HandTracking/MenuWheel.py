@@ -12,13 +12,13 @@ class MenuWheel:
         self.center_point = Point(0, 0)
         self.drawing_layer = drawing_layer
         self.drawing_color: str = "WHITE"
+        self.current_tool: str = "DRAW"
 
         self.initialize_buttons()
 
     def initialize_buttons(self):
-        self.add_tool_button(self.__select_eraser)
-        self.add_tool_button(self.__select_drawer)
-        self.add_tool_button(self.__select_color_wheel)
+        self.add_tool_button(self.__select_eraser, "ERASE")
+        self.add_tool_button(self.__select_drawer, "DRAW")
 
         for color in self.drawing_layer.color_palette:
             self.add_color_button(self.__change_color, color)
@@ -26,8 +26,11 @@ class MenuWheel:
     def open(self):
         pass
 
-    def add_tool_button(self, callback):
-        self.tool_buttons.append(Button(callback))
+    def add_tool_button(self, callback, tool):
+        if self.current_tool == tool:
+            self.tool_buttons.append(Button(callback, active=True))
+        else:
+            self.tool_buttons.append(Button(callback))
 
     def add_color_button(self, callback, color):
         if self.drawing_color == color:
@@ -66,9 +69,6 @@ class MenuWheel:
 
     def __select_drawer(self):
         print('selected: Draw')
-
-    def __select_color_wheel(self):
-        print('selected: Color')
 
     def __change_color(self, button: Button):
         actual_color = self.drawing_layer.color_palette[button.color]
