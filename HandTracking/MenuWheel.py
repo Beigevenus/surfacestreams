@@ -11,6 +11,7 @@ class MenuWheel:
         self.layer = layer
         self.center_point = Point(0, 0)
         self.drawing_layer = drawing_layer
+        self.prev_drawing_color: str = "WHITE"
         self.drawing_color: str = "WHITE"
         self.current_tool: str = "DRAW"
 
@@ -64,24 +65,52 @@ class MenuWheel:
 
             self.layer.draw_circle(button.location, button.color, circle_size)
 
-    def __select_eraser(self):
-        print('selected: Eraser')
+    def __select_eraser(self, button):
+        if self.current_tool != "ERASE":
+            self.__clear_active_tool_button()
 
-    def __select_drawer(self):
-        print('selected: Draw')
+            button.active = True
+            self.prev_drawing_color = self.drawing_color
+            self.drawing_color = "ERASER"
+            self.current_tool = "ERASE"
+
+    def __select_drawer(self, button):
+        if self.current_tool != "DRAW":
+            self.__clear_active_tool_button()
+
+            button.active = True
+            self.drawing_color = self.prev_drawing_color
+            self.current_tool = "DRAW"
+
+    def __clear_active_tool_button(self):
+        for button in self.tool_buttons:
+            button.active = False
 
     def __change_color(self, button: Button):
-        actual_color = self.drawing_layer.color_palette[button.color]
+        if self.current_tool != "ERASE":
+            actual_color = self.drawing_layer.color_palette[button.color]
 
-        for button in self.color_buttons:
-            if actual_color == self.drawing_layer.color_palette[button.color]:
-                button.active = True
-                self.drawing_color = button.color
-            else:
-                button.active = False
+            for button in self.color_buttons:
+                if actual_color == self.drawing_layer.color_palette[button.color]:
+                    button.active = True
+                    self.drawing_color = button.color
+                else:
+                    button.active = False
+        else:
+            actual_color = self.drawing_layer.color_palette[button.color]
+
+            for button in self.color_buttons:
+                if actual_color == self.drawing_layer.color_palette[button.color]:
+                    button.active = True
+                    self.prev_drawing_color = button.color
+                else:
+                    button.active = False
 
     def check_button_click(self, point: Point):
         for button in self.color_buttons:
+            if button.is_point_in_circle(point):
+                button.callback(button)
+        for button in self.tool_buttons:
             if button.is_point_in_circle(point):
                 button.callback(button)
 

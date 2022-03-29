@@ -8,7 +8,8 @@ class Config:
     filepath: str = "./config.json"
     empty_config: dict = {
         "startup": {},
-        "cal_points": {}
+        "cal_points": {},
+        "bou_points": {}
     }
 
     @classmethod
@@ -33,7 +34,24 @@ class Config:
             point_list: List[Point] = [Point.from_dict(config["cal_points"]["point0"]),
                                        Point.from_dict(config["cal_points"]["point1"]),
                                        Point.from_dict(config["cal_points"]["point2"]),
-                                       Point.from_dict(config["cal_points"]["point3"]), ]
+                                       Point.from_dict(config["cal_points"]["point3"])]
+            return point_list
+        except FileNotFoundError:
+            return None
+        except KeyError:
+            return None
+
+    @classmethod
+    def load_boundary_points(cls) -> Optional[List[Point]]:
+        """
+        Converts boundary points from the config file to a list of Point objects.
+
+        :return: A list of Point objects saved in the config file, or None if it doesn't exist
+        """
+        try:
+            config: dict = cls.load()
+            point_list: List[Point] = [Point.from_dict(config["bou_points"]["point0"]),
+                                       Point.from_dict(config["bou_points"]["point1"])]
             return point_list
         except FileNotFoundError:
             return None
@@ -81,6 +99,22 @@ class Config:
 
         cal_points = cls.point_list_to_dict(cal_points)
         config["cal_points"] = cal_points
+        cls.__write(config)
+
+    @classmethod
+    def save_boundary_points(cls, bou_points: List[Point]) -> None:
+        """
+        Writes the new boundary points to the config file.
+
+        :param bou_points: A list of Point objects to write to the config file
+        """
+        try:
+            config = cls.load()
+        except FileNotFoundError:
+            config = cls.empty_config
+
+        bou_points = cls.point_list_to_dict(bou_points)
+        config["bou_points"] = bou_points
         cls.__write(config)
 
     @classmethod
