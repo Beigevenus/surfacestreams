@@ -5,6 +5,7 @@ from numpy import ndarray
 
 from HandTracking.Config import Config
 from HandTracking.Point import Point
+from HandTracking.Vector import Vector
 from HandTracking.image_wrap import four_point_transform as fpt
 
 import cv2
@@ -25,6 +26,19 @@ class Camera:
         self.name: str = name
         self.boundary_points: list[Point] = []
         self.boudaries: dict[str, Optional[int]] = {"x_min": None, "x_max": None, "y_min": None, "y_max": None}
+
+        bou_points = Config.load_boundary_points()
+        if bou_points:
+            self.boundary_points = bou_points
+            min_x = min(self.boundary_points[0].x, self.boundary_points[1].x)
+            min_y = min(self.boundary_points[0].y, self.boundary_points[1].y)
+            max_x = max(self.boundary_points[0].x, self.boundary_points[1].x)
+            max_y = max(self.boundary_points[0].y, self.boundary_points[1].y)
+
+            self.boudaries["x_min"] = int(min_x)
+            self.boudaries["y_min"] = int(min_y)
+            self.boudaries["x_max"] = int(max_x)
+            self.boudaries["y_max"] = int(max_y)
 
         cv2.namedWindow(self.name)
 
@@ -74,6 +88,7 @@ class Camera:
                 self.boudaries["x_max"] = int(max_x)
                 self.boudaries["y_max"] = int(max_y)
 
+                Config.save_boundary_points(self.boundary_points)
                 print(self.boudaries)
             else:
                 self.calibration_points.clear()
@@ -142,10 +157,16 @@ class Camera:
             self.ptm, self.wwidth, self.wheight = fpt(self.get_expanded_corners(), width, height)
 
     def get_expanded_corners(self):
+        # V1 = Vector(self.sorted_calibration_points[3], self.sorted_calibration_points[0])
+        # V1 = Vector(self.sorted_calibration_points[3], self.sorted_calibration_points[0])
+        # V1 = Vector(self.sorted_calibration_points[3], self.sorted_calibration_points[0])
         min_x = min(self.sorted_calibration_points[0].x, self.sorted_calibration_points[3].x)
         min_y = min(self.sorted_calibration_points[0].y, self.sorted_calibration_points[1].y)
         max_x = max(self.sorted_calibration_points[1].x, self.sorted_calibration_points[2].x)
         max_y = max(self.sorted_calibration_points[2].y, self.sorted_calibration_points[3].y)
+
+        for point in self.calibration_points:
+            print(point)
 
         inner_width = max_x - min_x
         inner_height = max_y - min_y
@@ -156,19 +177,25 @@ class Camera:
         if aspect_ratio_outer > aspect_ratio_inner:
             target_aspect = (inner_width * (self.height / inner_height), self.height)
             step_width = (target_aspect[0] - inner_width) / 2
-            if min_x - step_width > 0:
-                step_width = min_x - step_width
-            else:
-                step_width = 0
+            # if min_x - step_width > 0:
+            step_width = min_x - step_width
+            # else:
+            #     step_width = 0
             step_height = 0
+            step_height = (target_aspect[1] - inner_height) / 2
+            # if min_y - step_height > 0:
+            step_height = min_y - step_height
         else:
             target_aspect = (self.width, inner_height * (self.width / inner_width))
             step_width = 0
             step_height = (target_aspect[1] - inner_height) / 2
-            if min_y - step_height > 0:
-                step_height = min_y - step_height
-            else:
-                step_height = 0
+            # if min_y - step_height > 0:
+            step_height = min_y - step_height
+            # else:
+            #     step_height = 0
+            step_width = (target_aspect[0] - inner_width) / 2
+            # if min_x - step_width > 0:
+            step_width = min_x - step_width
 
         rel_top_left = Point(
             ((self.sorted_calibration_points[0].x - min_x) / inner_width) * target_aspect[0] + step_width,

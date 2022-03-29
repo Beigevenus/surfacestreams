@@ -12,7 +12,7 @@ class Layer:
         self.image: ndarray = np.full(shape=[height, width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
 
         self.color_palette = {'WHITE': [150, 150, 150, 255], 'BLACK': [1, 1, 1, 1], 'RED': [0, 0, 255, 255],
-                              'GREEN': [0, 255, 0, 255], 'BLUE': [255, 0, 0, 255]}
+                              'GREEN': [0, 255, 0, 255], 'BLUE': [255, 0, 0, 255], 'ERASER': [0, 0, 0, 0]}
 
         if colors:
             for name, color in colors.items():
@@ -36,6 +36,8 @@ class Layer:
         """
         try:
             actual_color: list[int] = self.color_palette[color]
+            if color == "ERASER":
+                size = 50
         except KeyError:
             actual_color: list[int] = self.color_palette["WHITE"]
 
