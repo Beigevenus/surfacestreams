@@ -103,7 +103,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
             if camera.calibration_is_done():
                 # TODO: Add erasing when working on the wheel
                 hand_sign: str = hand.get_hand_sign(camera.frame, hand_landmarks)
-                if hand_sign == "Pointer" or hand_sign == "Close":
+                if hand_sign == "Pointer":
                     normalised_point = camera.normalise_in_boundary(hand.get_index_tip())
                     if normalised_point is not None:
                         point_on_canvas = camera.transform_point(normalised_point, canvas.width, canvas.height)
@@ -157,22 +157,6 @@ def check_key_presses(canvas, camera):
     key = cv2.waitKey(1)
     if key == 27:  # ESC
         return 1
-    elif key == 48:  # 0
-        canvas.toolbox.change_color_rgba([150, 150, 150, 255])
-    elif key == 49:  # 1
-        canvas.toolbox.change_color_rgba([15, 150, 255, 255])
-    elif key == 50:  # 2
-        canvas.toolbox.change_color_rgba([22, 140, 37, 255])
-    elif key == 51:  # 3
-        canvas.toolbox.change_color_rgba([57, 150, 90, 255])
-    elif key == 52:  # 4
-        canvas.toolbox.change_color_rgba([27, 255, 100, 255])
-    elif key == 53:  # 5
-        canvas.toolbox.change_color_rgba([3, 7, 87, 255])
-    elif key == 54:  # 6
-        canvas.toolbox.change_color_rgba([20, 40, 60, 255])
-    elif key == 55:  # 7
-        canvas.toolbox.change_color_rgba([0, 0, 0, 255])
     elif key == 115:  # S
         camera.capture.release()
         cv2.destroyAllWindows()
