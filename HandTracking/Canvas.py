@@ -1,3 +1,4 @@
+import copy
 from typing import Optional
 
 import cv2
@@ -16,7 +17,26 @@ class Canvas:
         self.name: str = name
         self.layers: list[(str, Layer)] = [("MASK", Layer(width, height))]
 
+        self.point_array: ndarray = np.zeros(shape=(self.width, self.height), dtype=np.uint8)
+        self.lines: list[list[tuple[str, Point]]] = []
+
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
+
+    def check_for_overlap(self, point):
+        if self.point_array[point.x][point.y] > 0:
+            lines = copy.deepcopy(self.lines)
+            for line in lines:
+                if point in line:
+                    self.lines.remove(line)
+            return True
+        else:
+            return False
+
+    def draw(self):
+        cv2.circle(self.image, (int(point.x), int(point.y)), int(size / 2), actual_color, cv2.FILLED)
+        # Draws line between old index finger tip position, and actual position
+        cv2.line(self.image, (int(previous_point.x), int(previous_point.y)), (int(point.x), int(point.y)),
+                 actual_color, size)
 
     def create_layer(self, name: str, colors: dict[str, list[int]] = None, position: int = -1) -> None:
         """
