@@ -1,10 +1,11 @@
 from HandTracking.Button import Button
+from HandTracking.Canvas import Canvas
 from HandTracking.Layer import Layer
 from HandTracking.Point import Point
 
 
 class MenuWheel:
-    def __init__(self, layer: Layer, drawing_layer: Layer):
+    def __init__(self, layer: Canvas, drawing_layer: Layer):
         self.is_open: bool = False
         self.tool_buttons: list[Button] = []
         self.color_buttons: list[Button] = []
@@ -15,13 +16,16 @@ class MenuWheel:
         self.drawing_color: str = "WHITE"
         self.current_tool: str = "DRAW"
 
+        self.color_palette = {'WHITE': [150, 150, 150, 255], 'BLACK': [1, 1, 1, 1], 'RED': [0, 0, 255, 255],
+                              'GREEN': [0, 255, 0, 255], 'BLUE': [255, 0, 0, 255]}
+
         self.initialize_buttons()
 
     def initialize_buttons(self):
         self.add_tool_button(self.__select_eraser, "ERASE")
         self.add_tool_button(self.__select_drawer, "DRAW")
 
-        for color in self.drawing_layer.color_palette:
+        for name, color in self.color_palette.items():
             self.add_color_button(self.__change_color, color)
 
     def open(self):
@@ -50,9 +54,9 @@ class MenuWheel:
             button.set_location(button_location)
             
             if button.active:
-                self.layer.draw_circle(button.location, "ACTIVE_BLUE", circle_size + 4)
+                self.layer.draw_circle(button.location, [255, 201, 99, 255], circle_size + 4)
 
-            self.layer.draw_circle(button.location, "WHITE", circle_size)
+            self.layer.draw_circle(button.location, [150, 150, 150, 255], circle_size)
 
         for idx, button in enumerate(self.color_buttons):
             button.size = circle_size
@@ -61,7 +65,7 @@ class MenuWheel:
             button.set_location(button_location)
 
             if button.active:
-                self.layer.draw_circle(button.location, "ACTIVE_BLUE", circle_size + 4)
+                self.layer.draw_circle(button.location, [255, 201, 99, 255], circle_size + 4)
 
             self.layer.draw_circle(button.location, button.color, circle_size)
 
@@ -71,7 +75,7 @@ class MenuWheel:
 
             button.active = True
             self.prev_drawing_color = self.drawing_color
-            self.drawing_color = "ERASER"
+            # self.drawing_color = "ERASER"
             self.current_tool = "ERASE"
 
     def __select_drawer(self, button):
@@ -87,20 +91,22 @@ class MenuWheel:
             button.active = False
 
     def __change_color(self, button: Button):
+        print("change!!!!!!!!!")
         if self.current_tool != "ERASE":
-            actual_color = self.drawing_layer.color_palette[button.color]
+            actual_color = button.color
 
             for button in self.color_buttons:
-                if actual_color == self.drawing_layer.color_palette[button.color]:
+                if actual_color == button.color:
                     button.active = True
+                    self.layer.color = button.color
                     self.drawing_color = button.color
                 else:
                     button.active = False
         else:
-            actual_color = self.drawing_layer.color_palette[button.color]
+            actual_color = button.color
 
             for button in self.color_buttons:
-                if actual_color == self.drawing_layer.color_palette[button.color]:
+                if actual_color == button.color:
                     button.active = True
                     self.prev_drawing_color = button.color
                 else:

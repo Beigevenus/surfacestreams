@@ -20,7 +20,7 @@ mp_hand = mp.solutions.hands
 def main(config: Settings) -> int:
     # TODO: Remove when auto calibration is implemented
     drawing_point: Optional[Point] = None
-    drawing_precision: int = 5
+    drawing_precision: int = 9
     old_point: Optional[Point] = None
     point_on_canvas: Optional[Point] = None
 
@@ -47,7 +47,7 @@ def main(config: Settings) -> int:
     counter: int = 0
 
     canvas.create_layer('MENU_WHEEL', {"ACTIVE_BLUE": [255, 201, 99, 255]}, 0)
-    menu_wheel = MenuWheel(canvas.get_layer('MENU_WHEEL'), canvas.get_layer('DRAWING'))
+    menu_wheel = MenuWheel(canvas, canvas.get_layer('DRAWING'))
 
     hands = mp_hand.Hands(
         static_image_mode=False,
@@ -72,6 +72,9 @@ def main(config: Settings) -> int:
         counter = update_hand_mask(counter, canvas)
 
         status = check_key_presses(canvas, camera)
+
+        canvas.wipe()
+        canvas.draw()
 
         if status == 1:
             return 0
@@ -110,6 +113,8 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
 
                     drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
                                                              drawing_point, old_point, drawing_precision, menu_wheel)
+                    if drawing_point is not None:
+                        canvas.add_point(drawing_point)
 
                 else:
                     old_point = None
@@ -124,12 +129,15 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                             menu_wheel.center_point = menu_point
 
                         menu_wheel.open_menu()
-                        menu_wheel.layer.draw_circle(menu_point, "GREEN", 5)
+                        canvas.draw_circle(menu_point, [0, 255, 0, 255], 5)
                         menu_wheel.check_button_click(menu_point)
 
                 if hand_sign == "Open" or hand_sign == "Pointer":
                     if menu_wheel.is_open:
                         menu_wheel.close_menu()
+
+                if hand_sign == "Closed" or hand_sign == "Open":
+                    canvas.new_line()
 
             # Mask for removing the hand
             mask_points = []
@@ -139,7 +147,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
 
             canvas.draw_mask_points(mask_points)
             if camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip) is not None:
-                canvas.get_layer("MASK").draw_circle(camera.transform_point(camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip), canvas.width, canvas.height), color="GREEN", size=3)
+                canvas.draw_circle(camera.transform_point(camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip), canvas.width, canvas.height), color=[0, 255, 0, 255], size=3)
 
     return drawing_point, old_point, point_on_canvas
 
@@ -193,8 +201,8 @@ def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, 
 
     if drawing_point is not None:
         if drawing_point.distance_to(point_on_canvas) > drawing_precision:
-            drawing_point = drawing_point.next_point_to(point_on_canvas, 2)
-            canvas.get_layer("DRAWING").draw_line(old_point, drawing_point, menu_wheel.drawing_color, 3)
+            drawing_point = drawing_point.next_point_to(point_on_canvas, 1)
+            # canvas.get_layer("DRAWING").draw_line(old_point, drawing_point, menu_wheel.drawing_color, 3)
             old_point = drawing_point
 
     return drawing_point, old_point

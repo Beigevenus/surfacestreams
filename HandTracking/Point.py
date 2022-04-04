@@ -49,7 +49,7 @@ class Point:
         :return: The distance between self and other
         """
         calculation: float = (self.x - other.x) ** 2 + (self.y - other.y) ** 2
-        return sqrt(calculation)
+        return calculation
 
     def next_point_to(self, other: 'Point', precision: int = 3) -> 'Point':
         """

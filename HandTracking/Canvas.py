@@ -16,11 +16,20 @@ class Canvas:
         self.height: int = height
         self.name: str = name
         self.layers: list[(str, Layer)] = [("MASK", Layer(width, height))]
+        self.image: ndarray = np.full(shape=[height, width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
 
         self.point_array: ndarray = np.zeros(shape=(self.width, self.height), dtype=np.uint8)
-        self.lines: list[list[tuple[str, Point]]] = []
+        self.lines: list[list[tuple[str, Point]]] = [[]]
+
+        self.color = [150, 150, 150, 255]
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
+
+    def wipe(self) -> None:
+        """
+        Resets the values of all "pixels" in the layer, making them black.
+        """
+        self.image: ndarray = np.full(shape=[self.height, self.width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
 
     def check_for_overlap(self, point):
         if self.point_array[point.x][point.y] > 0:
@@ -32,11 +41,56 @@ class Canvas:
         else:
             return False
 
+    def new_line(self):
+        if self.lines[-1]:
+            self.lines.append([])
+
+    def add_point(self, point):
+        self.lines[-1].append(("none", point))
+
     def draw(self):
-        cv2.circle(self.image, (int(point.x), int(point.y)), int(size / 2), actual_color, cv2.FILLED)
+        size = 3
+        try:
+            point2 = self.lines[0][0][1]
+            for line in self.lines:
+                name, previous_point = line[0]
+                for name, point in line:
+                    # Draws line between old index finger tip position, and actual position
+                    self.draw_line(previous_point, point, self.color, size)
+                    previous_point = point
+        except IndexError:
+            None
+
+    def draw_line(self, previous_point: Point, point: Point, color, size: int) -> None:
+        """
+        Draws a circle at the current point, and a line between the old and current point.
+
+        :param previous_point: The start position of the line segment
+        :param point: The end position of the line segment
+        :param color: The color to draw the line with
+        :param size: The line size
+        """
+        if type(color) is str:
+            color = [255, 225, 150, 255]
+
+        self.draw_circle(point, color, int(size / 2))
+
         # Draws line between old index finger tip position, and actual position
         cv2.line(self.image, (int(previous_point.x), int(previous_point.y)), (int(point.x), int(point.y)),
-                 actual_color, size)
+                 color, size)
+
+    def draw_circle(self, point: Point, color, size: int) -> None:
+        """
+        Draws a circle at the specified point's coordinates.
+
+        :param point: The point to draw a circle at
+        :param color: The color to draw the circle with
+        :param size: The radius of the circle
+        """
+        if type(color) is str:
+            color = [255, 225, 150, 255]
+
+        cv2.circle(self.image, (int(point.x), int(point.y)), size, color, cv2.FILLED)
 
     def create_layer(self, name: str, colors: dict[str, list[int]] = None, position: int = -1) -> None:
         """
@@ -138,13 +192,13 @@ class Canvas:
         """
 
         for point in points:
-            self.get_layer("MASK").draw_circle(point, "BLACK", int(75/2))
+            self.draw_circle(point, [1, 1, 1, 1], int(75/2))
 
     def show(self) -> None:
         """
         Updates the shown canvas in its window.
         """
-        cv2.imshow(self.name, cv2.flip(self.combine_layers(), 1))
+        cv2.imshow(self.name, cv2.flip(self.image, 1))
         self.__check_for_resize()
 
     def __check_for_resize(self) -> None:
