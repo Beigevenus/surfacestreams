@@ -23,6 +23,7 @@ class MenuWheel:
     def initialize_buttons(self):
         self.add_tool_button(self.__select_eraser, "ERASE")
         self.add_tool_button(self.__select_drawer, "DRAW")
+        self.add_tool_button(self.__select_wipe, "WIPE")
 
         for name, color in self.color_palette.items():
             self.add_color_button(self.__change_color, color)
@@ -84,6 +85,9 @@ class MenuWheel:
             button.active = True
             self.drawing_color = self.prev_drawing_color
             self.current_tool = "DRAW"
+
+    def __select_wipe(self, button):
+        self.layer.hard_wipe()
 
     def __clear_active_tool_button(self):
         for button in self.tool_buttons:

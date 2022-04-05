@@ -93,7 +93,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, drawing_precision,
                                               hand_position.multi_handedness):
 
             # TODO: Remove call when no longer needed. For debugging only
-            draw_hand_landmarks(hand_landmarks, camera.frame)
+            # draw_hand_landmarks(hand_landmarks, camera.frame)
 
             hand.update(hand_landmarks)
 
@@ -114,7 +114,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, drawing_precision,
                     drawing_point = None
 
                 if hand_sign == "Close":
-                    normalised_point = camera.normalise_in_boundary(hand.wrist)
+                    normalised_point = camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip)
                     if normalised_point is not None:
                         menu_point = camera.transform_point(normalised_point, canvas.width, canvas.height)
                         if not menu_wheel.is_open:
@@ -128,7 +128,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, drawing_precision,
                     if menu_wheel.is_open:
                         menu_wheel.close_menu()
 
-                if hand_sign == "Closed" or hand_sign == "Open":
+                if hand_sign == "Close" or hand_sign == "Open":
                     canvas.new_line()
 
             # Mask for removing the hand

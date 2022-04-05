@@ -15,13 +15,12 @@ class Canvas:
         self.width: int = width
         self.height: int = height
         self.name: str = name
-        self.layers: list[(str, Layer)] = [("MASK", Layer(width, height))]
         self.image: ndarray = np.full(shape=[height, width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
 
-        self.point_array: ndarray = np.zeros(shape=(self.width, self.height), dtype=np.uint8)
-        self.lines: list[list[tuple[str, Point]]] = [[]]
+        self.color: list[int] = [150, 150, 150, 255]
 
-        self.color = [150, 150, 150, 255]
+        self.point_array: ndarray = np.zeros(shape=(self.width, self.height), dtype=np.uint8)
+        self.lines: list[tuple[list[int], list[Point]]] = [(self.color, [])]
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
 
@@ -30,6 +29,11 @@ class Canvas:
         Resets the values of all "pixels" in the layer, making them black.
         """
         self.image: ndarray = np.full(shape=[self.height, self.width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
+
+    def hard_wipe(self):
+        self.image: ndarray = np.full(shape=[self.height, self.width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
+        self.point_array = np.zeros(shape=(self.width, self.height), dtype=np.uint8)
+        self.lines = [[]]
 
     def check_for_overlap(self, point):
         if self.point_array[point.x][point.y] > 0:
@@ -42,21 +46,22 @@ class Canvas:
             return False
 
     def new_line(self):
-        if self.lines[-1]:
-            self.lines.append([])
+        if self.lines[-1][1]:
+            color = copy.deepcopy(self.color)
+            self.lines.append((color, []))
 
     def add_point(self, point):
-        self.lines[-1].append(("none", point))
+        self.lines[-1][1].append(point)
 
     def draw(self):
         size = 3
         try:
             point2 = self.lines[0][0][1]
-            for line in self.lines:
-                name, previous_point = line[0]
-                for name, point in line:
+            for color, line in self.lines:
+                previous_point = line[0]
+                for point in line:
                     # Draws line between old index finger tip position, and actual position
-                    self.draw_line(previous_point, point, self.color, size)
+                    self.draw_line(previous_point, point, color, size)
                     previous_point = point
         except IndexError:
             None
