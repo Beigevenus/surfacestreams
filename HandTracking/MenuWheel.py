@@ -5,13 +5,12 @@ from HandTracking.Point import Point
 
 
 class MenuWheel:
-    def __init__(self, layer: Canvas, drawing_layer: Layer):
+    def __init__(self, layer: Canvas):
         self.is_open: bool = False
         self.tool_buttons: list[Button] = []
         self.color_buttons: list[Button] = []
         self.layer = layer
         self.center_point = Point(0, 0)
-        self.drawing_layer = drawing_layer
         self.prev_drawing_color: str = "WHITE"
         self.drawing_color: str = "WHITE"
         self.current_tool: str = "DRAW"

@@ -21,12 +21,10 @@ def main(config: Settings) -> int:
     # TODO: Remove when auto calibration is implemented
     drawing_point: Optional[Point] = None
     drawing_precision: int = 9
-    old_point: Optional[Point] = None
     point_on_canvas: Optional[Point] = None
 
     hand: Hand = Hand(mp_hand)
     canvas: Canvas = Canvas("Canvas", config.monitor.width, config.monitor.height)
-    canvas.create_layer("DRAWING")
     canvas.move_window(config.monitor.x, config.monitor.y)
     if config.is_fullscreen == 1:
         canvas.fullscreen()
@@ -44,10 +42,7 @@ def main(config: Settings) -> int:
                                                                                     canvas.height, event, x,
                                                                                     y))
 
-    counter: int = 0
-
-    canvas.create_layer('MENU_WHEEL', {"ACTIVE_BLUE": [255, 201, 99, 255]}, 0)
-    menu_wheel = MenuWheel(canvas, canvas.get_layer('DRAWING'))
+    menu_wheel = MenuWheel(canvas)
 
     hands = mp_hand.Hands(
         static_image_mode=False,
@@ -62,14 +57,14 @@ def main(config: Settings) -> int:
             # If loading a video, use 'break' instead of 'continue'.
             continue
 
-        drawing_point, old_point, point_on_canvas = analyse_frame(camera, hands, hand, canvas, drawing_point,
-                                                                  old_point, drawing_precision, point_on_canvas,
+        drawing_point, point_on_canvas = analyse_frame(camera, hands, hand, canvas, drawing_point,
+                                                                  drawing_precision, point_on_canvas,
                                                                   menu_wheel)
 
         camera.show_frame()
 
         # TODO: Save the black spots so we can remember the last seen hand position
-        counter = update_hand_mask(counter, canvas)
+        canvas.show()
 
         status = check_key_presses(canvas, camera)
 
@@ -84,7 +79,7 @@ def main(config: Settings) -> int:
     camera.capture.release()
 
 
-def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing_precision,
+def analyse_frame(camera, hands, hand, canvas, drawing_point, drawing_precision,
                   point_on_canvas: Optional[Point], menu_wheel):
     camera.frame = cv2.cvtColor(camera.frame, cv2.COLOR_BGR2RGB)
 
@@ -111,17 +106,14 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
                     if normalised_point is not None:
                         point_on_canvas = camera.transform_point(normalised_point, canvas.width, canvas.height)
 
-                    drawing_point, old_point = draw_on_layer(point_on_canvas, canvas,
-                                                             drawing_point, old_point, drawing_precision, menu_wheel)
+                    drawing_point = get_next_drawing_point(point_on_canvas, drawing_point, drawing_precision)
                     if drawing_point is not None:
                         canvas.add_point(drawing_point)
 
                 else:
-                    old_point = None
                     drawing_point = None
 
                 if hand_sign == "Close":
-                    menu_wheel.layer.wipe()
                     normalised_point = camera.normalise_in_boundary(hand.wrist)
                     if normalised_point is not None:
                         menu_point = camera.transform_point(normalised_point, canvas.width, canvas.height)
@@ -149,14 +141,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, old_point, drawing
             if camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip) is not None:
                 canvas.draw_circle(camera.transform_point(camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip), canvas.width, canvas.height), color=[0, 255, 0, 255], size=3)
 
-    return drawing_point, old_point, point_on_canvas
-
-
-def update_hand_mask(counter, canvas):
-    canvas.show()
-    canvas.get_layer("MASK").wipe()
-
-    return counter
+    return drawing_point, point_on_canvas
 
 
 def check_key_presses(canvas, camera):
@@ -189,23 +174,18 @@ def mouse_click(camera, width, height, event, x, y) -> None:
         camera.update_calibration_point(Point(x, y), width, height)
 
 
-def draw_on_layer(point_on_canvas: Point, canvas: Canvas, drawing_point: Point, old_point: Point,
-                  drawing_precision: int, menu_wheel: MenuWheel):
+def get_next_drawing_point(point_on_canvas: Point, drawing_point: Point,
+                           drawing_precision: int):
     # TODO: Write docstring for function
 
     if drawing_point is None:
         drawing_point = point_on_canvas
 
-    if old_point is None:
-        old_point = point_on_canvas
-
     if drawing_point is not None:
         if drawing_point.distance_to(point_on_canvas) > drawing_precision:
             drawing_point = drawing_point.next_point_to(point_on_canvas, 1)
-            # canvas.get_layer("DRAWING").draw_line(old_point, drawing_point, menu_wheel.drawing_color, 3)
-            old_point = drawing_point
 
-    return drawing_point, old_point
+    return drawing_point
 
 
 def draw_hand_landmarks(hand_landmarks, frame) -> None:

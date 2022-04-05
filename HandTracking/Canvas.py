@@ -92,97 +92,97 @@ class Canvas:
 
         cv2.circle(self.image, (int(point.x), int(point.y)), size, color, cv2.FILLED)
 
-    def create_layer(self, name: str, colors: dict[str, list[int]] = None, position: int = -1) -> None:
-        """
-        Creates a new Layer object and adds it to the canvas' list of layers, at the specified position.
+    # def create_layer(self, name: str, colors: dict[str, list[int]] = None, position: int = -1) -> None:
+    #     """
+    #     Creates a new Layer object and adds it to the canvas' list of layers, at the specified position.
+    #
+    #     :param name: The name of the layer
+    #     :param colors: The additional colors to add to the layer's color palette
+    #     :param position: The position of the layer in the order of layers
+    #     """
+    #     if colors:
+    #         actual_colors = colors
+    #     else:
+    #         actual_colors = {}
+    #
+    #     try:
+    #         if position == -1:
+    #             self.layers.append((name, Layer(self.width, self.height, actual_colors)))
+    #         else:
+    #             self.layers.insert(position, (name, Layer(self.width, self.height, actual_colors)))
+    #     except IndexError:
+    #         self.layers.append((name, Layer(self.width, self.height, actual_colors)))
 
-        :param name: The name of the layer
-        :param colors: The additional colors to add to the layer's color palette
-        :param position: The position of the layer in the order of layers
-        """
-        if colors:
-            actual_colors = colors
-        else:
-            actual_colors = {}
+    # def delete_layer(self, name: str) -> None:
+    #     """
+    #     Removes the specified layer from the list of layers.
+    #
+    #     :param name: The name of the layer to remove
+    #     """
+    #     layer: tuple[str, Layer] = self.__find_layer(name)
+    #
+    #     if layer:
+    #         self.layers.remove(layer)
+    #
+    # def get_layer(self, name: str) -> Optional[Layer]:
+    #     """
+    #     Returns a reference to a Layer object given its name if it exists in the list of layers.
+    #
+    #     :param name: The name of the layer to get the reference of
+    #     :return: A reference to the layer matching the specified name, or None if it doesn't exist
+    #     """
+    #     layer: tuple[str, Layer] = self.__find_layer(name)
+    #
+    #     if layer:
+    #         return self.__find_layer(name)[1]
+    #     else:
+    #         return None
+    #
+    # def __find_layer(self, name: str) -> Optional[tuple[str, Layer]]:
+    #     """
+    #     Returns a tuple containing a layer's name and object reference given its name.
+    #
+    #     :param name: The name of the layer to find
+    #     :return: A tuple containing the name and object reference of the layer, or None if it doesn't exist
+    #     """
+    #     for layer_name, layer in self.layers:
+    #         if name == layer_name:
+    #             return layer_name, layer
+    #     return None
+    #
+    # def combine_layers(self) -> ndarray:
+    #     """
+    #     Merges all layers in the list of layers together, to create *one* layer containing the images of all combined
+    #     layers.
+    #
+    #     :return: An ndarray representing the image of the merged layers
+    #     """
+    #     combined_image: ndarray = np.zeros(shape=[self.height, self.width, 4], dtype=np.uint8)
+    #
+    #     for name, layer in self.layers[::-1]:
+    #         src_a: ndarray = layer.image[..., 3] > 0
+    #
+    #         combined_image[src_a] = layer.image[src_a]
+    #
+    #     return combined_image
 
-        try:
-            if position == -1:
-                self.layers.append((name, Layer(self.width, self.height, actual_colors)))
-            else:
-                self.layers.insert(position, (name, Layer(self.width, self.height, actual_colors)))
-        except IndexError:
-            self.layers.append((name, Layer(self.width, self.height, actual_colors)))
-
-    def delete_layer(self, name: str) -> None:
-        """
-        Removes the specified layer from the list of layers.
-
-        :param name: The name of the layer to remove
-        """
-        layer: tuple[str, Layer] = self.__find_layer(name)
-
-        if layer:
-            self.layers.remove(layer)
-
-    def get_layer(self, name: str) -> Optional[Layer]:
-        """
-        Returns a reference to a Layer object given its name if it exists in the list of layers.
-
-        :param name: The name of the layer to get the reference of
-        :return: A reference to the layer matching the specified name, or None if it doesn't exist
-        """
-        layer: tuple[str, Layer] = self.__find_layer(name)
-
-        if layer:
-            return self.__find_layer(name)[1]
-        else:
-            return None
-
-    def __find_layer(self, name: str) -> Optional[tuple[str, Layer]]:
-        """
-        Returns a tuple containing a layer's name and object reference given its name.
-
-        :param name: The name of the layer to find
-        :return: A tuple containing the name and object reference of the layer, or None if it doesn't exist
-        """
-        for layer_name, layer in self.layers:
-            if name == layer_name:
-                return layer_name, layer
-        return None
-
-    def combine_layers(self) -> ndarray:
-        """
-        Merges all layers in the list of layers together, to create *one* layer containing the images of all combined
-        layers.
-
-        :return: An ndarray representing the image of the merged layers
-        """
-        combined_image: ndarray = np.zeros(shape=[self.height, self.width, 4], dtype=np.uint8)
-
-        for name, layer in self.layers[::-1]:
-            src_a: ndarray = layer.image[..., 3] > 0
-
-            combined_image[src_a] = layer.image[src_a]
-
-        return combined_image
-
-    def resize(self, width: int, height: int) -> None:
-        """
-        Changes the width and height of the canvas resolution and its layers to the given lengths.
-
-        :param width: The desired width
-        :param height: The desired height
-        """
-        if width <= 0 or height <= 0:
-            raise ValueError("Width and height of a resized canvas must be larger than 0.")
-
-        for name, layer in self.layers:
-            layer.image = cv2.resize(layer.image, (width, height), interpolation=cv2.INTER_AREA)
-            layer.width = width
-            layer.height = height
-
-        self.width = width
-        self.height = height
+    # def resize(self, width: int, height: int) -> None:
+    #     """
+    #     Changes the width and height of the canvas resolution and its layers to the given lengths.
+    #
+    #     :param width: The desired width
+    #     :param height: The desired height
+    #     """
+    #     if width <= 0 or height <= 0:
+    #         raise ValueError("Width and height of a resized canvas must be larger than 0.")
+    #
+    #     # for name, layer in self.layers:
+    #     #     layer.width = width
+    #     #     layer.height = height
+    #     self.image = cv2.resize(self.image, (width, height), interpolation=cv2.INTER_AREA)
+    #
+    #     self.width = width
+    #     self.height = height
 
     def draw_mask_points(self, points: list[Point]) -> None:
         """
@@ -199,17 +199,17 @@ class Canvas:
         Updates the shown canvas in its window.
         """
         cv2.imshow(self.name, cv2.flip(self.image, 1))
-        self.__check_for_resize()
+        # self.__check_for_resize()
 
-    def __check_for_resize(self) -> None:
-        """
-        Checks if the dimensions of the canvas window has changed and update its resolution accordingly.
-        """
-        width: int
-        height: int
-        width, height = cv2.getWindowImageRect(self.name)[2:]
-        if width != self.width or height != self.height:
-            self.resize(width, height)
+    # def __check_for_resize(self) -> None:
+    #     """
+    #     Checks if the dimensions of the canvas window has changed and update its resolution accordingly.
+    #     """
+    #     width: int
+    #     height: int
+    #     width, height = cv2.getWindowImageRect(self.name)[2:]
+    #     if width != self.width or height != self.height:
+    #         self.resize(width, height)
 
     def fullscreen(self) -> None:
         """
@@ -251,9 +251,3 @@ class Canvas:
         # print("bot right:")
         bot_right = camera.transform_point(Point(1, 1), self.width, self.height)
         # print(int(bot_right.x), int(bot_right.y))
-
-        self.get_layer("DRAWING").wipe()
-        self.get_layer("DRAWING").draw_line(top_left, top_right, color, size)
-        self.get_layer("DRAWING").draw_line(top_right, bot_right, color, size)
-        self.get_layer("DRAWING").draw_line(bot_right, bot_left, color, size)
-        self.get_layer("DRAWING").draw_line(bot_left, top_left, color, size)
