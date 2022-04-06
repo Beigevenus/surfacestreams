@@ -2,6 +2,7 @@ from collections import namedtuple
 from typing import NamedTuple, Optional
 
 from HandTracking.Config import Config
+from HandTracking.PersistenceHandler import PersistenceHandler
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
 from HandTracking.Hand import Hand
@@ -153,6 +154,7 @@ def check_key_presses(canvas, camera):
     elif key == 115:  # S
         camera.capture.release()
         cv2.destroyAllWindows()
+        PersistenceHandler.save_drawing(canvas.lines)
         return 2
 
     return 0

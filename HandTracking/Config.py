@@ -1,4 +1,5 @@
 import json
+from json import JSONDecodeError
 from typing import Optional, List
 
 from HandTracking.Point import Point
@@ -13,14 +14,17 @@ class Config:
     }
 
     @classmethod
-    def load(cls) -> dict:
+    def load(cls) -> Optional[dict]:
         """
         Loads the config JSON file into a dictionary.
 
-        :return: A dictionary symbolizing the config file
+        :return: A dictionary symbolizing the config file, or None if it cannot be parsed or doesn't exist
         """
-        with open(cls.filepath, "r") as file:
-            return json.load(file)
+        try:
+            with open(cls.filepath, "r") as file:
+                return json.load(file)
+        except (JSONDecodeError, FileNotFoundError):
+            return None
 
     @classmethod
     def load_calibration_points(cls) -> Optional[List[Point]]:
@@ -30,15 +34,13 @@ class Config:
         :return: A list of Point objects saved in the config file, or None if it doesn't exist
         """
         try:
-            config: dict = cls.load()
+            config: Optional[dict] = cls.load()
             point_list: List[Point] = [Point.from_dict(config["cal_points"]["point0"]),
                                        Point.from_dict(config["cal_points"]["point1"]),
                                        Point.from_dict(config["cal_points"]["point2"]),
                                        Point.from_dict(config["cal_points"]["point3"])]
             return point_list
-        except FileNotFoundError:
-            return None
-        except KeyError:
+        except (KeyError, TypeError):
             return None
 
     @classmethod
@@ -49,13 +51,11 @@ class Config:
         :return: A list of Point objects saved in the config file, or None if it doesn't exist
         """
         try:
-            config: dict = cls.load()
+            config: Optional[dict] = cls.load()
             point_list: List[Point] = [Point.from_dict(config["bou_points"]["point0"]),
                                        Point.from_dict(config["bou_points"]["point1"])]
             return point_list
-        except FileNotFoundError:
-            return None
-        except KeyError:
+        except (KeyError, TypeError):
             return None
 
     @classmethod
@@ -67,7 +67,7 @@ class Config:
         """
         try:
             return cls.load()["startup"]
-        except FileNotFoundError:
+        except TypeError:
             return None
 
     @classmethod
@@ -77,9 +77,9 @@ class Config:
 
         :param settings: The dictionary of settings to save
         """
-        try:
-            config = cls.load()
-        except FileNotFoundError:
+        config = cls.load()
+
+        if not config:
             config = cls.empty_config
 
         config["startup"] = settings
@@ -92,9 +92,9 @@ class Config:
 
         :param cal_points: A list of Point objects to write to the config file
         """
-        try:
-            config = cls.load()
-        except FileNotFoundError:
+        config = cls.load()
+
+        if not config:
             config = cls.empty_config
 
         cal_points = cls.point_list_to_dict(cal_points)
@@ -108,9 +108,9 @@ class Config:
 
         :param bou_points: A list of Point objects to write to the config file
         """
-        try:
-            config = cls.load()
-        except FileNotFoundError:
+        config = cls.load()
+
+        if not config:
             config = cls.empty_config
 
         bou_points = cls.point_list_to_dict(bou_points)
