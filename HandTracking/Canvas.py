@@ -45,7 +45,15 @@ class Canvas:
         else:
             return False
 
-    def new_line(self):
+    def new_line(self, force=False):
+        if self.lines[-1][1]:
+            color = copy.deepcopy(self.color)
+            self.lines.append((color, []))
+        elif force:
+            color = copy.deepcopy(self.color)
+            self.lines.append((color, []))
+
+    def delete_line(self):
         if self.lines[-1][1]:
             color = copy.deepcopy(self.color)
             self.lines.append((color, []))
@@ -55,16 +63,14 @@ class Canvas:
 
     def draw(self):
         size = 3
-        try:
-            point2 = self.lines[0][0][1]
-            for color, line in self.lines:
+        for color, line in self.lines:
+            if line:
                 previous_point = line[0]
                 for point in line:
                     # Draws line between old index finger tip position, and actual position
                     self.draw_line(previous_point, point, color, size)
                     previous_point = point
-        except IndexError:
-            None
+
 
     def draw_line(self, previous_point: Point, point: Point, color, size: int) -> None:
         """
