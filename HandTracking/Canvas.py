@@ -35,15 +35,17 @@ class Canvas:
         self.point_array = np.zeros(shape=(self.width, self.height), dtype=np.uint8)
         self.lines = [[]]
 
-    def check_for_overlap(self, point):
-        if self.point_array[point.x][point.y] > 0:
-            lines = copy.deepcopy(self.lines)
-            for line in lines:
-                if point in line:
-                    self.lines.remove(line)
-            return True
-        else:
-            return False
+    def check_for_overlap(self, points):
+        found = False
+        for point in points:
+            if self.point_array[point.x][point.y] > 0:
+                lines = copy.deepcopy(self.lines)
+                for line in lines:
+                    if point in line:
+                        self.lines.remove(line)
+                found = True
+
+        return found
 
     def new_line(self, force=False):
         if self.lines[-1][1]:
