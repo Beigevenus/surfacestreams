@@ -88,13 +88,13 @@ class MenuWheel:
 
     def __select_wipe(self, button):
         self.layer.hard_wipe()
+        self.layer.new_line(force=True)
 
     def __clear_active_tool_button(self):
         for button in self.tool_buttons:
             button.active = False
 
     def __change_color(self, button: Button):
-        print("change!!!!!!!!!")
         if self.current_tool != "ERASE":
             actual_color = button.color
 

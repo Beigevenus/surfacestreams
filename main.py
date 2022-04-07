@@ -108,13 +108,20 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, drawing_precision,
 
                 # TODO: Add erasing when working on the wheel
                 if hand_sign == "Pointer":
-                    normalised_point = camera.normalise_in_boundary(hand.get_index_tip())
-                    if normalised_point is not None:
-                        point_on_canvas = camera.transform_point(normalised_point, canvas.width, canvas.height)
+                    if menu_wheel.current_tool == "DRAW":
+                        normalised_point = camera.normalise_in_boundary(hand.get_index_tip())
+                        if normalised_point is not None:
+                            point_on_canvas = camera.transform_point(normalised_point, canvas.width, canvas.height)
 
-                    drawing_point = get_next_drawing_point(point_on_canvas, drawing_point, drawing_precision)
-                    if drawing_point is not None:
-                        canvas.add_point(drawing_point)
+                        drawing_point = get_next_drawing_point(point_on_canvas, drawing_point, drawing_precision)
+                        if drawing_point is not None:
+                            canvas.add_point(drawing_point)
+                    else:
+                        normalised_point = camera.normalise_in_boundary(hand.get_index_tip())
+                        if normalised_point is not None:
+                            point_on_canvas = camera.transform_point(normalised_point, canvas.width, canvas.height)
+
+                        canvas.erase(point_on_canvas, 15)
 
                 else:
                     drawing_point = None

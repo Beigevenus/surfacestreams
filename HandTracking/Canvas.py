@@ -19,10 +19,19 @@ class Canvas:
 
         self.color: list[int] = [150, 150, 150, 255]
 
-        self.point_array: ndarray = np.zeros(shape=(self.width, self.height), dtype=np.uint8)
+        self.line_array: list[list[list[tuple[list[int], list[Point]]]]] = [[[]]]
+        self.init_line_array()
         self.lines: list[tuple[list[int], list[Point]]] = [(self.color, [])]
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
+
+    # TODO: optimize with map
+    def init_line_array(self):
+        self.line_array = []
+        for y in range(self.height+100):
+            self.line_array.append([])
+            for x in range(self.width+100):
+                self.line_array[y].append([])
 
     def wipe(self) -> None:
         """
@@ -32,13 +41,13 @@ class Canvas:
 
     def hard_wipe(self):
         self.image: ndarray = np.full(shape=[self.height, self.width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
-        self.point_array = np.zeros(shape=(self.width, self.height), dtype=np.uint8)
-        self.lines = [[]]
+        self.init_line_array()
+        self.lines = []
 
     def check_for_overlap(self, points):
         found = False
         for point in points:
-            if self.point_array[point.x][point.y] > 0:
+            if self.line_array[point.x][point.y]:
                 lines = copy.deepcopy(self.lines)
                 for line in lines:
                     if point in line:
@@ -48,20 +57,21 @@ class Canvas:
         return found
 
     def new_line(self, force=False):
-        if self.lines[-1][1]:
+        if force:
             color = copy.deepcopy(self.color)
             self.lines.append((color, []))
-        elif force:
+        elif self.lines[-1][1]:
             color = copy.deepcopy(self.color)
             self.lines.append((color, []))
 
-    def delete_line(self):
+    def remove_excess_line(self):
         if self.lines[-1][1]:
             color = copy.deepcopy(self.color)
             self.lines.append((color, []))
 
     def add_point(self, point):
         self.lines[-1][1].append(point)
+        self.line_array[int(point.y)][int(point.x)].append(self.lines[-1])
 
     def draw(self):
         size = 3
@@ -73,6 +83,20 @@ class Canvas:
                     self.draw_line(previous_point, point, color, size)
                     previous_point = point
 
+    def erase(self, point, size):
+        start_point_x_y = (point.x-size, point.y-size)
+        for x in range(size*2):
+            if self.width > (start_point_x_y[0] + x) >= 0:
+                for y in range(size*2):
+                    if self.height > (start_point_x_y[1] + y) >= 0:
+                        if self.line_array[start_point_x_y[0] + x][start_point_x_y[1] + y]:
+                            for line in self.line_array[start_point_x_y[0] + x][start_point_x_y[1] + y]:
+                                self.delete_line(line)
+
+    def delete_line(self, line):
+        for point in line[1]:
+            self.line_array[point.x][point.y].remove(line)
+        self.lines.remove(line)
 
     def draw_line(self, previous_point: Point, point: Point, color, size: int) -> None:
         """
