@@ -1,7 +1,7 @@
 from collections import namedtuple
-from typing import NamedTuple, Optional
+from typing import Optional
 
-from HandTracking.Config import Config
+from HandTracking.ConfigHandler import ConfigHandler
 from HandTracking.PersistenceHandler import PersistenceHandler
 from HandTracking.Point import Point
 from HandTracking.Canvas import Canvas
@@ -30,7 +30,7 @@ def main(config: Settings) -> int:
     if config.is_fullscreen == 1:
         canvas.fullscreen()
 
-    cal_points: list[Point] = Config.load_calibration_points()
+    cal_points: list[Point] = ConfigHandler.load_calibration_points()
     if cal_points:
         camera = Camera(cal_points, camera=config.camera)
     else:
@@ -59,8 +59,8 @@ def main(config: Settings) -> int:
             continue
 
         drawing_point, point_on_canvas = analyse_frame(camera, hands, hand, canvas, drawing_point,
-                                                                  drawing_precision, point_on_canvas,
-                                                                  menu_wheel)
+                                                       drawing_precision, point_on_canvas,
+                                                       menu_wheel)
 
         camera.show_frame()
 
@@ -136,11 +136,14 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, drawing_precision,
             mask_points = []
             for point in hand.get_mask_points():
                 if camera.normalise_in_boundary(point) is not None:
-                    mask_points.append(camera.transform_point(camera.normalise_in_boundary(point), canvas.width, canvas.height))
+                    mask_points.append(
+                        camera.transform_point(camera.normalise_in_boundary(point), canvas.width, canvas.height))
 
             canvas.draw_mask_points(mask_points)
             if camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip) is not None:
-                canvas.draw_circle(camera.transform_point(camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip), canvas.width, canvas.height), color=[0, 255, 0, 255], size=3)
+                canvas.draw_circle(
+                    camera.transform_point(camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip), canvas.width,
+                                           canvas.height), color=[0, 255, 0, 255], size=3)
 
     return drawing_point, point_on_canvas
 
@@ -156,6 +159,8 @@ def check_key_presses(canvas, camera):
         cv2.destroyAllWindows()
         PersistenceHandler.save_drawing(canvas.lines)
         return 2
+    elif key == 116:    # T
+        PersistenceHandler.save_drawing(canvas.lines)
 
     return 0
 
@@ -206,7 +211,7 @@ def draw_hand_landmarks(hand_landmarks, frame) -> None:
 
 
 if __name__ == "__main__":
-    startup_dict: dict = Config.load_startup_settings()
+    startup_dict: dict = ConfigHandler.load_startup_settings()
     settings: Optional[Settings] = None
 
     if startup_dict:

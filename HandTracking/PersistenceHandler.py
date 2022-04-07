@@ -1,53 +1,65 @@
-import json
-from json import JSONDecodeError
 from typing import Optional
 
-from HandTracking.Config import Config
+from HandTracking.DictConverter import DictConverter
 from HandTracking.JsonHandler import JsonHandler
 from HandTracking.Point import Point
 
 
 class PersistenceHandler:
-    filepath: str = "./drawing.json"
-    file_handler = JsonHandler(filepath)
+    file_handler: JsonHandler = JsonHandler("./drawing.json")
 
     @classmethod
     def load(cls) -> Optional[dict]:
         """
-        Loads the drawing JSON file into a dictionary.
+        Loads the drawing.
 
         :return: A dictionary symbolizing the saved drawing, or None if it cannot be parsed or doesn't exist
         """
-        try:
-            with open(cls.filepath, "r") as file:
-                return json.load(file)
-        except (JSONDecodeError, FileNotFoundError):
-            return None
+        return cls.file_handler.load()
 
     @classmethod
-    def __write(cls, drawing: dict) -> None:
+    def save(cls, drawing: dict) -> None:
         """
-        Writes the given drawing a JSON file.
+        Saves the drawing.
 
-        :param drawing: The drawing to write to a JSON file
+        :param drawing: The drawing to save
         """
-        with open(cls.filepath, "w") as file:
-            json.dump(drawing, file)
+        cls.file_handler.write(drawing)
 
     @classmethod
     def save_drawing(cls, lines: list[tuple[list[int], list[Point]]]) -> None:
+        """
+        Saves the lines making up the current drawing.
+
+        :param lines: The lines to save as the current drawing
+        """
         drawing: dict = {}
 
         for i, line in enumerate(lines):
-            drawing[f"line{i}"] = PersistenceHandler.__line_tuple_to_dict(line)
+            drawing[f"line{i}"] = DictConverter.line_tuple_to_dict(line)
 
-        PersistenceHandler.__write(drawing)
-
-    @classmethod
-    def __color_list_to_dict(cls, color_list: list[int]) -> dict:
-        return {"b": color_list[0], "g": color_list[1], "r": color_list[2]}
+        cls.save(drawing)
 
     @classmethod
-    def __line_tuple_to_dict(cls, line_tuple: tuple) -> dict:
-        return {"color": PersistenceHandler.__color_list_to_dict(line_tuple[0]),
-                "points": Config.point_list_to_dict(line_tuple[1])}
+    def load_drawing(cls) -> list[tuple[list[int], list[Point]]]:
+        """
+        Loads the drawing as a dictionary, into its proper representation.
+
+        :return: The list of lines which make up the drawing
+        """
+        drawing: dict = cls.file_handler.load()
+        line_list: list[tuple[list[int], list[Point]]] = []
+
+        if not drawing:
+            return [([150, 150, 150, 255], [])]
+
+        for line in drawing:
+            color_list: list = [drawing[line]["color"]["b"], drawing[line]["color"]["g"], drawing[line]["color"]["r"]]
+            point_list: list = []
+
+            for point in drawing[line]["points"]:
+                point_list.append(Point.from_dict(drawing[line]["points"][point]))
+
+            line_list.append((color_list, point_list))
+
+        return line_list

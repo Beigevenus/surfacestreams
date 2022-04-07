@@ -3,7 +3,7 @@ from typing import Optional
 from cv2 import VideoCapture
 from numpy import ndarray
 
-from HandTracking.Config import Config
+from HandTracking.ConfigHandler import ConfigHandler
 from HandTracking.Point import Point
 from HandTracking.image_wrap import four_point_transform as fpt
 
@@ -26,7 +26,7 @@ class Camera:
         self.boundary_points: list[Point] = []
         self.boundaries: dict[str, Optional[int]] = {"x_min": None, "x_max": None, "y_min": None, "y_max": None}
 
-        bou_points = Config.load_boundary_points()
+        bou_points = ConfigHandler.load_boundary_points()
         if bou_points:
             self.update_boundaries(bou_points)
 
@@ -82,7 +82,7 @@ class Camera:
                 self.boundary_points.append(point)
                 self.update_boundaries(self.boundary_points)
 
-                Config.save_boundary_points(self.boundary_points)
+                ConfigHandler.save_boundary_points(self.boundary_points)
             else:
                 self.calibration_points.clear()
                 self.boundary_points.clear()
@@ -94,7 +94,7 @@ class Camera:
             self.calibration_points.append(point)
             self.sorted_calibration_points = self.sort_calibration_points()
             self.update_image_ptm(width, height)
-            Config.save_calibration_points(self.calibration_points)
+            ConfigHandler.save_calibration_points(self.calibration_points)
         else:
             self.calibration_points.append(point)
 

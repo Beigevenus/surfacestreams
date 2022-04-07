@@ -1,12 +1,11 @@
 import copy
-from typing import Optional
 
 import cv2
 import numpy as np
 from numpy import ndarray
 
 from HandTracking.Camera import Camera
-from HandTracking.Layer import Layer
+from HandTracking.PersistenceHandler import PersistenceHandler
 from HandTracking.Point import Point
 
 
@@ -20,7 +19,7 @@ class Canvas:
         self.color: list[int] = [150, 150, 150, 255]
 
         self.point_array: ndarray = np.zeros(shape=(self.width, self.height), dtype=np.uint8)
-        self.lines: list[tuple[list[int], list[Point]]] = [(self.color, [])]
+        self.lines: list[tuple[list[int], list[Point]]] = PersistenceHandler.load_drawing()
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
 
@@ -64,7 +63,7 @@ class Canvas:
                     self.draw_line(previous_point, point, color, size)
                     previous_point = point
         except IndexError:
-            None
+            pass
 
     def draw_line(self, previous_point: Point, point: Point, color, size: int) -> None:
         """

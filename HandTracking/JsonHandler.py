@@ -2,9 +2,6 @@ import json
 from json import JSONDecodeError
 from typing import Optional
 
-from HandTracking.Config import Config
-from HandTracking.Point import Point
-
 
 class JsonHandler:
     def __init__(self, filepath: str):
