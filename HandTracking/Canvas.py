@@ -20,6 +20,7 @@ class Canvas:
 
         self.line_array: list[list[list[tuple[list[int], list[Point]]]]] = [[[] for y in range(self.height)] for x in range(self.width)]
         self.lines: list[tuple[list[int], list[Point]]] = PersistenceHandler.load_drawing()
+        self.update_line_array()
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
 
@@ -31,6 +32,11 @@ class Canvas:
         #     self.line_array.append([])
         #     for x in range(self.width+100):
         #         self.line_array[y].append([])
+
+    def update_line_array(self):
+        for line in self.lines:
+            for point in line[1]:
+                self.line_array[int(point.x)][int(point.y)].append(line)
 
     def wipe(self) -> None:
         """
