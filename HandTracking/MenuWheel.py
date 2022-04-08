@@ -1,6 +1,5 @@
 from HandTracking.Button import Button
 from HandTracking.Canvas import Canvas
-from HandTracking.Layer import Layer
 from HandTracking.Point import Point
 
 

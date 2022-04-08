@@ -4,7 +4,7 @@ from screeninfo import get_monitors, Monitor
 import tkinter as tk
 import tkinter.ttk as ttk
 from HandTracking.Camera import Camera
-from HandTracking.Config import Config
+from HandTracking.ConfigHandler import ConfigHandler
 
 
 class Settings:
@@ -135,7 +135,7 @@ class SettingsApp:
             self.appliedSettings.monitor.width = 640
             self.appliedSettings.monitor.height = 360
 
-        Config.save_startup_settings(self.appliedSettings.to_dict())
+        ConfigHandler.save_startup_settings(self.appliedSettings.to_dict())
 
         self.toplevel1.destroy()
 

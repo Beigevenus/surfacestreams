@@ -9,6 +9,7 @@ x_fail = pytest.mark.xfail
 
 
 class TestCanvas:
+    # TODO: Reconsider test cases!
     @pytest.mark.parametrize("width, height", [(-1920, 1080), (1920, -1080)])
     def test_resize_negative_raises_value_error(self, width, height):
         # Arrange

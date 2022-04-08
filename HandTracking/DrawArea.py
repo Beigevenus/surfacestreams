@@ -1,7 +1,3 @@
-from typing import Optional
-
-import numpy as np
-from HandTracking.Canvas import Canvas
 from HandTracking.Point import Point
 
 
