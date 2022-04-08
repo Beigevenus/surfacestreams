@@ -38,7 +38,6 @@ def main(config: Settings) -> int:
                          Point(canvas.width - 1, canvas.height)], camera=config.camera)
 
     camera.update_image_ptm(canvas.width, canvas.height)
-    canvas.print_calibration_cross(camera)
     cv2.setMouseCallback(camera.name, lambda event, x, y, flags, param: mouse_click(camera, canvas.width,
                                                                                     canvas.height, event, x,
                                                                                     y))
@@ -112,7 +111,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, drawing_precision,
                     if menu_wheel.current_tool == "DRAW":
                         normalised_point = camera.normalise_in_boundary(hand.get_index_tip())
                         if normalised_point is not None:
-                            point_on_canvas = camera.transform_point(normalised_point, canvas.width, canvas.height)
+                            point_on_canvas = normalised_point.denormalize(canvas.width, canvas.height)
 
                         drawing_point = get_next_drawing_point(point_on_canvas, drawing_point, drawing_precision)
                         if drawing_point is not None:
@@ -120,7 +119,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, drawing_precision,
                     else:
                         normalised_point = camera.normalise_in_boundary(hand.get_index_tip())
                         if normalised_point is not None:
-                            point_on_canvas = camera.transform_point(normalised_point, canvas.width, canvas.height)
+                            point_on_canvas = normalised_point.denormalize(canvas.width, canvas.height)
 
                         canvas.erase(point_on_canvas, 15)
 
@@ -130,7 +129,7 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, drawing_precision,
                 if hand_sign == "Close":
                     normalised_point = camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip)
                     if normalised_point is not None:
-                        menu_point = camera.transform_point(normalised_point, canvas.width, canvas.height)
+                        menu_point = normalised_point.denormalize(canvas.width, canvas.height)
                         if not menu_wheel.is_open:
                             menu_wheel.center_point = menu_point
 
@@ -144,15 +143,17 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, drawing_precision,
             # Mask for removing the hand
             mask_points = []
             for point in hand.get_mask_points():
-                if camera.normalise_in_boundary(point) is not None:
-                    mask_points.append(
-                        camera.transform_point(camera.normalise_in_boundary(point), canvas.width, canvas.height))
+                normalized_point: Point = camera.normalise_in_boundary(point)
+                if normalized_point is not None:
+                    mask_points.append(normalized_point.denormalize(canvas.width, canvas.height))
 
             canvas.draw_mask_points(mask_points)
-            if camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip) is not None:
+            normalized_index_tip: Point = camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip)
+            if normalized_index_tip is not None:
                 canvas.draw_circle(
-                    camera.transform_point(camera.normalise_in_boundary(hand.fingers["INDEX_FINGER"].tip), canvas.width,
-                                           canvas.height), color=[0, 255, 0, 255], size=3)
+                    normalized_index_tip.denormalize(canvas.width, canvas.height),
+                    color=[0, 255, 0, 255], size=3
+                )
 
     return drawing_point, point_on_canvas
 

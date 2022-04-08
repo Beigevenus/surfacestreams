@@ -1,4 +1,4 @@
-from HandTracking.DrawArea import DrawArea
+from HandTracking.store.DrawArea import DrawArea
 from HandTracking.Point import Point
 import pytest
 

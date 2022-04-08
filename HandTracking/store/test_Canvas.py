@@ -3,7 +3,7 @@ import numpy as np
 from HandTracking.Canvas import Canvas
 import pytest
 
-from HandTracking.Layer import Layer
+from HandTracking.store.Layer import Layer
 
 x_fail = pytest.mark.xfail
 
