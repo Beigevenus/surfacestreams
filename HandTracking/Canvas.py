@@ -20,6 +20,7 @@ class Canvas:
 
         self.line_array: list[list[list[tuple[list[int], list[Point]]]]] = [[[] for y in range(self.height)] for x in range(self.width)]
         self.lines: list[tuple[list[int], list[Point]]] = PersistenceHandler.load_drawing()
+        self.new_line()
         self.update_line_array()
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
@@ -103,7 +104,10 @@ class Canvas:
     def delete_line(self, line):
         for point in line[1]:
             self.line_array[int(point.x)][int(point.y)].remove(line)
-        self.lines.remove(line)
+        try:
+            self.lines.remove(line)
+        except ValueError:
+            pass
 
     def draw_line(self, previous_point: Point, point: Point, color, size: int) -> None:
         """
