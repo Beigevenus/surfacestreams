@@ -88,7 +88,6 @@ class MenuWheel:
 
     def __select_wipe(self, button):
         self.layer.hard_wipe()
-        self.layer.new_line(force=True)
 
     def __clear_active_tool_button(self):
         for button in self.tool_buttons:
