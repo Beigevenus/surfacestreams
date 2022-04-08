@@ -1,3 +1,4 @@
+import copy
 from typing import Optional
 
 import cv2
@@ -14,101 +15,213 @@ class Canvas:
         self.width: int = width
         self.height: int = height
         self.name: str = name
-        self.layers: list[(str, Layer)] = [("MASK", Layer(width, height))]
+        self.image: ndarray = np.full(shape=[height, width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
+
+        self.color: list[int] = [150, 150, 150, 255]
+
+        self.line_array: list[list[list[tuple[list[int], list[Point]]]]] = [[[] for y in range(self.height)] for x in range(self.width)]
+        self.lines: list[tuple[list[int], list[Point]]] = [(self.color, [])]
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
 
-    def create_layer(self, name: str, colors: dict[str, list[int]] = None, position: int = -1) -> None:
+    # TODO: optimize with map
+    def init_line_array(self):
+        # self.line_array = [[[] for x in range(self.width)] for y in range(self.height)]
+        self.line_array = list(map(list, map(list, self.line_array)))
+        # for y in range(self.height+100):
+        #     self.line_array.append([])
+        #     for x in range(self.width+100):
+        #         self.line_array[y].append([])
+
+    def wipe(self) -> None:
         """
-        Creates a new Layer object and adds it to the canvas' list of layers, at the specified position.
-
-        :param name: The name of the layer
-        :param colors: The additional colors to add to the layer's color palette
-        :param position: The position of the layer in the order of layers
+        Resets the values of all "pixels" in the layer, making them black.
         """
-        if colors:
-            actual_colors = colors
-        else:
-            actual_colors = {}
+        self.image: ndarray = np.full(shape=[self.height, self.width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
 
-        try:
-            if position == -1:
-                self.layers.append((name, Layer(self.width, self.height, actual_colors)))
-            else:
-                self.layers.insert(position, (name, Layer(self.width, self.height, actual_colors)))
-        except IndexError:
-            self.layers.append((name, Layer(self.width, self.height, actual_colors)))
+    def hard_wipe(self):
+        if len(self.lines) > 1:
+            self.image: ndarray = np.full(shape=[self.height, self.width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
+            self.init_line_array()
+            self.lines = []
+            self.new_line(force=True)
 
-    def delete_layer(self, name: str) -> None:
+    def check_for_overlap(self, points):
+        found = False
+        for point in points:
+            if self.line_array[point.x][point.y]:
+                lines = copy.deepcopy(self.lines)
+                for line in lines:
+                    if point in line:
+                        self.lines.remove(line)
+                found = True
+
+        return found
+
+    def new_line(self, force=False):
+        if force:
+            color = copy.deepcopy(self.color)
+            self.lines.append((color, []))
+        elif self.lines[-1][1]:
+            color = copy.deepcopy(self.color)
+            self.lines.append((color, []))
+
+    def remove_excess_line(self):
+        if self.lines[-1][1]:
+            color = copy.deepcopy(self.color)
+            self.lines.append((color, []))
+
+    def add_point(self, point):
+        self.lines[-1][1].append(point)
+        self.line_array[int(point.x)][int(point.y)].append(self.lines[-1])
+
+    def draw(self):
+        size = 3
+        for color, line in self.lines:
+            if line:
+                previous_point = line[0]
+                for point in line:
+                    # Draws line between old index finger tip position, and actual position
+                    self.draw_line(previous_point, point, color, size)
+                    previous_point = point
+
+    def erase(self, point, size):
+        start_point_x_y = (point.x-size, point.y-size)
+        for x in range(size*2):
+            if self.width > (start_point_x_y[0] + x) >= 0:
+                for y in range(size*2):
+                    if self.height > (start_point_x_y[1] + y) >= 0:
+                        if self.line_array[start_point_x_y[0] + x][start_point_x_y[1] + y]:
+                            for line in self.line_array[start_point_x_y[0] + x][start_point_x_y[1] + y]:
+                                self.delete_line(line)
+
+    def delete_line(self, line):
+        for point in line[1]:
+            self.line_array[int(point.x)][int(point.y)].remove(line)
+        self.lines.remove(line)
+
+    def draw_line(self, previous_point: Point, point: Point, color, size: int) -> None:
         """
-        Removes the specified layer from the list of layers.
+        Draws a circle at the current point, and a line between the old and current point.
 
-        :param name: The name of the layer to remove
+        :param previous_point: The start position of the line segment
+        :param point: The end position of the line segment
+        :param color: The color to draw the line with
+        :param size: The line size
         """
-        layer: tuple[str, Layer] = self.__find_layer(name)
+        if type(color) is str:
+            color = [255, 225, 150, 255]
 
-        if layer:
-            self.layers.remove(layer)
+        self.draw_circle(point, color, int(size / 2))
 
-    def get_layer(self, name: str) -> Optional[Layer]:
+        # Draws line between old index finger tip position, and actual position
+        cv2.line(self.image, (int(previous_point.x), int(previous_point.y)), (int(point.x), int(point.y)),
+                 color, size)
+
+    def draw_circle(self, point: Point, color, size: int) -> None:
         """
-        Returns a reference to a Layer object given its name if it exists in the list of layers.
+        Draws a circle at the specified point's coordinates.
 
-        :param name: The name of the layer to get the reference of
-        :return: A reference to the layer matching the specified name, or None if it doesn't exist
+        :param point: The point to draw a circle at
+        :param color: The color to draw the circle with
+        :param size: The radius of the circle
         """
-        layer: tuple[str, Layer] = self.__find_layer(name)
+        if type(color) is str:
+            color = [255, 225, 150, 255]
 
-        if layer:
-            return self.__find_layer(name)[1]
-        else:
-            return None
+        cv2.circle(self.image, (int(point.x), int(point.y)), size, color, cv2.FILLED)
 
-    def __find_layer(self, name: str) -> Optional[tuple[str, Layer]]:
-        """
-        Returns a tuple containing a layer's name and object reference given its name.
+    # def create_layer(self, name: str, colors: dict[str, list[int]] = None, position: int = -1) -> None:
+    #     """
+    #     Creates a new Layer object and adds it to the canvas' list of layers, at the specified position.
+    #
+    #     :param name: The name of the layer
+    #     :param colors: The additional colors to add to the layer's color palette
+    #     :param position: The position of the layer in the order of layers
+    #     """
+    #     if colors:
+    #         actual_colors = colors
+    #     else:
+    #         actual_colors = {}
+    #
+    #     try:
+    #         if position == -1:
+    #             self.layers.append((name, Layer(self.width, self.height, actual_colors)))
+    #         else:
+    #             self.layers.insert(position, (name, Layer(self.width, self.height, actual_colors)))
+    #     except IndexError:
+    #         self.layers.append((name, Layer(self.width, self.height, actual_colors)))
 
-        :param name: The name of the layer to find
-        :return: A tuple containing the name and object reference of the layer, or None if it doesn't exist
-        """
-        for layer_name, layer in self.layers:
-            if name == layer_name:
-                return layer_name, layer
-        return None
+    # def delete_layer(self, name: str) -> None:
+    #     """
+    #     Removes the specified layer from the list of layers.
+    #
+    #     :param name: The name of the layer to remove
+    #     """
+    #     layer: tuple[str, Layer] = self.__find_layer(name)
+    #
+    #     if layer:
+    #         self.layers.remove(layer)
+    #
+    # def get_layer(self, name: str) -> Optional[Layer]:
+    #     """
+    #     Returns a reference to a Layer object given its name if it exists in the list of layers.
+    #
+    #     :param name: The name of the layer to get the reference of
+    #     :return: A reference to the layer matching the specified name, or None if it doesn't exist
+    #     """
+    #     layer: tuple[str, Layer] = self.__find_layer(name)
+    #
+    #     if layer:
+    #         return self.__find_layer(name)[1]
+    #     else:
+    #         return None
+    #
+    # def __find_layer(self, name: str) -> Optional[tuple[str, Layer]]:
+    #     """
+    #     Returns a tuple containing a layer's name and object reference given its name.
+    #
+    #     :param name: The name of the layer to find
+    #     :return: A tuple containing the name and object reference of the layer, or None if it doesn't exist
+    #     """
+    #     for layer_name, layer in self.layers:
+    #         if name == layer_name:
+    #             return layer_name, layer
+    #     return None
+    #
+    # def combine_layers(self) -> ndarray:
+    #     """
+    #     Merges all layers in the list of layers together, to create *one* layer containing the images of all combined
+    #     layers.
+    #
+    #     :return: An ndarray representing the image of the merged layers
+    #     """
+    #     combined_image: ndarray = np.zeros(shape=[self.height, self.width, 4], dtype=np.uint8)
+    #
+    #     for name, layer in self.layers[::-1]:
+    #         src_a: ndarray = layer.image[..., 3] > 0
+    #
+    #         combined_image[src_a] = layer.image[src_a]
+    #
+    #     return combined_image
 
-    def combine_layers(self) -> ndarray:
-        """
-        Merges all layers in the list of layers together, to create *one* layer containing the images of all combined
-        layers.
-
-        :return: An ndarray representing the image of the merged layers
-        """
-        combined_image: ndarray = np.zeros(shape=[self.height, self.width, 4], dtype=np.uint8)
-
-        for name, layer in self.layers[::-1]:
-            src_a: ndarray = layer.image[..., 3] > 0
-
-            combined_image[src_a] = layer.image[src_a]
-
-        return combined_image
-
-    def resize(self, width: int, height: int) -> None:
-        """
-        Changes the width and height of the canvas resolution and its layers to the given lengths.
-
-        :param width: The desired width
-        :param height: The desired height
-        """
-        if width <= 0 or height <= 0:
-            raise ValueError("Width and height of a resized canvas must be larger than 0.")
-
-        for name, layer in self.layers:
-            layer.image = cv2.resize(layer.image, (width, height), interpolation=cv2.INTER_AREA)
-            layer.width = width
-            layer.height = height
-
-        self.width = width
-        self.height = height
+    # def resize(self, width: int, height: int) -> None:
+    #     """
+    #     Changes the width and height of the canvas resolution and its layers to the given lengths.
+    #
+    #     :param width: The desired width
+    #     :param height: The desired height
+    #     """
+    #     if width <= 0 or height <= 0:
+    #         raise ValueError("Width and height of a resized canvas must be larger than 0.")
+    #
+    #     # for name, layer in self.layers:
+    #     #     layer.width = width
+    #     #     layer.height = height
+    #     self.image = cv2.resize(self.image, (width, height), interpolation=cv2.INTER_AREA)
+    #
+    #     self.width = width
+    #     self.height = height
 
     def draw_mask_points(self, points: list[Point]) -> None:
         """
@@ -118,24 +231,24 @@ class Canvas:
         """
 
         for point in points:
-            self.get_layer("MASK").draw_circle(point, "BLACK", int(75/2))
+            self.draw_circle(point, [1, 1, 1, 1], int(75/2))
 
     def show(self) -> None:
         """
         Updates the shown canvas in its window.
         """
-        cv2.imshow(self.name, cv2.flip(self.combine_layers(), 1))
-        self.__check_for_resize()
+        cv2.imshow(self.name, cv2.flip(self.image, 1))
+        # self.__check_for_resize()
 
-    def __check_for_resize(self) -> None:
-        """
-        Checks if the dimensions of the canvas window has changed and update its resolution accordingly.
-        """
-        width: int
-        height: int
-        width, height = cv2.getWindowImageRect(self.name)[2:]
-        if width != self.width or height != self.height:
-            self.resize(width, height)
+    # def __check_for_resize(self) -> None:
+    #     """
+    #     Checks if the dimensions of the canvas window has changed and update its resolution accordingly.
+    #     """
+    #     width: int
+    #     height: int
+    #     width, height = cv2.getWindowImageRect(self.name)[2:]
+    #     if width != self.width or height != self.height:
+    #         self.resize(width, height)
 
     def fullscreen(self) -> None:
         """
@@ -177,9 +290,3 @@ class Canvas:
         # print("bot right:")
         bot_right = camera.transform_point(Point(1, 1), self.width, self.height)
         # print(int(bot_right.x), int(bot_right.y))
-
-        self.get_layer("DRAWING").wipe()
-        self.get_layer("DRAWING").draw_line(top_left, top_right, color, size)
-        self.get_layer("DRAWING").draw_line(top_right, bot_right, color, size)
-        self.get_layer("DRAWING").draw_line(bot_right, bot_left, color, size)
-        self.get_layer("DRAWING").draw_line(bot_left, top_left, color, size)

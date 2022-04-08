@@ -59,7 +59,7 @@ class TestCamera:
         camera.width = 500
         camera.height = 500
         camera.boundary_points = []
-        camera.boudaries = {"x_min": None, "x_max": None, "y_min": None, "y_max": None}
+        camera.boundaries = {"x_min": None, "x_max": None, "y_min": None, "y_max": None}
         camera.update_calibration_point(Point(20, 20), 0, 0)
         camera.update_calibration_point(Point(400, 400), 0, 0)
 

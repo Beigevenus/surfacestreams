@@ -5,7 +5,6 @@ from numpy import ndarray
 
 from HandTracking.Config import Config
 from HandTracking.Point import Point
-from HandTracking.Vector import Vector
 from HandTracking.image_wrap import four_point_transform as fpt
 
 import cv2
@@ -18,29 +17,32 @@ class Camera:
         self.calibration_points: list[Point] = calibration_points
         self.sorted_calibration_points: list[Point] = self.sort_calibration_points()
         self.ptm: Optional[ndarray] = None
-        self.wwidth = 0
-        self.wheight = 0
+        self.warped_width = 0
+        self.warped_height = 0
         self.frame: ndarray = self.update_frame()
         self.height: int = self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
         self.width: int = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.name: str = name
         self.boundary_points: list[Point] = []
-        self.boudaries: dict[str, Optional[int]] = {"x_min": None, "x_max": None, "y_min": None, "y_max": None}
+        self.boundaries: dict[str, Optional[int]] = {"x_min": None, "x_max": None, "y_min": None, "y_max": None}
 
         bou_points = Config.load_boundary_points()
         if bou_points:
-            self.boundary_points = bou_points
-            min_x = min(self.boundary_points[0].x, self.boundary_points[1].x)
-            min_y = min(self.boundary_points[0].y, self.boundary_points[1].y)
-            max_x = max(self.boundary_points[0].x, self.boundary_points[1].x)
-            max_y = max(self.boundary_points[0].y, self.boundary_points[1].y)
-
-            self.boudaries["x_min"] = int(min_x)
-            self.boudaries["y_min"] = int(min_y)
-            self.boudaries["x_max"] = int(max_x)
-            self.boudaries["y_max"] = int(max_y)
+            self.update_boundaries(bou_points)
 
         cv2.namedWindow(self.name)
+
+    def update_boundaries(self, bou_points):
+        self.boundary_points = bou_points
+        min_x = min(self.boundary_points[0].x, self.boundary_points[1].x)
+        min_y = min(self.boundary_points[0].y, self.boundary_points[1].y)
+        max_x = max(self.boundary_points[0].x, self.boundary_points[1].x)
+        max_y = max(self.boundary_points[0].y, self.boundary_points[1].y)
+
+        self.boundaries["x_min"] = int(min_x)
+        self.boundaries["y_min"] = int(min_y)
+        self.boundaries["x_max"] = int(max_x)
+        self.boundaries["y_max"] = int(max_y)
 
     def show_frame(self) -> None:
         """
@@ -59,7 +61,7 @@ class Camera:
         self.frame = cv2.flip(self.frame, 1)
         if success:
             if self.ptm is not None and len(self.calibration_points) > 3:
-                self.frame = cv2.warpPerspective(self.frame, self.ptm, (self.wwidth, self.wheight),
+                self.frame = cv2.warpPerspective(self.frame, self.ptm, (self.warped_width, self.warped_height),
                                                  flags=cv2.INTER_LINEAR)
             return self.frame
         return None
@@ -78,25 +80,16 @@ class Camera:
                 self.boundary_points.append(point)
             elif len(self.boundary_points) == 1:
                 self.boundary_points.append(point)
-                min_x = min(self.boundary_points[0].x, self.boundary_points[1].x)
-                min_y = min(self.boundary_points[0].y, self.boundary_points[1].y)
-                max_x = max(self.boundary_points[0].x, self.boundary_points[1].x)
-                max_y = max(self.boundary_points[0].y, self.boundary_points[1].y)
-
-                self.boudaries["x_min"] = int(min_x)
-                self.boudaries["y_min"] = int(min_y)
-                self.boudaries["x_max"] = int(max_x)
-                self.boudaries["y_max"] = int(max_y)
+                self.update_boundaries(self.boundary_points)
 
                 Config.save_boundary_points(self.boundary_points)
-                print(self.boudaries)
             else:
                 self.calibration_points.clear()
                 self.boundary_points.clear()
-                self.boudaries["x_min"] = None
-                self.boudaries["y_min"] = None
-                self.boudaries["x_max"] = None
-                self.boudaries["y_max"] = None
+                self.boundaries["x_min"] = None
+                self.boundaries["y_min"] = None
+                self.boundaries["x_max"] = None
+                self.boundaries["y_max"] = None
         elif len(self.calibration_points) == 3:
             self.calibration_points.append(point)
             self.sorted_calibration_points = self.sort_calibration_points()
@@ -106,13 +99,13 @@ class Camera:
             self.calibration_points.append(point)
 
     def normalise_in_boundary(self, point):
-        if self.boudaries["x_max"] is not None:
-            x_max: int = self.boudaries["x_max"]
-            x_min: int = self.boudaries["x_min"]
-            y_max: int = self.boudaries["y_max"]
-            y_min: int = self.boudaries["y_min"]
-            point_x = point.x * self.wwidth
-            point_y = point.y * self.wheight
+        if self.boundaries["x_max"] is not None:
+            x_max: int = self.boundaries["x_max"]
+            x_min: int = self.boundaries["x_min"]
+            y_max: int = self.boundaries["y_max"]
+            y_min: int = self.boundaries["y_min"]
+            point_x = point.x * self.warped_width
+            point_y = point.y * self.warped_height
             if x_max >= point_x >= x_min and y_max >= point_y >= y_min:
                 return Point((point_x - x_min) / (x_max - x_min), (point_y - y_min) / (y_max - y_min))
 
@@ -131,8 +124,8 @@ class Camera:
                        int(int(10 / 2) * 2),
                        [255, 255, 0], cv2.FILLED)
         elif len(self.boundary_points) == 2:
-            cv2.rectangle(self.frame, (self.boudaries["x_min"], self.boudaries["y_min"]),
-                          (self.boudaries["x_max"], self.boudaries["y_max"]),
+            cv2.rectangle(self.frame, (self.boundaries["x_min"], self.boundaries["y_min"]),
+                          (self.boundaries["x_max"], self.boundaries["y_max"]),
                           [255, 255, 0], 10)
 
     @staticmethod
@@ -154,19 +147,13 @@ class Camera:
     def update_image_ptm(self, width: int, height: int) -> None:
         # TODO: Write docstring for method
         if not len(self.calibration_points) <= 3:
-            self.ptm, self.wwidth, self.wheight = fpt(self.get_expanded_corners(), width, height)
+            self.ptm, self.warped_width, self.warped_height = fpt(self.get_expanded_corners(), width, height)
 
     def get_expanded_corners(self):
-        # V1 = Vector(self.sorted_calibration_points[3], self.sorted_calibration_points[0])
-        # V1 = Vector(self.sorted_calibration_points[3], self.sorted_calibration_points[0])
-        # V1 = Vector(self.sorted_calibration_points[3], self.sorted_calibration_points[0])
         min_x = min(self.sorted_calibration_points[0].x, self.sorted_calibration_points[3].x)
         min_y = min(self.sorted_calibration_points[0].y, self.sorted_calibration_points[1].y)
         max_x = max(self.sorted_calibration_points[1].x, self.sorted_calibration_points[2].x)
         max_y = max(self.sorted_calibration_points[2].y, self.sorted_calibration_points[3].y)
-
-        for point in self.calibration_points:
-            print(point)
 
         inner_width = max_x - min_x
         inner_height = max_y - min_y
@@ -175,40 +162,40 @@ class Camera:
         aspect_ratio_outer = self.width / self.height
 
         if aspect_ratio_outer > aspect_ratio_inner:
-            target_aspect = (inner_width * (self.height / inner_height), self.height)
-            step_width = (target_aspect[0] - inner_width) / 2
-            # if min_x - step_width > 0:
-            step_width = min_x - step_width
+            target_resolution = (inner_width * (self.height / inner_height), self.height)
+            offset_width = (target_resolution[0] - inner_width) / 2
+            # if min_x - offset_width > 0:
+            offset_width = min_x - offset_width
             # else:
-            #     step_width = 0
-            step_height = 0
-            step_height = (target_aspect[1] - inner_height) / 2
-            # if min_y - step_height > 0:
-            step_height = min_y - step_height
+            #     offset_width = 0
+            offset_height = 0
+            offset_height = (target_resolution[1] - inner_height) / 2
+            # if min_y - offset_height > 0:
+            offset_height = min_y - offset_height
         else:
-            target_aspect = (self.width, inner_height * (self.width / inner_width))
-            step_width = 0
-            step_height = (target_aspect[1] - inner_height) / 2
-            # if min_y - step_height > 0:
-            step_height = min_y - step_height
+            target_resolution = (self.width, inner_height * (self.width / inner_width))
+            offset_width = 0
+            offset_height = (target_resolution[1] - inner_height) / 2
+            # if min_y - offset_height > 0:
+            offset_height = min_y - offset_height
             # else:
-            #     step_height = 0
-            step_width = (target_aspect[0] - inner_width) / 2
-            # if min_x - step_width > 0:
-            step_width = min_x - step_width
+            #     offset_height = 0
+            offset_width = (target_resolution[0] - inner_width) / 2
+            # if min_x - offset_width > 0:
+            offset_width = min_x - offset_width
 
         rel_top_left = Point(
-            ((self.sorted_calibration_points[0].x - min_x) / inner_width) * target_aspect[0] + step_width,
-            ((self.sorted_calibration_points[0].y - min_y) / inner_height) * target_aspect[1] + step_height)
+            ((self.sorted_calibration_points[0].x - min_x) / inner_width) * target_resolution[0] + offset_width,
+            ((self.sorted_calibration_points[0].y - min_y) / inner_height) * target_resolution[1] + offset_height)
         rel_top_right = Point(
-            ((self.sorted_calibration_points[1].x - min_x) / inner_width) * target_aspect[0] + step_width,
-            ((self.sorted_calibration_points[1].y - min_y) / inner_height) * target_aspect[1] + step_height)
+            ((self.sorted_calibration_points[1].x - min_x) / inner_width) * target_resolution[0] + offset_width,
+            ((self.sorted_calibration_points[1].y - min_y) / inner_height) * target_resolution[1] + offset_height)
         rel_bot_left = Point(
-            ((self.sorted_calibration_points[3].x - min_x) / inner_width) * target_aspect[0] + step_width,
-            ((self.sorted_calibration_points[3].y - min_y) / inner_height) * target_aspect[1] + step_height)
+            ((self.sorted_calibration_points[3].x - min_x) / inner_width) * target_resolution[0] + offset_width,
+            ((self.sorted_calibration_points[3].y - min_y) / inner_height) * target_resolution[1] + offset_height)
         rel_bot_right = Point(
-            ((self.sorted_calibration_points[2].x - min_x) / inner_width) * target_aspect[0] + step_width,
-            ((self.sorted_calibration_points[2].y - min_y) / inner_height) * target_aspect[1] + step_height)
+            ((self.sorted_calibration_points[2].x - min_x) / inner_width) * target_resolution[0] + offset_width,
+            ((self.sorted_calibration_points[2].y - min_y) / inner_height) * target_resolution[1] + offset_height)
 
         print(rel_top_left, rel_top_right, rel_bot_right, rel_bot_left)
 
