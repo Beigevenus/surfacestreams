@@ -100,16 +100,29 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, drawing_precision,
 
             # The actual check whether the program should be drawing or not
             if camera.calibration_is_done():
-                # TODO: Add erasing when working on the wheel
                 hand_sign: str = hand.get_hand_sign(camera.frame, hand_landmarks)
-                if hand_sign == "Pointer":
-                    normalised_point = camera.normalise_in_boundary(hand.get_index_tip())
-                    if normalised_point is not None:
-                        point_on_canvas = camera.transform_point(normalised_point, canvas.width, canvas.height)
 
-                    drawing_point = get_next_drawing_point(point_on_canvas, drawing_point, drawing_precision)
-                    if drawing_point is not None:
-                        canvas.add_point(drawing_point)
+                if hand_sign == "Open" or hand_sign == "Pointer":
+                    if menu_wheel.is_open:
+                        canvas.new_line(force=True)
+                        menu_wheel.close_menu()
+
+                # TODO: Add erasing when working on the wheel
+                if hand_sign == "Pointer":
+                    if menu_wheel.current_tool == "DRAW":
+                        normalised_point = camera.normalise_in_boundary(hand.get_index_tip())
+                        if normalised_point is not None:
+                            point_on_canvas = camera.transform_point(normalised_point, canvas.width, canvas.height)
+
+                        drawing_point = get_next_drawing_point(point_on_canvas, drawing_point, drawing_precision)
+                        if drawing_point is not None:
+                            canvas.add_point(drawing_point)
+                    else:
+                        normalised_point = camera.normalise_in_boundary(hand.get_index_tip())
+                        if normalised_point is not None:
+                            point_on_canvas = camera.transform_point(normalised_point, canvas.width, canvas.height)
+
+                        canvas.erase(point_on_canvas, 15)
 
                 else:
                     drawing_point = None
@@ -124,10 +137,6 @@ def analyse_frame(camera, hands, hand, canvas, drawing_point, drawing_precision,
                         menu_wheel.open_menu()
                         canvas.draw_circle(menu_point, [0, 255, 0, 255], 5)
                         menu_wheel.check_button_click(menu_point)
-
-                if hand_sign == "Open" or hand_sign == "Pointer":
-                    if menu_wheel.is_open:
-                        menu_wheel.close_menu()
 
                 if hand_sign == "Close" or hand_sign == "Open":
                     canvas.new_line()

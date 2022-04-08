@@ -93,7 +93,6 @@ class MenuWheel:
             button.active = False
 
     def __change_color(self, button: Button):
-        print("change!!!!!!!!!")
         if self.current_tool != "ERASE":
             actual_color = button.color
 
