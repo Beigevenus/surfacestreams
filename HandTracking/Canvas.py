@@ -7,6 +7,7 @@ from numpy import ndarray
 from HandTracking.Camera import Camera
 from HandTracking.PersistenceHandler import PersistenceHandler
 from HandTracking.Point import Point
+from Bezier.Bezier import Bezier
 
 
 class Canvas:
@@ -25,15 +26,6 @@ class Canvas:
 
         cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
 
-    # TODO: optimize with map
-    def init_line_array(self):
-        # self.line_array = [[[] for x in range(self.width)] for y in range(self.height)]
-        self.line_array = list(map(list, map(list, self.line_array)))
-        # for y in range(self.height+100):
-        #     self.line_array.append([])
-        #     for x in range(self.width+100):
-        #         self.line_array[y].append([])
-
     def update_line_array(self):
         for line in self.lines:
             for point in line[1]:
@@ -48,7 +40,7 @@ class Canvas:
     def hard_wipe(self):
         if len(self.lines) > 1:
             self.image: ndarray = np.full(shape=[self.height, self.width, 4], fill_value=[0, 0, 0, 0], dtype=np.uint8)
-            self.init_line_array()
+            self.line_array = list(map(list, map(list, self.line_array)))
             self.lines = []
             self.new_line(force=True)
 
@@ -71,6 +63,11 @@ class Canvas:
         elif self.lines[-1][1]:
             color = copy.deepcopy(self.color)
             self.lines.append((color, []))
+            if len(self.lines) > 1:
+                steps = np.arange(0, 1, 0.01)
+                points = np.array([[point.x, point.y] for point in self.lines[-2][1]])
+                new_points = Bezier.Curve(steps, points)
+                self.lines[-2] = (self.lines[-2][0], [Point(x, y) for x, y in new_points])
 
     def remove_excess_line(self):
         if self.lines[-1][1]:

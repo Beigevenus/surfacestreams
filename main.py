@@ -61,13 +61,13 @@ def main(config: Settings) -> int:
             continue
 
         if counter % 2 == 0:
+            canvas.wipe()
             drawing_point, point_on_canvas = analyse_frame(camera, hands, hand, canvas, drawing_point,
                                                            drawing_precision, point_on_canvas,
                                                            menu_wheel)
 
-            canvas.show()
-            canvas.wipe()
             canvas.draw()
+            canvas.show()
 
         camera.show_frame()
 

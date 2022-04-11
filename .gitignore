@@ -8,3 +8,4 @@ venv
 *.mp4
 config.json
 drawing.json
+/Bezier/
